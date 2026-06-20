@@ -1,0 +1,14 @@
+{
+  "name": "disenador-de-personajes",
+  "version": "1.0.0",
+  "description": "Diseñador de personajes basado en habilidades reales, físico, personalidad y hábitos, con diagnóstico de la condición personal y plan de mejora.",
+  "private": true,
+  "scripts": {
+    "test": "node test-render.js",
+    "preview": "node preview.js"
+  },
+  "comment": "La aplicación (index.html + styles.css + app.js) NO necesita dependencias: se abre directamente en el navegador. Las dependencias de abajo solo se usan para las pruebas/previsualización en Node.",
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2"
+  }
+}

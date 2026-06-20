@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Diseñador de Personajes · Diagnóstico de Vida</title>
+  <meta name="description" content="Crea un personaje basado en habilidades reales, físico, personalidad y hábitos. Obtén un diagnóstico de tu condición y qué mejorar." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='35' r='20' fill='%235b8cff'/><rect x='25' y='58' width='50' height='38' rx='18' fill='%2334d399'/></svg>" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4.2" fill="#08101f"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke="#08101f" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </span>
+      <div>
+        <h1>Diseñador de Personajes</h1>
+        <p>Habilidades reales · Físico · Personalidad · Diagnóstico de vida</p>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="preset-bar" id="presets">
+        <span class="lbl">Ejemplos:</span>
+        <!-- preset chips injected -->
+      </div>
+      <button class="btn" id="btnRandom"><span class="ico">🎲</span> Aleatorio</button>
+      <button class="btn" id="btnReset"><span class="ico">↺</span> Reiniciar</button>
+      <button class="btn primary" id="btnSave"><span class="ico">💾</span> Guardar</button>
+    </div>
+  </header>
+
+  <main class="app">
+    <!-- ===================== AVATAR / RESUMEN ===================== -->
+    <section class="panel col-avatar" aria-label="Personaje">
+      <div class="panel-head">
+        <h2>Tu personaje</h2>
+        <span class="hint">vista en vivo</span>
+      </div>
+      <div class="panel-body">
+        <div class="avatar-stage" id="avatarStage"><!-- svg avatar injected --></div>
+
+        <div class="identity">
+          <div class="name-row">
+            <span class="name" id="idName">—</span>
+            <span class="age" id="idAge"></span>
+          </div>
+          <div class="sub" id="idSub"></div>
+        </div>
+
+        <div class="cond-badge">
+          <div class="score" id="condScore">0</div>
+          <div class="meta">
+            <div class="k">Condición general</div>
+            <div class="v" id="condLabel">—</div>
+          </div>
+        </div>
+
+        <div class="dim-bars" id="dimBars"><!-- dimension bars injected --></div>
+
+        <div class="export-row">
+          <button class="btn" id="btnExportSvg"><span class="ico">🖼️</span> Avatar (SVG)</button>
+          <button class="btn" id="btnExportTxt"><span class="ico">📄</span> Informe</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CONTROLES ===================== -->
+    <section class="panel col-controls" aria-label="Editor de atributos">
+      <div class="panel-head">
+        <h2>Editor de atributos</h2>
+        <span class="hint">0 = nulo · 100 = excelente</span>
+      </div>
+      <div id="controls"><!-- controls injected --></div>
+    </section>
+
+    <!-- ===================== DIAGNÓSTICO ===================== -->
+    <section class="panel col-diagnosis" aria-label="Diagnóstico">
+      <div class="panel-head">
+        <h2>Diagnóstico</h2>
+        <span class="hint">perfil de 6 dimensiones</span>
+      </div>
+      <div class="panel-body">
+        <div class="radar-wrap" id="radarWrap"><!-- radar injected --></div>
+
+        <div class="archetype">
+          <span class="emoji" id="archEmoji">🧭</span>
+          <div>
+            <div class="t" id="archTitle">—</div>
+            <div class="d" id="archDesc"></div>
+          </div>
+        </div>
+
+        <div class="sw-grid">
+          <div class="sw-card">
+            <h3>💪 Fortalezas</h3>
+            <div class="sw-list" id="strengths"></div>
+          </div>
+          <div class="sw-card">
+            <h3>🎯 A reforzar</h3>
+            <div class="sw-list" id="weaknesses"></div>
+          </div>
+        </div>
+
+        <div class="section-title"><span>Plan de mejora</span><span class="ln"></span></div>
+        <div class="reco-list" id="reco"></div>
+
+        <p class="note">
+          Esta herramienta es una guía de autoconocimiento y reflexión: no constituye un
+          diagnóstico médico, psicológico ni profesional. Si algún área (sueño, estrés,
+          estado de ánimo) te preocupa, consulta con un especialista.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    Hecho como plantilla de diagnóstico personal · Todo el procesamiento ocurre en tu navegador.
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
