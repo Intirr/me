@@ -498,20 +498,32 @@
     ];
 
     // Paletas visuales.
-    const SKIN_TONES = ['#f7d9bf', '#f0c3a0', '#e0a87e', '#c98a5b', '#a86b41', '#7d4a2b', '#5a3420'];
-    const HAIR_COLORS = ['#15110e', '#3b2a1a', '#6b4423', '#a76a32', '#d8b66a', '#9aa0a6', '#e7e7ea', '#8a3b2c', '#3a5a8c'];
-    const HAIR_STYLES = [['rapado', 'Rapado'], ['corto', 'Corto'], ['medio', 'Medio'], ['largo', 'Largo']];
+    const SKIN_TONES = ['#ffe0c4', '#f7d9bf', '#f0c3a0', '#e0a87e', '#c98a5b', '#a86b41', '#8a5430', '#5a3420', '#3d2416'];
+    const HAIR_COLORS = ['#15110e', '#3b2a1a', '#6b4423', '#a76a32', '#d8b66a', '#e9d9a8', '#9aa0a6', '#e7e7ea', '#8a3b2c', '#b5483f', '#3a5a8c', '#6a4a86', '#3f7a5a'];
+    const EYE_COLORS = ['#3a2417', '#5b3a29', '#7a5a2e', '#9a7b3a', '#3f6e7d', '#3f7a66', '#5a6f86', '#6a6f7a', '#2a2f3a'];
+    const HAIR_STYLES = [['rapado', 'Rapado'], ['corto', 'Corto'], ['medio', 'Medio'], ['largo', 'Largo'], ['recogido', 'Recogido'], ['afro', 'Afro']];
     const BUILDS = [['delgada', 'Delgada'], ['media', 'Media'], ['atletica', 'Atlética'], ['robusta', 'Robusta']];
-    const FIGURES = [['neutro', 'Neutro'], ['masc', 'Ancha'], ['fem', 'Estilizada']];
+    const FACE_SHAPES = [['ovalada', 'Ovalada'], ['redonda', 'Redonda'], ['cuadrada', 'Cuadrada'], ['corazon', 'Corazón'], ['larga', 'Alargada']];
+    const BROWS = [['finas', 'Finas'], ['naturales', 'Naturales'], ['gruesas', 'Gruesas'], ['arqueadas', 'Arqueadas'], ['rectas', 'Rectas']];
+    const VELLO = [['ninguno', 'Ninguno'], ['incipiente', 'Incipiente'], ['bigote', 'Bigote'], ['perilla', 'Perilla'], ['corta', 'Barba corta'], ['completa', 'Barba completa']];
+    const GAFAS = [['ninguna', 'Ninguna'], ['redondas', 'Redondas'], ['cuadradas', 'Cuadradas'], ['sol', 'De sol']];
+    const SINO = [['no', 'No'], ['si', 'Sí']];
 
     /* ---------------------------------------------------------- *
      *  2. ESTADO
      * ---------------------------------------------------------- */
 
     const DEFAULTS = {
-      nombre: 'Alex', edad: 28, figura: 'neutro',
-      complexion: 'media', altura: 172, tonoMuscular: 50, postura: 62,
+      nombre: 'Alex', edad: 28,
+      // cuerpo
+      complexion: 'media', altura: 172, peso: 42, tonoMuscular: 50,
+      hombros: 52, cadera: 48, postura: 62, cuello: 50,
+      // rostro
+      cabezaTam: 50, caraForma: 'ovalada', ojosTam: 50, ojos: '#5b3a29',
+      cejas: 'naturales', nariz: 50, boca: 50, orejas: 50,
+      // piel / cabello / detalles
       piel: '#e0a87e', cabello: '#3b2a1a', peinado: 'corto',
+      vello: 'ninguno', gafas: 'ninguna', pecas: 'no',
       // habilidades
       fuerza: 50, resistencia: 50, flexibilidad: 48, coordinacion: 52,
       logica: 56, memoria: 50, concentracion: 50, creatividad: 55,
@@ -698,72 +710,99 @@
       `<ellipse cx="${fmt(cx)}" cy="${fmt(cy)}" rx="${fmt(rx)}" ry="${fmt(ry)}" fill="${fill}" ${extra || ''}/>`;
 
     function avatarSVG(s) {
-      const W = 320, H = 540, cx = 160, groundY = 498;
+      const W = 320, H = 540, cx = 160;
 
-      // ---- parámetros derivados ----
-      const buildMul = ({ delgada: 0.84, media: 1.0, atletica: 1.06, robusta: 1.30 })[s.complexion] || 1;
-      const figW = ({ neutro: 1.0, masc: 1.08, fem: 0.94 })[s.figura] || 1;
-      const figHip = ({ neutro: 1.0, masc: 0.94, fem: 1.12 })[s.figura] || 1;
+      // ---- factores normalizados ----
       const muscle = clamp100(s.tonoMuscular) / 100;
-      const post = clamp100(s.postura) / 100;
-      const vit = clamp100(s.vitalidad) / 100;
-      const hs = 0.93 + (clamp(s.altura, 140, 210) - 140) / 70 * 0.17; // 0.93..1.10
+      const fat    = clamp100(s.peso) / 100;
+      const post   = clamp100(s.postura) / 100;
+      const vit    = clamp100(s.vitalidad) / 100;
 
+      const buildMul = ({ delgada: 0.86, media: 1.0, atletica: 1.05, robusta: 1.22 })[s.complexion] || 1;
+      const shF   = 0.74 + clamp100(s.hombros)   / 100 * 0.52;  // anchura de hombros
+      const hpF   = 0.74 + clamp100(s.cadera)    / 100 * 0.52;  // anchura de cadera
+      const headF = 0.86 + clamp100(s.cabezaTam) / 100 * 0.30;  // tamaño de cabeza
+      const neckLen = 16 + clamp100(s.cuello)    / 100 * 22;    // longitud de cuello
+
+      // ---- colores ----
       const skin = s.piel || '#e0a87e';
-      const skinDk = shade(skin, -26);
-      const skinLt = shade(skin, 18);
+      const skinDk = shade(skin, -26), skinLt = shade(skin, 20), skinSh = shade(skin, -13);
       const hair = s.cabello || '#3b2a1a';
-      const hairLt = mix(hair, '#ffffff', 0.22);
+      const hairLt = mix(hair, '#ffffff', 0.24), hairDk = shade(hair, -18);
+      const browCol = mix(hair, '#221a12', 0.40);
+      const eyeCol = s.ojos || '#5b3a29';
+      const lipCol = mix(skin, '#a8584f', 0.30);
 
-      const dims = dimensions(s);
-      const overall = overallScore(dims);
+      const dims = dimensions(s), overall = overallScore(dims);
       const dominant = DIMS.slice().sort((a, b) => dims[b.key] - dims[a.key])[0];
-      const shirt = dominant.color;
-      const shirtDk = shade(shirt, -40);
-      const shorts = '#27324a';
-      const shortsDk = shade(shorts, -16);
+      const shirt = dominant.color, shirtDk = shade(shirt, -40);
+      const shorts = '#27324a', shortsDk = shade(shorts, -16);
 
-      // métricas corporales (base media)
-      const shoulderHalf = (58 + muscle * 18) * buildMul * figW;
-      const waistHalf = (({ delgada: 36, media: 44, atletica: 42, robusta: 60 })[s.complexion] || 44) + muscle * 3;
-      const hipHalf = (46 + (s.complexion === 'robusta' ? 12 : 0)) * (0.97 + (buildMul - 1) * 0.6) * figHip;
-      const neckW = 22 + muscle * 4 + (buildMul - 1) * 8;
-      const armW = clamp(17 + muscle * 11 + (buildMul - 1) * 9, 12, 42);
-      const legW = clamp(25 + muscle * 8 + (buildMul - 1) * 16, 18, 56);
+      // ---- forma de cara ----
+      const FACE = ({
+        ovalada:  { tw: 0.82, cw: 1.00, jw: 0.76, ry: 1.02, sq: 0.0 },
+        redonda:  { tw: 0.95, cw: 1.07, jw: 0.95, ry: 0.92, sq: 0.0 },
+        cuadrada: { tw: 0.94, cw: 1.00, jw: 1.00, ry: 0.98, sq: 0.55 },
+        corazon:  { tw: 1.00, cw: 1.02, jw: 0.58, ry: 1.04, sq: 0.0 },
+        larga:    { tw: 0.80, cw: 0.90, jw: 0.76, ry: 1.18, sq: 0.0 },
+      })[s.caraForma] || { tw: 0.82, cw: 1.00, jw: 0.76, ry: 1.02, sq: 0.0 };
 
-      const rHX = 37, rHY = 43;
-      const headDX = (1 - post) * 11;          // postura: cabeza adelantada
-      const droop = (1 - post) * 6;            // hombros caídos
-      const headCY = 92, neckTop = 130;
-      const shoulderY = 168 + droop, waistY = 250, hipY = 312, legBottom = 492;
-      const hx0 = cx + headDX, hy0 = headCY;
+      // ---- métricas corporales ----
+      const shoulderHalf = (50 + muscle * 18 + fat * 8) * buildMul * shF;
+      const waistBase = ({ delgada: 33, media: 40, atletica: 38, robusta: 52 })[s.complexion] || 40;
+      const waistHalf = (waistBase + muscle * 2 + fat * 34) * (0.96 + (buildMul - 1) * 0.5);
+      const hipHalf = (42 + fat * 14 + (s.complexion === 'robusta' ? 8 : 0)) * buildMul * hpF;
+      const neckW = clamp(17 + muscle * 4 + fat * 7 + (buildMul - 1) * 6, 13, 40);
+      const armW = clamp(15 + muscle * 11 + fat * 10 + (buildMul - 1) * 8, 11, 48);
+      const legW = clamp(22 + muscle * 8 + fat * 15 + (buildMul - 1) * 14, 16, 62);
+
+      // ---- geometría vertical (cabeza arriba, pies abajo) ----
+      const rHX = 36 * headF;
+      const rHY = 42 * headF * FACE.ry;
+      const droop = (1 - post) * 6;
+      const headDX = (1 - post) * 11;            // postura: cabeza adelantada
+      const hx0 = cx + headDX, hy0 = 96;
+      const chinY = hy0 + rHY;
+      const neckTop = chinY - rHY * 0.16;
+      const shoulderY = neckTop + neckLen + droop;
+      const torsoLen = 128 + (buildMul - 1) * 22 + fat * 14;
+      const waistY = shoulderY + torsoLen * 0.52;
+      const hipY = shoulderY + torsoLen;
+      const legBottom = hipY + 168;
 
       const legGap = hipHalf * 0.46;
       const xL = cx - legGap, xR = cx + legGap;
-
-      // brazos: del hombro a la muñeca, abiertos ligeramente
       const shX = shoulderHalf - 4;
-      const armTopY = shoulderY + 4, armBotY = hipY + 6;
+      const armTopY = shoulderY + 4, armBotY = hipY + 4;
       const wristL = [cx - shX - 8, armBotY], wristR = [cx + shX + 8, armBotY];
 
-      // expresión
+      // ---- expresión / aura ----
       const smileK = clamp((overall - 45) / 45, -1, 1);
-      const eyeOpen = 3.4 + vit * 2.0;
-      const browTilt = -smileK * 4 + (1 - clamp100(s.estabilidad) / 100) * 3;
-
-      // aura por vitalidad
       const auraCol = vit < 0.5 ? mix('#3a4761', '#5b8cff', vit * 2) : mix('#5b8cff', '#ffd76b', (vit - 0.5) * 2);
       const auraOp = 0.12 + vit * 0.42;
+      const auraCY = (shoulderY + hipY) / 2;
 
-      // hairBase por peinado (truco: elipse de pelo + elipse de piel encima)
-      let hg = 6, lift = 5, rxAdd = 6, ryAdd = 6, sides = false, longBack = false, ears = true;
+      // ---- peinado ----
+      let hg = 6, lift = 5, rxAdd = 6, ryAdd = 7, sides = false, longBack = false,
+          bun = false, afro = false, fringeOn = true, hairTop = rHY * 0.2;
       switch (s.peinado) {
-        case 'rapado': hg = 2.5; lift = 2; rxAdd = 3; ryAdd = 3; ears = true; break;
-        case 'corto':  hg = 6;  lift = 5; rxAdd = 6; ryAdd = 7; ears = true; break;
-        case 'medio':  hg = 8;  lift = 5; rxAdd = 9; ryAdd = 14; sides = true; ears = false; break;
-        case 'largo':  hg = 8;  lift = 5; rxAdd = 9; ryAdd = 16; sides = true; ears = false; longBack = true; break;
+        case 'rapado':   hg = 2.5; lift = 2; rxAdd = 3;  ryAdd = 3;  fringeOn = false; break;
+        case 'corto':    hg = 6;   lift = 5; rxAdd = 6;  ryAdd = 7;  break;
+        case 'medio':    hg = 8;   lift = 5; rxAdd = 9;  ryAdd = 14; sides = true; break;
+        case 'largo':    hg = 8;   lift = 5; rxAdd = 9;  ryAdd = 16; sides = true; longBack = true; break;
+        case 'recogido': hg = 5;   lift = 4; rxAdd = 5;  ryAdd = 6;  bun = true; hairTop = rHY * 0.5; break;
+        case 'afro':     hg = 10;  lift = 11; rxAdd = 22; ryAdd = 16; afro = true; fringeOn = false; hairTop = rHY * 0.62; break;
       }
+      const earsShown = !sides;   // medio/largo cubren las orejas
       const hairFill = s.peinado === 'rapado' ? mix(skin, hair, 0.55) : 'url(#gHair)';
+
+      // ---- escala para encajar en el lienzo sin recortes ----
+      const figTop = hy0 - rHY - hairTop;
+      const figBot = legBottom + 6;
+      const targetTop = 12, targetBot = 506;
+      const fitScale = (targetBot - targetTop) / (figBot - figTop);
+      const heightAdj = 0.90 + (clamp(s.altura, 140, 210) - 140) / 70 * 0.13;
+      const scale = Math.min(fitScale, fitScale * heightAdj);
 
       // ---- defs ----
       const defs = `
@@ -788,16 +827,17 @@
         </defs>`;
 
       // ---- piezas ----
-      const aura = `<ellipse cx="${cx}" cy="248" rx="150" ry="240" fill="url(#gAura)"/>`;
-      const groundShadow = ell(cx, groundY + 4, 92, 13, 'rgba(0,0,0,.45)');
+      const aura = `<ellipse cx="${cx}" cy="${fmt(auraCY)}" rx="150" ry="232" fill="url(#gAura)"/>`;
+      const groundShadow = ell(cx, targetBot + 2, 88, 12, 'rgba(0,0,0,.45)');
 
-      // cabello trasero (largo)
+      // cabello trasero (largo / recogido)
       let backHair = '';
       if (longBack) {
-        backHair =
-          limb(hx0 - rHX + 4, hy0, hx0 - rHX + 2, shoulderY + 96, rHX * 0.62, 'url(#gHair)') +
-          limb(hx0 + rHX - 4, hy0, hx0 + rHX - 2, shoulderY + 96, rHX * 0.62, 'url(#gHair)');
+        backHair +=
+          limb(hx0 - rHX + 4, hy0, hx0 - rHX + 2, shoulderY + 92, rHX * 0.6, 'url(#gHair)') +
+          limb(hx0 + rHX - 4, hy0, hx0 + rHX - 2, shoulderY + 92, rHX * 0.6, 'url(#gHair)');
       }
+      if (bun) backHair += ell(hx0, hy0 - rHY * 1.02, rHX * 0.5, rHX * 0.5, 'url(#gHair)');
 
       // piernas (piel) + pies
       const legs =
@@ -849,44 +889,142 @@
       const neck = `<rect x="${fmt(cx - neckW / 2)}" y="${fmt(neckTop)}" width="${fmt(neckW)}" height="${fmt(shoulderY - neckTop + 8)}" rx="9" fill="${skin}"/>`
         + ell(cx, neckTop + 10, neckW / 2, 5, skinDk, 'opacity="0.35"');
 
-      // cabeza
-      const hairBase = ell(hx0, hy0 - lift, rHX + rxAdd, rHY + ryAdd, hairFill);
-      const head = ell(hx0, hy0, rHX, rHY, skin)
-        + ell(hx0, hy0 + rHY * 0.32, rHX * 0.78, rHY * 0.55, skinLt, 'opacity="0.18"'); // mejilla/luz
-      const earsEl = ears
-        ? ell(hx0 - rHX + 1, hy0 + 4, 6, 9, skin) + ell(hx0 + rHX - 1, hy0 + 4, 6, 9, skin)
+      // ====================== ROSTRO ======================
+      const cH = rHX * FACE.cw, fHh = rHX * FACE.tw, jH = rHX * FACE.jw;
+
+      // cabeza: silueta paramétrica según la forma de cara
+      const headPath = `<path d="M ${fmt(hx0 + fHh)} ${fmt(hy0 - rHY * 0.55)}`
+        + ` Q ${fmt(hx0 + cH)} ${fmt(hy0 - rHY * 0.30)} ${fmt(hx0 + cH)} ${fmt(hy0 - rHY * 0.02)}`
+        + ` Q ${fmt(hx0 + cH * 0.99)} ${fmt(hy0 + rHY * 0.28)} ${fmt(hx0 + jH)} ${fmt(hy0 + rHY * 0.52)}`
+        + ` Q ${fmt(hx0 + jH * (0.70 + FACE.sq * 0.22))} ${fmt(hy0 + rHY * (0.93 - FACE.sq * 0.05))} ${fmt(hx0)} ${fmt(hy0 + rHY)}`
+        + ` Q ${fmt(hx0 - jH * (0.70 + FACE.sq * 0.22))} ${fmt(hy0 + rHY * (0.93 - FACE.sq * 0.05))} ${fmt(hx0 - jH)} ${fmt(hy0 + rHY * 0.52)}`
+        + ` Q ${fmt(hx0 - cH * 0.99)} ${fmt(hy0 + rHY * 0.28)} ${fmt(hx0 - cH)} ${fmt(hy0 - rHY * 0.02)}`
+        + ` Q ${fmt(hx0 - cH)} ${fmt(hy0 - rHY * 0.30)} ${fmt(hx0 - fHh)} ${fmt(hy0 - rHY * 0.55)}`
+        + ` C ${fmt(hx0 - fHh * 0.5)} ${fmt(hy0 - rHY * 1.06)} ${fmt(hx0 + fHh * 0.5)} ${fmt(hy0 - rHY * 1.06)} ${fmt(hx0 + fHh)} ${fmt(hy0 - rHY * 0.55)}`
+        + ` Z" fill="${skin}"/>`;
+      const headShade =
+        ell(hx0 + cH * 0.55, hy0 + rHY * 0.26, cH * 0.42, rHY * 0.42, skinSh, 'opacity="0.16"')
+        + ell(hx0 - cH * 0.42, hy0 + rHY * 0.16, cH * 0.42, rHY * 0.36, skinLt, 'opacity="0.15"');
+
+      // cabello (elipse de pelo bajo la cara → deja borde de pelo arriba y a los lados)
+      const hairBase = afro
+        ? ell(hx0, hy0 - lift, rHX + rxAdd, rHY + ryAdd, 'url(#gHair)')
+        : ell(hx0, hy0 - lift, cH + hg, rHY + ryAdd, hairFill);
+
+      // orejas
+      const earH = 8 + clamp100(s.orejas) / 100 * 8, earW = earH * 0.62;
+      const earsEl = earsShown
+        ? ell(hx0 - cH - earW * 0.25, hy0 + rHY * 0.06, earW, earH, skin)
+          + ell(hx0 - cH - earW * 0.25, hy0 + rHY * 0.06, earW * 0.5, earH * 0.55, skinSh, 'opacity="0.45"')
+          + ell(hx0 + cH + earW * 0.25, hy0 + rHY * 0.06, earW, earH, skin)
+          + ell(hx0 + cH + earW * 0.25, hy0 + rHY * 0.06, earW * 0.5, earH * 0.55, skinSh, 'opacity="0.45"')
         : '';
 
-      // cara
-      const eyeY = hy0 + 1, eyeDX = 13;
-      const eyes =
-        ell(hx0 - eyeDX, eyeY, 6.5, eyeOpen, '#ffffff') +
-        ell(hx0 + eyeDX, eyeY, 6.5, eyeOpen, '#ffffff') +
-        ell(hx0 - eyeDX, eyeY + 0.5, 3, 3, '#2a2f3a') +
-        ell(hx0 + eyeDX, eyeY + 0.5, 3, 3, '#2a2f3a') +
-        ell(hx0 - eyeDX + 1.2, eyeY - 1, 1, 1, '#ffffff') +
-        ell(hx0 + eyeDX + 1.2, eyeY - 1, 1, 1, '#ffffff');
-      const browY = hy0 - 12;
-      const brows =
-        `<line x1="${fmt(hx0 - eyeDX - 7)}" y1="${fmt(browY + browTilt)}" x2="${fmt(hx0 - eyeDX + 6)}" y2="${fmt(browY - browTilt)}" stroke="${shade(hair, -10)}" stroke-width="2.6" stroke-linecap="round"/>` +
-        `<line x1="${fmt(hx0 + eyeDX - 6)}" y1="${fmt(browY - browTilt)}" x2="${fmt(hx0 + eyeDX + 7)}" y2="${fmt(browY + browTilt)}" stroke="${shade(hair, -10)}" stroke-width="2.6" stroke-linecap="round"/>`;
-      const nose = `<path d="M ${fmt(hx0)} ${fmt(hy0 + 3)} L ${fmt(hx0 - 3)} ${fmt(hy0 + 13)} Q ${fmt(hx0)} ${fmt(hy0 + 16)} ${fmt(hx0 + 3)} ${fmt(hy0 + 13)}" stroke="${skinDk}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
-      const mouthY = hy0 + 26;
-      const mouth = `<path d="M ${fmt(hx0 - 10)} ${fmt(mouthY)} Q ${fmt(hx0)} ${fmt(mouthY + smileK * 7)} ${fmt(hx0 + 10)} ${fmt(mouthY)}" stroke="${shade(skin, -55)}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+      // ojos (esclerótica, iris a color, pupila, brillo, párpado)
+      const eyeDX = rHX * 0.42, eyeY = hy0 + rHY * 0.05;
+      const ew = 4.6 + clamp100(s.ojosTam) / 100 * 2.6;
+      const eh = (3.0 + vit * 1.5) * (0.85 + clamp100(s.ojosTam) / 100 * 0.4);
+      const irisR = clamp(eh * 0.95, 2.4, ew * 0.82), pupilR = irisR * 0.5;
+      const eye = dir => {
+        const ex = hx0 + dir * eyeDX;
+        return ell(ex, eyeY, ew, eh, '#f4f5f7')
+          + ell(ex, eyeY, irisR, irisR, eyeCol)
+          + ell(ex, eyeY, pupilR, pupilR, '#15181f')
+          + ell(ex - irisR * 0.32, eyeY - irisR * 0.32, irisR * 0.26, irisR * 0.26, '#ffffff')
+          + `<path d="M ${fmt(ex - ew)} ${fmt(eyeY - eh * 0.45)} Q ${fmt(ex)} ${fmt(eyeY - eh - 1.4)} ${fmt(ex + ew)} ${fmt(eyeY - eh * 0.45)}" fill="none" stroke="${skinDk}" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>`;
+      };
+      const eyes = eye(-1) + eye(1);
 
-      // mechón frontal sutil tipo media luna (no en rapado)
-      const fw = rHX * (sides ? 0.98 : 0.9);
-      const fringe = s.peinado === 'rapado' ? '' :
-        `<path d="M ${fmt(hx0 - fw)} ${fmt(hy0 - rHY * 0.34)}
-          Q ${fmt(hx0)} ${fmt(hy0 - rHY * 0.04)} ${fmt(hx0 + fw)} ${fmt(hy0 - rHY * 0.34)}
-          Q ${fmt(hx0)} ${fmt(hy0 - rHY * 0.92)} ${fmt(hx0 - fw)} ${fmt(hy0 - rHY * 0.34)} Z"
-          fill="url(#gHair)"/>`;
+      // cejas: forma rellena con arco natural (se acabaron las líneas rectas)
+      const BROW = ({ finas: { t: 2.4, a: 3 }, naturales: { t: 4, a: 3.6 }, gruesas: { t: 6, a: 3.2 }, arqueadas: { t: 3.6, a: 6 }, rectas: { t: 4, a: 1.2 } })[s.cejas] || { t: 4, a: 3.6 };
+      const browY = eyeY - eh - 4 - BROW.t * 0.5;
+      const brow = dir => {
+        const inX = hx0 + dir * (eyeDX - ew * 0.7), mdX = hx0 + dir * (eyeDX + ew * 0.05), outX = hx0 + dir * (eyeDX + ew * 1.0);
+        const t = BROW.t, a = BROW.a;
+        return `<path d="M ${fmt(inX)} ${fmt(browY + t * 0.5)}`
+          + ` Q ${fmt(mdX)} ${fmt(browY - a)} ${fmt(outX)} ${fmt(browY + 0.5)}`
+          + ` Q ${fmt(mdX)} ${fmt(browY - a + t)} ${fmt(inX)} ${fmt(browY + t * 0.5)} Z" fill="${browCol}"/>`;
+      };
+      const brows = brow(-1) + brow(1);
 
+      // nariz
+      const nl = 9 + clamp100(s.nariz) / 100 * 10, nw = 2.6 + clamp100(s.nariz) / 100 * 4;
+      const noseTopY = eyeY + eh * 0.4, noseTipY = noseTopY + nl;
+      const nose = `<path d="M ${fmt(hx0 - 1.2)} ${fmt(noseTopY)}`
+        + ` Q ${fmt(hx0 - nw * 0.5)} ${fmt(noseTipY - nl * 0.4)} ${fmt(hx0 - nw)} ${fmt(noseTipY - 2)}`
+        + ` Q ${fmt(hx0 - nw * 1.05)} ${fmt(noseTipY + 1.6)} ${fmt(hx0 - nw * 0.35)} ${fmt(noseTipY + 1)}`
+        + ` Q ${fmt(hx0)} ${fmt(noseTipY + 3)} ${fmt(hx0 + nw * 0.35)} ${fmt(noseTipY + 1)}`
+        + ` Q ${fmt(hx0 + nw * 1.05)} ${fmt(noseTipY + 1.6)} ${fmt(hx0 + nw)} ${fmt(noseTipY - 2)}`
+        + ` Q ${fmt(hx0 + nw * 0.5)} ${fmt(noseTipY - nl * 0.4)} ${fmt(hx0 + 1.2)} ${fmt(noseTopY)}"`
+        + ` fill="none" stroke="${skinDk}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.62"/>`;
+
+      // boca / labios
+      const mw = 7 + clamp100(s.boca) / 100 * 7, lipH = 1.6 + clamp100(s.boca) / 100 * 3.0;
+      const mouthY = hy0 + rHY * 0.56, sm = smileK * 6;
+      const mouth = `<path d="M ${fmt(hx0 - mw)} ${fmt(mouthY)} Q ${fmt(hx0)} ${fmt(mouthY + sm + lipH * 1.7)} ${fmt(hx0 + mw)} ${fmt(mouthY)} Q ${fmt(hx0)} ${fmt(mouthY + sm + 1)} ${fmt(hx0 - mw)} ${fmt(mouthY)} Z" fill="${lipCol}"/>`
+        + `<path d="M ${fmt(hx0 - mw)} ${fmt(mouthY)} Q ${fmt(hx0 - mw * 0.45)} ${fmt(mouthY - lipH)} ${fmt(hx0)} ${fmt(mouthY - 0.4)} Q ${fmt(hx0 + mw * 0.45)} ${fmt(mouthY - lipH)} ${fmt(hx0 + mw)} ${fmt(mouthY)} Q ${fmt(hx0)} ${fmt(mouthY + sm + 1)} ${fmt(hx0 - mw)} ${fmt(mouthY)} Z" fill="${shade(lipCol, -22)}"/>`
+        + `<path d="M ${fmt(hx0 - mw)} ${fmt(mouthY)} Q ${fmt(hx0)} ${fmt(mouthY + sm)} ${fmt(hx0 + mw)} ${fmt(mouthY)}" fill="none" stroke="${shade(lipCol, -48)}" stroke-width="1.2" stroke-linecap="round"/>`;
+
+      // vello facial
+      const beardFill = hairDk;
+      const jawBeard = (topMul, extra, op) => {
+        const ty = hy0 + rHY * topMul;
+        return `<path d="M ${fmt(hx0 - cH * 0.98)} ${fmt(ty)}`
+          + ` Q ${fmt(hx0 - cH)} ${fmt(hy0 + rHY * 0.58)} ${fmt(hx0 - jH * 0.82)} ${fmt(hy0 + rHY * 0.94)}`
+          + ` Q ${fmt(hx0)} ${fmt(hy0 + rHY * (1.04 + extra))} ${fmt(hx0 + jH * 0.82)} ${fmt(hy0 + rHY * 0.94)}`
+          + ` Q ${fmt(hx0 + cH)} ${fmt(hy0 + rHY * 0.58)} ${fmt(hx0 + cH * 0.98)} ${fmt(ty)}`
+          + ` Q ${fmt(hx0)} ${fmt(ty + rHY * 0.10)} ${fmt(hx0 - cH * 0.98)} ${fmt(ty)} Z" fill="${beardFill}" opacity="${op}"/>`;
+      };
+      const mustache = `<path d="M ${fmt(hx0 - mw * 1.05)} ${fmt(mouthY - lipH - 2)} Q ${fmt(hx0 - mw * 0.4)} ${fmt(mouthY - lipH + 1)} ${fmt(hx0)} ${fmt(mouthY - lipH - 0.5)} Q ${fmt(hx0 + mw * 0.4)} ${fmt(mouthY - lipH + 1)} ${fmt(hx0 + mw * 1.05)} ${fmt(mouthY - lipH - 2)} Q ${fmt(hx0)} ${fmt(mouthY - lipH + 3)} ${fmt(hx0 - mw * 1.05)} ${fmt(mouthY - lipH - 2)} Z" fill="${beardFill}"/>`;
+      const chinPatch = `<path d="M ${fmt(hx0 - jH * 0.5)} ${fmt(hy0 + rHY * 0.74)} Q ${fmt(hx0)} ${fmt(hy0 + rHY * 0.7)} ${fmt(hx0 + jH * 0.5)} ${fmt(hy0 + rHY * 0.74)} Q ${fmt(hx0 + jH * 0.42)} ${fmt(hy0 + rHY * 1.04)} ${fmt(hx0)} ${fmt(hy0 + rHY * 1.06)} Q ${fmt(hx0 - jH * 0.42)} ${fmt(hy0 + rHY * 1.04)} ${fmt(hx0 - jH * 0.5)} ${fmt(hy0 + rHY * 0.74)} Z" fill="${beardFill}"/>`;
+      let beard = '';
+      switch (s.vello) {
+        case 'incipiente': beard = jawBeard(0.46, 0, 0.30) + `<g opacity="0.30">${mustache}</g>`; break;
+        case 'bigote':     beard = mustache; break;
+        case 'perilla':    beard = chinPatch + mustache; break;
+        case 'corta':      beard = jawBeard(0.44, 0, 0.9) + mustache; break;
+        case 'completa':   beard = jawBeard(0.34, 0.06, 1) + mustache; break;
+      }
+
+      // pecas
+      const freckles = s.pecas === 'si'
+        ? [[-0.55, 0.30], [-0.40, 0.40], [-0.62, 0.42], [0.55, 0.30], [0.40, 0.40], [0.62, 0.42], [-0.18, 0.48], [0.18, 0.48]]
+            .map(p => ell(hx0 + p[0] * cH, hy0 + p[1] * rHY, 1.1, 1.1, skinDk, 'opacity="0.45"')).join('')
+        : '';
+
+      // gafas
+      let glasses = '';
+      if (s.gafas !== 'ninguna') {
+        const fr = '#2b2f3a', lr = ew + 3, exL = hx0 - eyeDX, exR = hx0 + eyeDX;
+        const lensFill = s.gafas === 'sol' ? 'rgba(22,26,34,0.82)' : 'none';
+        let lenses;
+        if (s.gafas === 'cuadradas') {
+          const w = lr * 1.9, h = (eh + 3) * 2;
+          lenses = `<rect x="${fmt(exL - w / 2)}" y="${fmt(eyeY - h / 2)}" width="${fmt(w)}" height="${fmt(h)}" rx="3" fill="${lensFill}" stroke="${fr}" stroke-width="2"/>`
+            + `<rect x="${fmt(exR - w / 2)}" y="${fmt(eyeY - h / 2)}" width="${fmt(w)}" height="${fmt(h)}" rx="3" fill="${lensFill}" stroke="${fr}" stroke-width="2"/>`;
+        } else {
+          const rr = s.gafas === 'sol' ? lr * 1.05 : lr;
+          lenses = `<circle cx="${fmt(exL)}" cy="${fmt(eyeY)}" r="${fmt(rr)}" fill="${lensFill}" stroke="${fr}" stroke-width="2"/>`
+            + `<circle cx="${fmt(exR)}" cy="${fmt(eyeY)}" r="${fmt(rr)}" fill="${lensFill}" stroke="${fr}" stroke-width="2"/>`;
+        }
+        glasses = lenses
+          + `<line x1="${fmt(exL + lr * 0.7)}" y1="${fmt(eyeY)}" x2="${fmt(exR - lr * 0.7)}" y2="${fmt(eyeY)}" stroke="${fr}" stroke-width="2"/>`
+          + `<line x1="${fmt(exL - lr)}" y1="${fmt(eyeY)}" x2="${fmt(hx0 - cH)}" y2="${fmt(eyeY - 2)}" stroke="${fr}" stroke-width="2"/>`
+          + `<line x1="${fmt(exR + lr)}" y1="${fmt(eyeY)}" x2="${fmt(hx0 + cH)}" y2="${fmt(eyeY - 2)}" stroke="${fr}" stroke-width="2"/>`;
+      }
+
+      // mechón frontal (media luna)
+      const fw = cH * (sides ? 0.98 : 0.9);
+      const fringe = !fringeOn ? '' :
+        `<path d="M ${fmt(hx0 - fw)} ${fmt(hy0 - rHY * 0.36)} Q ${fmt(hx0)} ${fmt(hy0 - rHY * 0.06)} ${fmt(hx0 + fw)} ${fmt(hy0 - rHY * 0.36)} Q ${fmt(hx0)} ${fmt(hy0 - rHY * 0.95)} ${fmt(hx0 - fw)} ${fmt(hy0 - rHY * 0.36)} Z" fill="url(#gHair)"/>`;
+
+      // ====================== ENSAMBLAJE ======================
       const figure =
         backHair + legs + shortsEl + arms + torso + sleeves + shirtDetail +
-        neck + hairBase + head + earsEl + eyes + brows + nose + mouth + fringe;
+        neck + hairBase + headPath + headShade + earsEl + beard +
+        eyes + brows + nose + mouth + freckles + fringe + glasses;
 
-      const scaled = `<g transform="translate(${cx} ${groundY}) scale(${fmt(hs)}) translate(${-cx} ${-groundY})">${figure}</g>`;
+      const scaled = `<g transform="translate(${cx} ${fmt(targetBot)}) scale(${fmt(scale)}) translate(${fmt(-cx)} ${fmt(-figBot)})">${figure}</g>`;
 
       return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Avatar del personaje">`
         + defs + aura + groundShadow + scaled + `</svg>`;
@@ -946,25 +1084,66 @@
           <input type="range" id="f_${k}" min="${min}" max="${max}" value="${clamp(state[k], min, max)}" step="1" data-key="${k}" data-suffix="${suffix || ''}"/>
         </div>`;
 
+      const colorRow = (name, colors, val) =>
+        `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">${sw(name, colors, val)}`
+        + `<input type="color" id="f_${name}" value="${val}" data-key="${name}" aria-label="Color personalizado"`
+        + ` style="width:36px;height:28px;padding:0;border:1px solid var(--border-2);border-radius:8px;background:var(--panel-2);cursor:pointer"/></div>`;
+      const field = (label, control) => `<div class="field"><label>${label}</label>${control}</div>`;
+
       let html = '';
 
-      // --- Apariencia ---
+      // --- Identidad ---
       html += `<details class="ctrl-group" open>
-        <summary><span class="dot" style="background:#22d3ee"></span> Identidad y apariencia <span class="caret">›</span></summary>
+        <summary><span class="dot" style="background:#22d3ee"></span> Identidad <span class="caret">›</span></summary>
         <div class="ctrl-content">
           <div class="field">
             <label for="f_nombre">Nombre</label>
             <input type="text" id="f_nombre" value="${esc(state.nombre)}" data-key="nombre" maxlength="24"/>
           </div>
           ${slider('edad', 'Edad', 5, 90, ' años')}
-          <div class="field"><label>Estilo de figura</label>${seg('figura', FIGURES, state.figura)}</div>
-          <div class="field"><label>Complexión</label>${seg('complexion', BUILDS, state.complexion)}</div>
+        </div>
+      </details>`;
+
+      // --- Cuerpo ---
+      html += `<details class="ctrl-group" open>
+        <summary><span class="dot" style="background:#ff6b6b"></span> 🧍 Cuerpo <span class="caret">›</span></summary>
+        <div class="ctrl-content">
+          ${field('Complexión', seg('complexion', BUILDS, state.complexion))}
           ${slider('altura', 'Altura', 140, 210, ' cm')}
+          ${slider('peso', 'Peso / grasa corporal', 0, 100, '')}
           ${slider('tonoMuscular', 'Tono muscular', 0, 100, '')}
+          ${slider('hombros', 'Anchura de hombros', 0, 100, '')}
+          ${slider('cadera', 'Anchura de cadera', 0, 100, '')}
+          ${slider('cuello', 'Longitud del cuello', 0, 100, '')}
           ${slider('postura', 'Postura', 0, 100, '')}
-          <div class="field"><label>Tono de piel</label>${sw('piel', SKIN_TONES, state.piel)}</div>
-          <div class="field"><label>Color de cabello</label>${sw('cabello', HAIR_COLORS, state.cabello)}</div>
-          <div class="field"><label>Peinado</label>${seg('peinado', HAIR_STYLES, state.peinado)}</div>
+        </div>
+      </details>`;
+
+      // --- Rostro ---
+      html += `<details class="ctrl-group" open>
+        <summary><span class="dot" style="background:#b07cff"></span> 😀 Rostro <span class="caret">›</span></summary>
+        <div class="ctrl-content">
+          ${slider('cabezaTam', 'Tamaño de cabeza', 0, 100, '')}
+          ${field('Forma de cara', seg('caraForma', FACE_SHAPES, state.caraForma))}
+          ${slider('ojosTam', 'Tamaño de ojos', 0, 100, '')}
+          ${field('Color de ojos', colorRow('ojos', EYE_COLORS, state.ojos))}
+          ${field('Cejas', seg('cejas', BROWS, state.cejas))}
+          ${slider('nariz', 'Nariz', 0, 100, '')}
+          ${slider('boca', 'Boca / labios', 0, 100, '')}
+          ${slider('orejas', 'Orejas', 0, 100, '')}
+        </div>
+      </details>`;
+
+      // --- Piel, cabello y extras ---
+      html += `<details class="ctrl-group">
+        <summary><span class="dot" style="background:#34d399"></span> 💇 Piel, cabello y extras <span class="caret">›</span></summary>
+        <div class="ctrl-content">
+          ${field('Tono de piel', colorRow('piel', SKIN_TONES, state.piel))}
+          ${field('Color de cabello', colorRow('cabello', HAIR_COLORS, state.cabello))}
+          ${field('Peinado', seg('peinado', HAIR_STYLES, state.peinado))}
+          ${field('Vello facial', seg('vello', VELLO, state.vello))}
+          ${field('Gafas', seg('gafas', GAFAS, state.gafas))}
+          ${field('Pecas', seg('pecas', SINO, state.pecas))}
         </div>
       </details>`;
 
@@ -1007,6 +1186,7 @@
         setSliderFill(inp);
       });
       const nm = document.getElementById('f_nombre'); if (nm) nm.value = state.nombre;
+      document.querySelectorAll('input[type="color"]').forEach(ci => { ci.value = state[ci.dataset.key]; });
       document.querySelectorAll('[data-seg]').forEach(seg => {
         const name = seg.dataset.seg;
         seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.val === String(state[name]))));
@@ -1103,6 +1283,9 @@
             const g = GROUPS.find(g => g.fields.some(([k]) => k === t.dataset.key));
             if (g) { const el = document.getElementById('avg_' + g.id);
               if (el) el.textContent = round(avg(g.fields.map(([k]) => clamp100(state[k])))) + ' / 100'; }
+          } else if (t.type === 'color') {
+            const grp = controls.querySelector(`[data-sw="${t.dataset.key}"]`);
+            if (grp) grp.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.val === t.value)));
           }
           render();
         }
@@ -1115,7 +1298,9 @@
         if (seg) { state[seg.dataset.seg] = btn.dataset.val;
           seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === btn))); render(); }
         else if (sw) { state[sw.dataset.sw] = btn.dataset.val;
-          sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === btn))); render(); }
+          sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+          const ci = document.getElementById('f_' + sw.dataset.sw); if (ci) ci.value = btn.dataset.val;
+          render(); }
       });
 
       document.getElementById('presets').addEventListener('click', e => {
@@ -1127,14 +1312,24 @@
 
       document.getElementById('btnRandom').addEventListener('click', () => {
         const r = (a, b) => Math.round(a + Math.random() * (b - a));
+        const pick = arr => arr[r(0, arr.length - 1)];
         attributeList(state).forEach(({ key }) => { state[key] = r(15, 95); });
-        state.complexion = BUILDS[r(0, 3)][0];
-        state.peinado = HAIR_STYLES[r(0, 3)][0];
-        state.figura = FIGURES[r(0, 2)][0];
-        state.piel = SKIN_TONES[r(0, SKIN_TONES.length - 1)];
-        state.cabello = HAIR_COLORS[r(0, HAIR_COLORS.length - 1)];
+        // cuerpo
+        state.complexion = pick(BUILDS)[0];
         state.altura = r(150, 200); state.edad = r(16, 70);
-        state.vitalidad = r(20, 95);
+        state.peso = r(15, 80); state.hombros = r(20, 90); state.cadera = r(20, 85);
+        state.cuello = r(25, 80); state.vitalidad = r(20, 95);
+        // rostro
+        state.cabezaTam = r(30, 75); state.caraForma = pick(FACE_SHAPES)[0];
+        state.ojosTam = r(30, 80); state.ojos = pick(EYE_COLORS);
+        state.cejas = pick(BROWS)[0]; state.nariz = r(25, 80);
+        state.boca = r(25, 80); state.orejas = r(25, 80);
+        // piel / cabello / extras
+        state.piel = pick(SKIN_TONES); state.cabello = pick(HAIR_COLORS);
+        state.peinado = pick(HAIR_STYLES)[0];
+        state.vello = Math.random() < 0.5 ? 'ninguno' : pick(VELLO)[0];
+        state.gafas = Math.random() < 0.65 ? 'ninguna' : pick(GAFAS)[0];
+        state.pecas = Math.random() < 0.7 ? 'no' : 'si';
         update();
       });
 

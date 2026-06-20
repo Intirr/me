@@ -22,11 +22,17 @@ function randomState() {
   });
   s.altura = 140 + Math.floor(Math.random() * 71);
   s.edad = 5 + Math.floor(Math.random() * 86);
-  s.complexion = ['delgada', 'media', 'atletica', 'robusta'][Math.floor(Math.random() * 4)];
-  s.peinado = ['rapado', 'corto', 'medio', 'largo'][Math.floor(Math.random() * 4)];
-  s.figura = ['neutro', 'masc', 'fem'][Math.floor(Math.random() * 3)];
-  s.piel = ['#f7d9bf', '#e0a87e', '#5a3420'][Math.floor(Math.random() * 3)];
-  s.cabello = ['#15110e', '#d8b66a', '#3a5a8c'][Math.floor(Math.random() * 3)];
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  s.complexion = pick(['delgada', 'media', 'atletica', 'robusta']);
+  s.peinado = pick(['rapado', 'corto', 'medio', 'largo', 'recogido', 'afro']);
+  s.caraForma = pick(['ovalada', 'redonda', 'cuadrada', 'corazon', 'larga']);
+  s.cejas = pick(['finas', 'naturales', 'gruesas', 'arqueadas', 'rectas']);
+  s.vello = pick(['ninguno', 'incipiente', 'bigote', 'perilla', 'corta', 'completa']);
+  s.gafas = pick(['ninguna', 'redondas', 'cuadradas', 'sol']);
+  s.pecas = pick(['no', 'si']);
+  s.piel = pick(['#ffe0c4', '#f7d9bf', '#e0a87e', '#5a3420', '#3d2416']);
+  s.cabello = pick(['#15110e', '#d8b66a', '#3a5a8c', '#b5483f']);
+  s.ojos = pick(['#3a2417', '#5b3a29', '#3f6e7d', '#3f7a66']);
   return s;
 }
 
@@ -34,14 +40,20 @@ console.log('1) Estado por defecto');
 validateSVG(M.avatarSVG(M.DEFAULTS), 'avatar default');
 validateSVG(M.radarSVG(M.dimensions(M.DEFAULTS)), 'radar default');
 
-console.log('2) Extremos (todo 0 / todo 100, cada complexión y peinado)');
+console.log('2) Extremos (todo 0 / todo 100, cada complexión, peinado, cara y vello)');
 ['delgada', 'media', 'atletica', 'robusta'].forEach(complexion => {
-  ['rapado', 'corto', 'medio', 'largo'].forEach(peinado => {
-    [0, 100].forEach(v => {
-      const s = Object.assign({}, M.DEFAULTS);
-      Object.keys(s).forEach(k => { if (typeof s[k] === 'number') s[k] = v; });
-      s.altura = v === 0 ? 140 : 210; s.complexion = complexion; s.peinado = peinado;
-      validateSVG(M.avatarSVG(s), `avatar ${complexion}/${peinado}/${v}`);
+  ['rapado', 'corto', 'medio', 'largo', 'recogido', 'afro'].forEach(peinado => {
+    ['ovalada', 'redonda', 'cuadrada', 'corazon', 'larga'].forEach(caraForma => {
+      ['ninguno', 'completa', 'bigote'].forEach(vello => {
+        [0, 100].forEach(v => {
+          const s = Object.assign({}, M.DEFAULTS);
+          Object.keys(s).forEach(k => { if (typeof s[k] === 'number') s[k] = v; });
+          s.altura = v === 0 ? 140 : 210;
+          s.complexion = complexion; s.peinado = peinado; s.caraForma = caraForma; s.vello = vello;
+          s.gafas = v === 0 ? 'sol' : 'cuadradas'; s.pecas = 'si';
+          validateSVG(M.avatarSVG(s), `avatar ${complexion}/${peinado}/${caraForma}/${vello}/${v}`);
+        });
+      });
     });
   });
 });
