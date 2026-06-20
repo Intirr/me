@@ -5,8 +5,329 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Diseñador de Personajes · Diagnóstico de Vida</title>
   <meta name="description" content="Crea un personaje basado en habilidades reales, físico, personalidad y hábitos. Obtén un diagnóstico de tu condición y qué mejorar." />
-  <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='35' r='20' fill='%235b8cff'/><rect x='25' y='58' width='50' height='38' rx='18' fill='%2334d399'/></svg>" />
+
+  <style>
+  /* ============================================================
+     Diseñador de Personajes — Diagnóstico de Vida
+     Estilos base (tema oscuro, diseño moderno)
+     ============================================================ */
+
+  :root {
+    --bg:        #0c0f14;
+    --bg-2:      #0f141c;
+    --panel:     #141a23;
+    --panel-2:   #1a2230;
+    --panel-3:   #212c3d;
+    --border:    #28344a;
+    --border-2:  #344563;
+    --text:      #e8eef6;
+    --muted:     #93a1b5;
+    --muted-2:   #6c7c93;
+    --accent:    #5b8cff;
+    --accent-2:  #34d399;
+    --danger:    #ff6b6b;
+    --warn:      #ffb057;
+    --good:      #4ade80;
+    --radius:    16px;
+    --radius-sm: 10px;
+    --shadow:    0 10px 30px rgba(0,0,0,.45);
+    --shadow-sm: 0 4px 14px rgba(0,0,0,.35);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+            "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    color: var(--text);
+    background:
+      radial-gradient(1200px 700px at 12% -8%, rgba(91,140,255,.12), transparent 60%),
+      radial-gradient(1000px 600px at 100% 0%, rgba(52,211,153,.10), transparent 55%),
+      linear-gradient(180deg, var(--bg-2), var(--bg));
+    background-attachment: fixed;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    line-height: 1.45;
+  }
+
+  /* ----------------------------- Header ----------------------------- */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding: 14px clamp(16px, 3vw, 34px);
+    background: rgba(12,15,20,.72);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+  .brand .logo {
+    width: 40px; height: 40px; flex: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .brand .logo svg { width: 24px; height: 24px; }
+  .brand h1 { font-size: 1.02rem; margin: 0; letter-spacing: .2px; }
+  .brand p  { font-size: .76rem; margin: 0; color: var(--muted); }
+
+  .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .btn {
+    appearance: none;
+    border: 1px solid var(--border-2);
+    background: var(--panel-2);
+    color: var(--text);
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 600;
+    padding: 8px 13px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform .06s ease, background .15s ease, border-color .15s ease;
+    display: inline-flex; align-items: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--panel-3); border-color: var(--accent); }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary {
+    background: linear-gradient(135deg, var(--accent), #7aa2ff);
+    border-color: transparent; color: #08101f;
+  }
+  .btn.primary:hover { filter: brightness(1.07); }
+  .btn .ico { font-size: .95rem; line-height: 1; }
+
+  .preset-bar {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    align-items: center;
+  }
+  .preset-bar .lbl { font-size: .72rem; color: var(--muted-2); margin-right: 2px; }
+  .chip {
+    appearance: none; border: 1px solid var(--border);
+    background: transparent; color: var(--muted);
+    font: inherit; font-size: .76rem; font-weight: 600;
+    padding: 5px 10px; border-radius: 999px; cursor: pointer;
+    transition: all .15s ease;
+  }
+  .chip:hover { color: var(--text); border-color: var(--accent); background: var(--panel-2); }
+
+  /* ----------------------------- Layout ----------------------------- */
+  .app {
+    display: grid;
+    grid-template-columns: 320px minmax(0,1fr) minmax(0,1.05fr);
+    gap: 18px;
+    padding: 18px clamp(16px, 3vw, 34px) 60px;
+    align-items: start;
+  }
+  @media (max-width: 1180px) {
+    .app { grid-template-columns: 300px minmax(0,1fr); }
+    .col-diagnosis { grid-column: 1 / -1; }
+  }
+  @media (max-width: 760px) {
+    .app { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: linear-gradient(180deg, var(--panel), var(--panel) 60%, #11171f);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .col-avatar { position: sticky; top: 86px; }
+  @media (max-width: 760px) { .col-avatar { position: static; } }
+
+  .panel-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-head h2 { font-size: .92rem; margin: 0; letter-spacing: .3px; }
+  .panel-head .hint { font-size: .72rem; color: var(--muted-2); margin-left: auto; }
+  .panel-body { padding: 16px; }
+
+  /* --------------------------- Avatar panel -------------------------- */
+  .avatar-stage {
+    position: relative;
+    border-radius: 14px;
+    background:
+      radial-gradient(120% 80% at 50% 12%, rgba(91,140,255,.08), transparent 60%),
+      linear-gradient(180deg, #0e131b, #0b0f15);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .avatar-stage svg { display: block; width: 100%; height: auto; }
+
+  .identity { margin-top: 14px; }
+  .identity .name-row { display: flex; align-items: baseline; gap: 8px; }
+  .identity .name { font-size: 1.18rem; font-weight: 700; }
+  .identity .age  { font-size: .82rem; color: var(--muted); }
+  .identity .sub  { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+
+  .cond-badge {
+    margin-top: 12px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 13px;
+    border-radius: 12px;
+    border: 1px solid var(--border-2);
+    background: var(--panel-2);
+  }
+  .cond-badge .score {
+    font-size: 1.7rem; font-weight: 800; line-height: 1;
+    min-width: 56px; text-align: center;
+  }
+  .cond-badge .meta .k { font-size: .72rem; color: var(--muted-2); text-transform: uppercase; letter-spacing: .6px; }
+  .cond-badge .meta .v { font-size: .95rem; font-weight: 700; }
+
+  .dim-bars { margin-top: 14px; display: grid; gap: 9px; }
+  .dim-bar .top { display: flex; justify-content: space-between; font-size: .76rem; margin-bottom: 4px; }
+  .dim-bar .top .val { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .track { height: 8px; border-radius: 99px; background: #0c1118; overflow: hidden; border: 1px solid var(--border); }
+  .track > i { display: block; height: 100%; border-radius: 99px; transition: width .35s cubic-bezier(.2,.7,.2,1); }
+
+  .export-row { display: flex; gap: 8px; margin-top: 14px; }
+  .export-row .btn { flex: 1; justify-content: center; font-size: .76rem; padding: 8px 8px; }
+
+  /* --------------------------- Controls panel ------------------------ */
+  .ctrl-group { border-bottom: 1px solid var(--border); }
+  .ctrl-group:last-child { border-bottom: 0; }
+  .ctrl-group > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 13px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: .86rem;
+    user-select: none;
+  }
+  .ctrl-group > summary::-webkit-details-marker { display: none; }
+  .ctrl-group > summary .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .ctrl-group > summary .caret { margin-left: auto; color: var(--muted-2); transition: transform .2s ease; }
+  .ctrl-group[open] > summary .caret { transform: rotate(90deg); }
+  .ctrl-group > summary .gavg { font-size: .72rem; color: var(--muted); font-weight: 600; margin-left: 4px; }
+  .ctrl-content { padding: 4px 16px 16px; }
+
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 4px; }
+  .field > label { display: flex; justify-content: space-between; align-items: baseline; font-size: .8rem; margin-bottom: 6px; }
+  .field > label .v { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  input[type="text"], input[type="number"] {
+    width: 100%; font: inherit; font-size: .9rem;
+    color: var(--text); background: var(--panel-2);
+    border: 1px solid var(--border-2); border-radius: 10px;
+    padding: 9px 11px;
+  }
+  input[type="text"]:focus, input[type="number"]:focus { outline: none; border-color: var(--accent); }
+
+  /* range slider */
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 22px; background: transparent; cursor: pointer; margin: 0;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 7px; border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent) var(--pct,50%), #0c1118 var(--pct,50%));
+    border: 1px solid var(--border);
+  }
+  input[type="range"]::-moz-range-track {
+    height: 7px; border-radius: 99px; background: #0c1118; border: 1px solid var(--border);
+  }
+  input[type="range"]::-moz-range-progress { height: 7px; border-radius: 99px; background: var(--accent); }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 17px; height: 17px; margin-top: -6px;
+    border-radius: 50%; background: #fff;
+    border: 3px solid var(--accent);
+    box-shadow: 0 2px 6px rgba(0,0,0,.4);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 15px; height: 15px; border-radius: 50%; background: #fff; border: 3px solid var(--accent);
+  }
+
+  /* segmented control */
+  .segmented { display: flex; gap: 6px; flex-wrap: wrap; }
+  .segmented button {
+    flex: 1 1 auto; min-width: 64px;
+    font: inherit; font-size: .78rem; font-weight: 600;
+    padding: 8px 6px; border-radius: 9px;
+    border: 1px solid var(--border-2); background: var(--panel-2); color: var(--muted);
+    cursor: pointer; transition: all .14s ease;
+  }
+  .segmented button:hover { color: var(--text); }
+  .segmented button[aria-pressed="true"] {
+    background: linear-gradient(135deg, rgba(91,140,255,.25), rgba(52,211,153,.18));
+    border-color: var(--accent); color: var(--text);
+  }
+
+  /* swatches */
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  .swatches button {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--border-2); cursor: pointer; padding: 0;
+    transition: transform .1s ease, border-color .14s ease;
+  }
+  .swatches button:hover { transform: scale(1.1); }
+  .swatches button[aria-pressed="true"] { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
+
+  /* -------------------------- Diagnosis panel ------------------------ */
+  .radar-wrap { display: grid; place-items: center; padding: 4px 0 6px; }
+  .radar-wrap svg { width: 100%; max-width: 340px; height: auto; }
+
+  .archetype {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px; margin: 6px 0 16px;
+    border-radius: 12px; border: 1px solid var(--border-2);
+    background: linear-gradient(135deg, rgba(91,140,255,.10), rgba(176,124,255,.08));
+  }
+  .archetype .emoji { font-size: 2rem; line-height: 1; }
+  .archetype .t { font-size: 1.05rem; font-weight: 800; }
+  .archetype .d { font-size: .82rem; color: var(--muted); }
+
+  .sw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  @media (max-width: 520px){ .sw-grid { grid-template-columns: 1fr; } }
+  .sw-card { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: var(--panel-2); }
+  .sw-card h3 { margin: 0 0 10px; font-size: .8rem; display: flex; align-items: center; gap: 7px; }
+  .sw-list { display: grid; gap: 8px; }
+  .sw-item .top { display: flex; justify-content: space-between; font-size: .76rem; margin-bottom: 3px; }
+  .sw-item .top .val { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .mini-track { height: 6px; border-radius: 99px; background: #0c1118; border: 1px solid var(--border); overflow: hidden; }
+  .mini-track > i { display: block; height: 100%; border-radius: 99px; }
+
+  .section-title { font-size: .82rem; font-weight: 700; margin: 6px 0 10px; display: flex; align-items: center; gap: 8px; color: var(--text); }
+  .section-title .ln { flex: 1; height: 1px; background: var(--border); }
+
+  .reco-list { display: grid; gap: 10px; }
+  .reco {
+    border: 1px solid var(--border); border-left-width: 3px;
+    border-radius: 10px; padding: 12px 13px; background: var(--panel-2);
+  }
+  .reco h4 { margin: 0 0 4px; font-size: .86rem; display: flex; align-items: center; gap: 8px; }
+  .reco p { margin: 0 0 8px; font-size: .82rem; color: var(--muted); }
+  .reco ul { margin: 0; padding-left: 18px; }
+  .reco li { font-size: .8rem; margin-bottom: 3px; }
+  .reco .tag { font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    padding: 2px 7px; border-radius: 99px; margin-left: auto; }
+
+  .note { font-size: .76rem; color: var(--muted-2); margin-top: 14px; line-height: 1.6; }
+
+  .site-footer { text-align: center; color: var(--muted-2); font-size: .76rem; padding: 24px 16px 40px; }
+  .site-footer a { color: var(--muted); }
+
+  /* tiny print helper */
+  @media print {
+    .site-header, .col-controls, .export-row, .toolbar { display: none !important; }
+    body { background: #fff; color: #000; }
+  }
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -119,6 +440,797 @@
     Hecho como plantilla de diagnóstico personal · Todo el procesamiento ocurre en tu navegador.
   </footer>
 
-  <script src="app.js"></script>
+  <script>
+  /* ============================================================
+     Diseñador de Personajes — Diagnóstico de Vida
+     Lógica de estado, render de avatar (SVG), radar y diagnóstico.
+     Todo embebido en este archivo: basta abrir index.html.
+     ============================================================ */
+  (function () {
+    'use strict';
+
+    /* ---------------------------------------------------------- *
+     *  1. ESQUEMA DE ATRIBUTOS
+     * ---------------------------------------------------------- */
+
+    // Grupos de atributos numéricos (sliders 0..100).
+    const GROUPS = [
+      { id: 'fisicas',      label: 'Habilidades físicas',     color: '#ff6b6b', icon: '🏃', fields: [
+        ['fuerza', 'Fuerza'], ['resistencia', 'Resistencia'],
+        ['flexibilidad', 'Flexibilidad'], ['coordinacion', 'Coordinación'] ] },
+      { id: 'mentales',     label: 'Habilidades mentales',    color: '#5b8cff', icon: '🧠', fields: [
+        ['logica', 'Lógica'], ['memoria', 'Memoria'],
+        ['concentracion', 'Concentración'], ['creatividad', 'Creatividad'] ] },
+      { id: 'sociales',     label: 'Habilidades sociales',    color: '#ffb057', icon: '🗣️', fields: [
+        ['comunicacion', 'Comunicación'], ['empatia', 'Empatía'],
+        ['liderazgo', 'Liderazgo'], ['persuasion', 'Persuasión'] ] },
+      { id: 'practicas',    label: 'Habilidades prácticas',   color: '#34d399', icon: '🛠️', fields: [
+        ['tecnologia', 'Tecnología'], ['finanzas', 'Finanzas'],
+        ['cocina', 'Cocina'], ['organizacion', 'Organización'] ] },
+      { id: 'personalidad', label: 'Rasgos de personalidad',  color: '#b07cff', icon: '🧩', fields: [
+        ['apertura', 'Apertura a la experiencia'], ['responsabilidad', 'Responsabilidad'],
+        ['extraversion', 'Extraversión'], ['amabilidad', 'Amabilidad'],
+        ['estabilidad', 'Estabilidad emocional'] ] },
+      { id: 'habitos',      label: 'Hábitos y estilo de vida', color: '#22d3ee', icon: '🌿', fields: [
+        ['sueno', 'Calidad del sueño'], ['alimentacion', 'Alimentación'],
+        ['actividad', 'Actividad física'], ['estres', 'Manejo del estrés'],
+        ['conexion', 'Conexión social'], ['vitalidad', 'Vitalidad / energía'] ] },
+    ];
+
+    // Etiqueta legible de cada atributo (incluye físicos especiales).
+    const LABELS = { tonoMuscular: 'Tono muscular', postura: 'Postura' };
+    GROUPS.forEach(g => g.fields.forEach(([k, l]) => { LABELS[k] = l; }));
+
+    // Dimensiones del diagnóstico (radar) y de qué atributos se componen.
+    const DIMS = [
+      { key: 'fisico',    label: 'Físico',    color: '#ff6b6b', emoji: '🏋️',
+        parts: ['fuerza', 'resistencia', 'flexibilidad', 'coordinacion', 'tonoMuscular', 'postura'] },
+      { key: 'mente',     label: 'Mente',     color: '#5b8cff', emoji: '🧠',
+        parts: ['logica', 'memoria', 'concentracion', 'creatividad'] },
+      { key: 'social',    label: 'Social',    color: '#ffb057', emoji: '🤝',
+        parts: ['comunicacion', 'empatia', 'liderazgo', 'persuasion', 'extraversion'] },
+      { key: 'caracter',  label: 'Carácter',  color: '#b07cff', emoji: '🛡️',
+        parts: ['apertura', 'responsabilidad', 'amabilidad', 'estabilidad'] },
+      { key: 'practica',  label: 'Práctica',  color: '#34d399', emoji: '🧰',
+        parts: ['tecnologia', 'finanzas', 'cocina', 'organizacion'] },
+      { key: 'bienestar', label: 'Bienestar', color: '#22d3ee', emoji: '🌿',
+        parts: ['sueno', 'alimentacion', 'actividad', 'estres', 'conexion', 'vitalidad'] },
+    ];
+
+    // Paletas visuales.
+    const SKIN_TONES = ['#f7d9bf', '#f0c3a0', '#e0a87e', '#c98a5b', '#a86b41', '#7d4a2b', '#5a3420'];
+    const HAIR_COLORS = ['#15110e', '#3b2a1a', '#6b4423', '#a76a32', '#d8b66a', '#9aa0a6', '#e7e7ea', '#8a3b2c', '#3a5a8c'];
+    const HAIR_STYLES = [['rapado', 'Rapado'], ['corto', 'Corto'], ['medio', 'Medio'], ['largo', 'Largo']];
+    const BUILDS = [['delgada', 'Delgada'], ['media', 'Media'], ['atletica', 'Atlética'], ['robusta', 'Robusta']];
+    const FIGURES = [['neutro', 'Neutro'], ['masc', 'Ancha'], ['fem', 'Estilizada']];
+
+    /* ---------------------------------------------------------- *
+     *  2. ESTADO
+     * ---------------------------------------------------------- */
+
+    const DEFAULTS = {
+      nombre: 'Alex', edad: 28, figura: 'neutro',
+      complexion: 'media', altura: 172, tonoMuscular: 50, postura: 62,
+      piel: '#e0a87e', cabello: '#3b2a1a', peinado: 'corto',
+      // habilidades
+      fuerza: 50, resistencia: 50, flexibilidad: 48, coordinacion: 52,
+      logica: 56, memoria: 50, concentracion: 50, creatividad: 55,
+      comunicacion: 55, empatia: 58, liderazgo: 45, persuasion: 48,
+      tecnologia: 55, finanzas: 45, cocina: 50, organizacion: 52,
+      apertura: 60, responsabilidad: 55, extraversion: 50, amabilidad: 62, estabilidad: 50,
+      sueno: 55, alimentacion: 50, actividad: 45, estres: 50, conexion: 56, vitalidad: 60,
+    };
+
+    const PRESETS = {
+      'Atleta':       { complexion: 'atletica', tonoMuscular: 86, postura: 80, peinado: 'rapado',
+        fuerza: 88, resistencia: 90, flexibilidad: 72, coordinacion: 84, actividad: 92,
+        vitalidad: 85, alimentacion: 80, sueno: 78, responsabilidad: 75, estabilidad: 68,
+        finanzas: 45, creatividad: 45, tecnologia: 48 },
+      'Académico':    { complexion: 'delgada', tonoMuscular: 30, postura: 45, peinado: 'medio',
+        logica: 92, memoria: 86, concentracion: 88, creatividad: 70, apertura: 82,
+        tecnologia: 78, organizacion: 75, responsabilidad: 80,
+        actividad: 28, fuerza: 32, resistencia: 35, conexion: 42, extraversion: 38, estres: 45 },
+      'Creativo':     { complexion: 'media', tonoMuscular: 42, postura: 55, peinado: 'largo', cabello: '#8a3b2c',
+        creatividad: 95, apertura: 92, comunicacion: 72, empatia: 75,
+        organizacion: 38, finanzas: 35, responsabilidad: 42, estabilidad: 48, vitalidad: 70 },
+      'Líder':        { complexion: 'atletica', tonoMuscular: 60, postura: 85, peinado: 'corto',
+        liderazgo: 92, comunicacion: 88, persuasion: 85, extraversion: 86, responsabilidad: 82,
+        estabilidad: 78, organizacion: 76, empatia: 70, conexion: 80, finanzas: 68 },
+      'Equilibrado':  { complexion: 'media', tonoMuscular: 60, postura: 72,
+        fuerza: 65, resistencia: 66, logica: 68, memoria: 64, comunicacion: 68, empatia: 70,
+        tecnologia: 65, finanzas: 62, apertura: 66, responsabilidad: 70, estabilidad: 72,
+        sueno: 72, alimentacion: 70, actividad: 68, estres: 70, conexion: 70, vitalidad: 74 },
+      'En recuperación': { complexion: 'media', tonoMuscular: 30, postura: 40, peinado: 'medio', vitalidad: 28,
+        fuerza: 35, resistencia: 30, actividad: 22, sueno: 30, alimentacion: 38, estres: 28,
+        conexion: 32, estabilidad: 35, concentracion: 38, organizacion: 38 },
+    };
+
+    let state = Object.assign({}, DEFAULTS);
+
+    /* ---------------------------------------------------------- *
+     *  3. UTILIDADES
+     * ---------------------------------------------------------- */
+
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const clamp100 = v => clamp(Number(v) || 0, 0, 100);
+    const round = v => Math.round(v);
+    const avg = arr => arr.reduce((a, b) => a + b, 0) / (arr.length || 1);
+    const fmt = n => (Math.round(n * 10) / 10);
+
+    function hex2rgb(h) {
+      h = String(h).replace('#', '');
+      if (h.length === 3) h = h.split('').map(c => c + c).join('');
+      return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+    }
+    const _c = n => clamp(Math.round(n), 0, 255).toString(16).padStart(2, '0');
+    function rgb2hex(r, g, b) { return '#' + _c(r) + _c(g) + _c(b); }
+    function shade(hex, amt) { const [r, g, b] = hex2rgb(hex); return rgb2hex(r + amt, g + amt, b + amt); }
+    function mix(h1, h2, t) {
+      const a = hex2rgb(h1), b = hex2rgb(h2);
+      return rgb2hex(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t);
+    }
+    const buildLabel = c => { const b = BUILDS.find(x => x[0] === c); return b ? b[1] : 'Media'; };
+    const esc = s => String(s).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    /* ---------------------------------------------------------- *
+     *  4. CÁLCULO DE DIMENSIONES Y DIAGNÓSTICO
+     * ---------------------------------------------------------- */
+
+    function dimensions(s) {
+      const out = {};
+      DIMS.forEach(d => { out[d.key] = avg(d.parts.map(p => clamp100(s[p]))); });
+      return out;
+    }
+    function overallScore(dims) { return avg(DIMS.map(d => dims[d.key])); }
+
+    function condition(score) {
+      if (score < 26) return { label: 'Crítica', color: '#ff5a5a', desc: 'requiere atención prioritaria' };
+      if (score < 46) return { label: 'En desarrollo', color: '#ffb057', desc: 'bases por construir' };
+      if (score < 66) return { label: 'Estable', color: '#ffd76b', desc: 'funcional, con margen claro' };
+      if (score < 83) return { label: 'Saludable', color: '#4ade80', desc: 'sólida y bien sostenida' };
+      return { label: 'Excepcional', color: '#34d399', desc: 'rendimiento sobresaliente' };
+    }
+
+    // Lista plana de atributos (clave, etiqueta, valor) para fortalezas/debilidades.
+    function attributeList(s) {
+      const keys = [];
+      GROUPS.forEach(g => g.fields.forEach(([k]) => keys.push(k)));
+      keys.push('tonoMuscular', 'postura');
+      return keys.map(k => ({ key: k, label: LABELS[k], value: clamp100(s[k]) }));
+    }
+
+    function archetype(dims, overall) {
+      const sorted = DIMS.slice().sort((a, b) => dims[b.key] - dims[a.key]);
+      const top = sorted[0];
+      const spread = dims[sorted[0].key] - dims[sorted[sorted.length - 1].key];
+
+      if (overall < 32) return { emoji: '🌱', title: 'El Aprendiz', desc: 'En plena construcción: cada hábito que sumes rinde el doble ahora.' };
+      if (overall >= 70 && spread <= 16) return { emoji: '🌟', title: 'El Polímata', desc: 'Perfil parejo y alto en todas las áreas. Tu reto es no estancarte.' };
+      if (spread <= 12) return { emoji: '⚖️', title: 'El Equilibrado', desc: 'Sin grandes picos ni huecos. Elige un área para destacar de verdad.' };
+
+      const byKey = {
+        fisico:    { emoji: '🏋️', title: 'El Atleta',     desc: 'Tu cuerpo es tu motor. Canaliza esa energía hacia metas concretas.' },
+        mente:     { emoji: '🧠', title: 'El Estratega',  desc: 'Piensas antes de actuar. Lleva esas ideas al mundo real más a menudo.' },
+        social:    { emoji: '🤝', title: 'El Conector',   desc: 'Las personas te siguen y confían en ti. Úsalo para construir, no solo brillar.' },
+        caracter:  { emoji: '🛡️', title: 'El Pilar',      desc: 'Estable y confiable bajo presión. Otros se apoyan en ti; cuídate también.' },
+        practica:  { emoji: '🧰', title: 'El Hacedor',    desc: 'Resuelves problemas reales con tus manos y tu cabeza. Eres quien ejecuta.' },
+        bienestar: { emoji: '🌿', title: 'El Sereno',     desc: 'Cuidas tu base: descanso, hábitos y vínculos. Desde ahí, todo crece.' },
+      };
+      return byKey[top.key];
+    }
+
+    // Banco de recomendaciones por dimensión.
+    const RECO = {
+      fisico: { title: 'Construye tu base física', icon: '🏋️', actions: [
+        'Entrena fuerza 2–3 veces por semana (incluso con tu propio peso).',
+        'Camina 7–8 mil pasos diarios para subir tu resistencia de base.',
+        'Dedica 5 min al día a movilidad para ganar flexibilidad y postura.' ] },
+      mente: { title: 'Afila tu mente', icon: '🧠', actions: [
+        'Aprende algo nuevo 20 min/día (lectura, curso, idioma).',
+        'Trabaja en bloques de concentración sin móvil (técnica 25/5).',
+        'Anota lo aprendido: escribir consolida la memoria.' ] },
+      social: { title: 'Fortalece tu mundo social', icon: '🤝', actions: [
+        'Inicia una conversación nueva por semana, aunque sea breve.',
+        'Practica escucha activa: resume lo que oyes antes de responder.',
+        'Asume un pequeño rol de liderazgo en un grupo o proyecto.' ] },
+      caracter: { title: 'Cultiva tu carácter', icon: '🛡️', actions: [
+        'Define 1–3 hábitos clave y cúmplelos pase lo que pase.',
+        'Ante el estrés, pausa y respira antes de reaccionar.',
+        'Mantén pequeñas promesas a ti mismo para construir autoconfianza.' ] },
+      practica: { title: 'Suma habilidades prácticas', icon: '🧰', actions: [
+        'Aprende a cocinar 5 platos saludables que disfrutes.',
+        'Haz un presupuesto mensual y automatiza un pequeño ahorro.',
+        'Crea un sistema simple para organizar tareas (una sola lista).' ] },
+      bienestar: { title: 'Recupera tu bienestar', icon: '🌿', actions: [
+        'Protege 7–8 h de sueño con un horario regular.',
+        'Reduce ultraprocesados; suma verdura y agua cada día.',
+        'Agenda momentos sociales y de descanso, no solo trabajo.' ] },
+    };
+
+    // Recomendaciones específicas por hábito en rojo.
+    const HABIT_TIPS = {
+      sueno:        ['Sueño insuficiente', 'Apaga pantallas 1 h antes y mantén horario fijo de descanso.'],
+      alimentacion: ['Alimentación a mejorar', 'Planifica tus comidas y ten a mano opciones saludables.'],
+      actividad:    ['Vida sedentaria', 'Empieza con 10 min de movimiento diario y sube poco a poco.'],
+      estres:       ['Estrés elevado', 'Prueba respiración, paseos o journaling; pide ayuda si te supera.'],
+      conexion:     ['Aislamiento social', 'Retoma contacto con alguien de confianza esta semana.'],
+      estabilidad:  ['Inestabilidad emocional', 'Identifica disparadores y crea rutinas que te den calma.'],
+    };
+
+    function diagnose(s) {
+      const dims = dimensions(s);
+      const overall = overallScore(dims);
+      const cond = condition(overall);
+      const attrs = attributeList(s);
+      const strengths = attrs.slice().sort((a, b) => b.value - a.value).slice(0, 4);
+      const weaknesses = attrs.slice().sort((a, b) => a.value - b.value).slice(0, 4);
+      const arch = archetype(dims, overall);
+
+      // Recomendaciones: 3 dimensiones más bajas + hábitos críticos.
+      const lowDims = DIMS.slice().sort((a, b) => dims[a.key] - dims[b.key]).slice(0, 3);
+      const recos = [];
+      lowDims.forEach(d => {
+        const sev = dims[d.key] < 35 ? 'Prioridad' : (dims[d.key] < 55 ? 'Importante' : 'Pulir');
+        recos.push(Object.assign({ dim: d, score: dims[d.key], sev }, RECO[d.key]));
+      });
+      const habitFlags = [];
+      Object.keys(HABIT_TIPS).forEach(k => {
+        if (clamp100(s[k]) < 38) habitFlags.push({ key: k, t: HABIT_TIPS[k][0], d: HABIT_TIPS[k][1] });
+      });
+
+      const topDim = DIMS.slice().sort((a, b) => dims[b.key] - dims[a.key])[0];
+      return { dims, overall, cond, strengths, weaknesses, arch, recos, habitFlags, topDim };
+    }
+
+    /* ---------------------------------------------------------- *
+     *  5. RENDER DEL AVATAR (SVG paramétrico)
+     * ---------------------------------------------------------- */
+
+    // Extremidad como cápsula (rect redondeado) entre (x1,y1) y (x2,y2).
+    function limb(x1, y1, x2, y2, w, fill, extra) {
+      const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 0.001;
+      const A = Math.atan2(-dx, dy) * 180 / Math.PI; // alinea +Y local con (dx,dy)
+      return `<rect x="${fmt(-w / 2)}" y="0" width="${fmt(w)}" height="${fmt(len)}" rx="${fmt(w / 2)}" `
+        + `fill="${fill}" ${extra || ''} transform="translate(${fmt(x1)} ${fmt(y1)}) rotate(${fmt(A)})"/>`;
+    }
+    const ell = (cx, cy, rx, ry, fill, extra) =>
+      `<ellipse cx="${fmt(cx)}" cy="${fmt(cy)}" rx="${fmt(rx)}" ry="${fmt(ry)}" fill="${fill}" ${extra || ''}/>`;
+
+    function avatarSVG(s) {
+      const W = 320, H = 540, cx = 160, groundY = 498;
+
+      // ---- parámetros derivados ----
+      const buildMul = ({ delgada: 0.84, media: 1.0, atletica: 1.06, robusta: 1.30 })[s.complexion] || 1;
+      const figW = ({ neutro: 1.0, masc: 1.08, fem: 0.94 })[s.figura] || 1;
+      const figHip = ({ neutro: 1.0, masc: 0.94, fem: 1.12 })[s.figura] || 1;
+      const muscle = clamp100(s.tonoMuscular) / 100;
+      const post = clamp100(s.postura) / 100;
+      const vit = clamp100(s.vitalidad) / 100;
+      const hs = 0.93 + (clamp(s.altura, 140, 210) - 140) / 70 * 0.17; // 0.93..1.10
+
+      const skin = s.piel || '#e0a87e';
+      const skinDk = shade(skin, -26);
+      const skinLt = shade(skin, 18);
+      const hair = s.cabello || '#3b2a1a';
+      const hairLt = mix(hair, '#ffffff', 0.22);
+
+      const dims = dimensions(s);
+      const overall = overallScore(dims);
+      const dominant = DIMS.slice().sort((a, b) => dims[b.key] - dims[a.key])[0];
+      const shirt = dominant.color;
+      const shirtDk = shade(shirt, -40);
+      const shorts = '#27324a';
+      const shortsDk = shade(shorts, -16);
+
+      // métricas corporales (base media)
+      const shoulderHalf = (58 + muscle * 18) * buildMul * figW;
+      const waistHalf = (({ delgada: 36, media: 44, atletica: 42, robusta: 60 })[s.complexion] || 44) + muscle * 3;
+      const hipHalf = (46 + (s.complexion === 'robusta' ? 12 : 0)) * (0.97 + (buildMul - 1) * 0.6) * figHip;
+      const neckW = 22 + muscle * 4 + (buildMul - 1) * 8;
+      const armW = clamp(17 + muscle * 11 + (buildMul - 1) * 9, 12, 42);
+      const legW = clamp(25 + muscle * 8 + (buildMul - 1) * 16, 18, 56);
+
+      const rHX = 37, rHY = 43;
+      const headDX = (1 - post) * 11;          // postura: cabeza adelantada
+      const droop = (1 - post) * 6;            // hombros caídos
+      const headCY = 92, neckTop = 130;
+      const shoulderY = 168 + droop, waistY = 250, hipY = 312, legBottom = 492;
+      const hx0 = cx + headDX, hy0 = headCY;
+
+      const legGap = hipHalf * 0.46;
+      const xL = cx - legGap, xR = cx + legGap;
+
+      // brazos: del hombro a la muñeca, abiertos ligeramente
+      const shX = shoulderHalf - 4;
+      const armTopY = shoulderY + 4, armBotY = hipY + 6;
+      const wristL = [cx - shX - 8, armBotY], wristR = [cx + shX + 8, armBotY];
+
+      // expresión
+      const smileK = clamp((overall - 45) / 45, -1, 1);
+      const eyeOpen = 3.4 + vit * 2.0;
+      const browTilt = -smileK * 4 + (1 - clamp100(s.estabilidad) / 100) * 3;
+
+      // aura por vitalidad
+      const auraCol = vit < 0.5 ? mix('#3a4761', '#5b8cff', vit * 2) : mix('#5b8cff', '#ffd76b', (vit - 0.5) * 2);
+      const auraOp = 0.12 + vit * 0.42;
+
+      // hairBase por peinado (truco: elipse de pelo + elipse de piel encima)
+      let hg = 6, lift = 5, rxAdd = 6, ryAdd = 6, sides = false, longBack = false, ears = true;
+      switch (s.peinado) {
+        case 'rapado': hg = 2.5; lift = 2; rxAdd = 3; ryAdd = 3; ears = true; break;
+        case 'corto':  hg = 6;  lift = 5; rxAdd = 6; ryAdd = 7; ears = true; break;
+        case 'medio':  hg = 8;  lift = 5; rxAdd = 9; ryAdd = 14; sides = true; ears = false; break;
+        case 'largo':  hg = 8;  lift = 5; rxAdd = 9; ryAdd = 16; sides = true; ears = false; longBack = true; break;
+      }
+      const hairFill = s.peinado === 'rapado' ? mix(skin, hair, 0.55) : 'url(#gHair)';
+
+      // ---- defs ----
+      const defs = `
+        <defs>
+          <radialGradient id="gAura" cx="50%" cy="42%" r="60%">
+            <stop offset="0%"  stop-color="${auraCol}" stop-opacity="${fmt(auraOp)}"/>
+            <stop offset="60%" stop-color="${auraCol}" stop-opacity="${fmt(auraOp * 0.4)}"/>
+            <stop offset="100%" stop-color="${auraCol}" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="gShirt" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${shade(shirt, 22)}"/>
+            <stop offset="100%" stop-color="${shirtDk}"/>
+          </linearGradient>
+          <linearGradient id="gShorts" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${shorts}"/>
+            <stop offset="100%" stop-color="${shortsDk}"/>
+          </linearGradient>
+          <linearGradient id="gHair" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${hairLt}"/>
+            <stop offset="100%" stop-color="${hair}"/>
+          </linearGradient>
+        </defs>`;
+
+      // ---- piezas ----
+      const aura = `<ellipse cx="${cx}" cy="248" rx="150" ry="240" fill="url(#gAura)"/>`;
+      const groundShadow = ell(cx, groundY + 4, 92, 13, 'rgba(0,0,0,.45)');
+
+      // cabello trasero (largo)
+      let backHair = '';
+      if (longBack) {
+        backHair =
+          limb(hx0 - rHX + 4, hy0, hx0 - rHX + 2, shoulderY + 96, rHX * 0.62, 'url(#gHair)') +
+          limb(hx0 + rHX - 4, hy0, hx0 + rHX - 2, shoulderY + 96, rHX * 0.62, 'url(#gHair)');
+      }
+
+      // piernas (piel) + pies
+      const legs =
+        limb(xL, hipY - 4, xL, legBottom, legW, skin) +
+        limb(xR, hipY - 4, xR, legBottom, legW, skin) +
+        ell(xL - 2, legBottom + 2, legW * 0.62, 9, skinDk) +
+        ell(xR + 2, legBottom + 2, legW * 0.62, 9, skinDk);
+
+      // pantalón corto (bloque cadera + dos perneras)
+      const shortsEl =
+        `<rect x="${fmt(cx - hipHalf - 2)}" y="${fmt(hipY - 26)}" width="${fmt(hipHalf * 2 + 4)}" height="${fmt(46)}" rx="16" fill="url(#gShorts)"/>` +
+        limb(xL, hipY - 12, xL, hipY + 52, legW + 9, 'url(#gShorts)') +
+        limb(xR, hipY - 12, xR, hipY + 52, legW + 9, 'url(#gShorts)');
+
+      // brazos (piel) + manos
+      const arms =
+        limb(cx - shX, armTopY, wristL[0], wristL[1], armW, skin) +
+        limb(cx + shX, armTopY, wristR[0], wristR[1], armW, skin) +
+        ell(wristL[0], wristL[1] + 2, armW * 0.55, armW * 0.55, skinDk) +
+        ell(wristR[0], wristR[1] + 2, armW * 0.55, armW * 0.55, skinDk) +
+        // brillo de bíceps si hay tono muscular
+        (muscle > 0.55 ?
+          ell(cx - shX - 2, armTopY + 26, armW * 0.22, 12, skinLt, 'opacity="0.5"') +
+          ell(cx + shX + 2, armTopY + 26, armW * 0.22, 12, skinLt, 'opacity="0.5"') : '');
+
+      // torso (camiseta) con curvas suaves
+      const sH = shoulderHalf, wH = waistHalf, hH = hipHalf;
+      const torso = `<path d="
+        M ${fmt(cx - sH)} ${fmt(shoulderY)}
+        Q ${fmt(cx)} ${fmt(shoulderY - 17)} ${fmt(cx + sH)} ${fmt(shoulderY)}
+        Q ${fmt(cx + wH + (sH - wH) * 0.25)} ${fmt((shoulderY + waistY) / 2)} ${fmt(cx + wH)} ${fmt(waistY)}
+        Q ${fmt(cx + (wH + hH) / 2 + 4)} ${fmt((waistY + hipY) / 2)} ${fmt(cx + hH)} ${fmt(hipY)}
+        Q ${fmt(cx)} ${fmt(hipY + 16)} ${fmt(cx - hH)} ${fmt(hipY)}
+        Q ${fmt(cx - (wH + hH) / 2 - 4)} ${fmt((waistY + hipY) / 2)} ${fmt(cx - wH)} ${fmt(waistY)}
+        Q ${fmt(cx - wH - (sH - wH) * 0.25)} ${fmt((shoulderY + waistY) / 2)} ${fmt(cx - sH)} ${fmt(shoulderY)}
+        Z" fill="url(#gShirt)"/>`;
+
+      // mangas (caps de camiseta sobre el hombro)
+      const sleeves =
+        limb(cx - shX, armTopY - 2, cx - shX - 4, armTopY + 26, armW + 6, 'url(#gShirt)') +
+        limb(cx + shX, armTopY - 2, cx + shX + 4, armTopY + 26, armW + 6, 'url(#gShirt)');
+
+      // detalle sutil de torso (línea central de camiseta)
+      const shirtDetail =
+        `<path d="M ${fmt(cx)} ${fmt(shoulderY + 6)} L ${fmt(cx)} ${fmt(hipY - 6)}" stroke="${shirtDk}" stroke-width="2" opacity="0.5" fill="none"/>` +
+        `<path d="M ${fmt(cx - 16)} ${fmt(shoulderY + 2)} Q ${fmt(cx)} ${fmt(shoulderY + 14)} ${fmt(cx + 16)} ${fmt(shoulderY + 2)}" stroke="${shirtDk}" stroke-width="2.4" opacity="0.55" fill="none"/>`;
+
+      // cuello
+      const neck = `<rect x="${fmt(cx - neckW / 2)}" y="${fmt(neckTop)}" width="${fmt(neckW)}" height="${fmt(shoulderY - neckTop + 8)}" rx="9" fill="${skin}"/>`
+        + ell(cx, neckTop + 10, neckW / 2, 5, skinDk, 'opacity="0.35"');
+
+      // cabeza
+      const hairBase = ell(hx0, hy0 - lift, rHX + rxAdd, rHY + ryAdd, hairFill);
+      const head = ell(hx0, hy0, rHX, rHY, skin)
+        + ell(hx0, hy0 + rHY * 0.32, rHX * 0.78, rHY * 0.55, skinLt, 'opacity="0.18"'); // mejilla/luz
+      const earsEl = ears
+        ? ell(hx0 - rHX + 1, hy0 + 4, 6, 9, skin) + ell(hx0 + rHX - 1, hy0 + 4, 6, 9, skin)
+        : '';
+
+      // cara
+      const eyeY = hy0 + 1, eyeDX = 13;
+      const eyes =
+        ell(hx0 - eyeDX, eyeY, 6.5, eyeOpen, '#ffffff') +
+        ell(hx0 + eyeDX, eyeY, 6.5, eyeOpen, '#ffffff') +
+        ell(hx0 - eyeDX, eyeY + 0.5, 3, 3, '#2a2f3a') +
+        ell(hx0 + eyeDX, eyeY + 0.5, 3, 3, '#2a2f3a') +
+        ell(hx0 - eyeDX + 1.2, eyeY - 1, 1, 1, '#ffffff') +
+        ell(hx0 + eyeDX + 1.2, eyeY - 1, 1, 1, '#ffffff');
+      const browY = hy0 - 12;
+      const brows =
+        `<line x1="${fmt(hx0 - eyeDX - 7)}" y1="${fmt(browY + browTilt)}" x2="${fmt(hx0 - eyeDX + 6)}" y2="${fmt(browY - browTilt)}" stroke="${shade(hair, -10)}" stroke-width="2.6" stroke-linecap="round"/>` +
+        `<line x1="${fmt(hx0 + eyeDX - 6)}" y1="${fmt(browY - browTilt)}" x2="${fmt(hx0 + eyeDX + 7)}" y2="${fmt(browY + browTilt)}" stroke="${shade(hair, -10)}" stroke-width="2.6" stroke-linecap="round"/>`;
+      const nose = `<path d="M ${fmt(hx0)} ${fmt(hy0 + 3)} L ${fmt(hx0 - 3)} ${fmt(hy0 + 13)} Q ${fmt(hx0)} ${fmt(hy0 + 16)} ${fmt(hx0 + 3)} ${fmt(hy0 + 13)}" stroke="${skinDk}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+      const mouthY = hy0 + 26;
+      const mouth = `<path d="M ${fmt(hx0 - 10)} ${fmt(mouthY)} Q ${fmt(hx0)} ${fmt(mouthY + smileK * 7)} ${fmt(hx0 + 10)} ${fmt(mouthY)}" stroke="${shade(skin, -55)}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+
+      // mechón frontal sutil tipo media luna (no en rapado)
+      const fw = rHX * (sides ? 0.98 : 0.9);
+      const fringe = s.peinado === 'rapado' ? '' :
+        `<path d="M ${fmt(hx0 - fw)} ${fmt(hy0 - rHY * 0.34)}
+          Q ${fmt(hx0)} ${fmt(hy0 - rHY * 0.04)} ${fmt(hx0 + fw)} ${fmt(hy0 - rHY * 0.34)}
+          Q ${fmt(hx0)} ${fmt(hy0 - rHY * 0.92)} ${fmt(hx0 - fw)} ${fmt(hy0 - rHY * 0.34)} Z"
+          fill="url(#gHair)"/>`;
+
+      const figure =
+        backHair + legs + shortsEl + arms + torso + sleeves + shirtDetail +
+        neck + hairBase + head + earsEl + eyes + brows + nose + mouth + fringe;
+
+      const scaled = `<g transform="translate(${cx} ${groundY}) scale(${fmt(hs)}) translate(${-cx} ${-groundY})">${figure}</g>`;
+
+      return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Avatar del personaje">`
+        + defs + aura + groundShadow + scaled + `</svg>`;
+    }
+
+    /* ---------------------------------------------------------- *
+     *  6. RENDER DEL RADAR (SVG)
+     * ---------------------------------------------------------- */
+
+    function radarSVG(dims) {
+      const N = DIMS.length, W = 360, H = 330, cx = W / 2, cy = 158, R = 96;
+      const ang = i => (-90 + i * 360 / N) * Math.PI / 180;
+      const pt = (i, r) => [cx + Math.cos(ang(i)) * r, cy + Math.sin(ang(i)) * r];
+
+      let rings = '';
+      [0.25, 0.5, 0.75, 1].forEach(f => {
+        const p = DIMS.map((_, i) => pt(i, R * f).map(fmt).join(',')).join(' ');
+        rings += `<polygon points="${p}" fill="none" stroke="#28344a" stroke-width="1"/>`;
+      });
+      let axes = '', labels = '';
+      DIMS.forEach((d, i) => {
+        const [x, y] = pt(i, R);
+        axes += `<line x1="${fmt(cx)}" y1="${fmt(cy)}" x2="${fmt(x)}" y2="${fmt(y)}" stroke="#28344a" stroke-width="1"/>`;
+        const [lx, ly] = pt(i, R + 18);
+        const anchor = Math.abs(lx - cx) < 6 ? 'middle' : (lx > cx ? 'start' : 'end');
+        const dy = ly < cy - 4 ? -2 : 12; // etiquetas superiores hacia arriba
+        labels += `<text x="${fmt(lx)}" y="${fmt(ly + dy)}" text-anchor="${anchor}" font-size="12" font-weight="700" fill="#cdd8e6">${d.emoji} ${d.label}</text>`;
+        labels += `<text x="${fmt(lx)}" y="${fmt(ly + dy + 14)}" text-anchor="${anchor}" font-size="11" fill="${d.color}" font-weight="700">${round(dims[d.key])}</text>`;
+      });
+      const dataPts = DIMS.map((d, i) => pt(i, R * clamp100(dims[d.key]) / 100));
+      const poly = dataPts.map(p => p.map(fmt).join(',')).join(' ');
+      const dots = dataPts.map((p, i) => `<circle cx="${fmt(p[0])}" cy="${fmt(p[1])}" r="3.4" fill="${DIMS[i].color}"/>`).join('');
+
+      return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gráfico radar del perfil">
+        <defs><linearGradient id="gRadar" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#5b8cff" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="#34d399" stop-opacity="0.45"/>
+        </linearGradient></defs>
+        ${rings}${axes}
+        <polygon points="${poly}" fill="url(#gRadar)" stroke="#7aa2ff" stroke-width="2" stroke-linejoin="round"/>
+        ${dots}${labels}
+      </svg>`;
+    }
+
+    /* ---------------------------------------------------------- *
+     *  7. DOM / WIRING
+     * ---------------------------------------------------------- */
+
+    function buildControls(root) {
+      const seg = (name, options, val) => `<div class="segmented" data-seg="${name}">` +
+        options.map(([v, l]) => `<button type="button" data-val="${v}" aria-pressed="${v === val}">${l}</button>`).join('') + `</div>`;
+      const sw = (name, colors, val) => `<div class="swatches" data-sw="${name}">` +
+        colors.map(c => `<button type="button" data-val="${c}" style="background:${c}" aria-pressed="${c === val}" aria-label="${c}"></button>`).join('') + `</div>`;
+      const slider = (k, label, min, max, suffix) =>
+        `<div class="field" data-field="${k}">
+          <label for="f_${k}">${label} <span class="v" id="v_${k}">${state[k]}${suffix || ''}</span></label>
+          <input type="range" id="f_${k}" min="${min}" max="${max}" value="${clamp(state[k], min, max)}" step="1" data-key="${k}" data-suffix="${suffix || ''}"/>
+        </div>`;
+
+      let html = '';
+
+      // --- Apariencia ---
+      html += `<details class="ctrl-group" open>
+        <summary><span class="dot" style="background:#22d3ee"></span> Identidad y apariencia <span class="caret">›</span></summary>
+        <div class="ctrl-content">
+          <div class="field">
+            <label for="f_nombre">Nombre</label>
+            <input type="text" id="f_nombre" value="${esc(state.nombre)}" data-key="nombre" maxlength="24"/>
+          </div>
+          ${slider('edad', 'Edad', 5, 90, ' años')}
+          <div class="field"><label>Estilo de figura</label>${seg('figura', FIGURES, state.figura)}</div>
+          <div class="field"><label>Complexión</label>${seg('complexion', BUILDS, state.complexion)}</div>
+          ${slider('altura', 'Altura', 140, 210, ' cm')}
+          ${slider('tonoMuscular', 'Tono muscular', 0, 100, '')}
+          ${slider('postura', 'Postura', 0, 100, '')}
+          <div class="field"><label>Tono de piel</label>${sw('piel', SKIN_TONES, state.piel)}</div>
+          <div class="field"><label>Color de cabello</label>${sw('cabello', HAIR_COLORS, state.cabello)}</div>
+          <div class="field"><label>Peinado</label>${seg('peinado', HAIR_STYLES, state.peinado)}</div>
+        </div>
+      </details>`;
+
+      // --- Grupos de habilidades / personalidad / hábitos ---
+      GROUPS.forEach(g => {
+        html += `<details class="ctrl-group" ${g.id === 'fisicas' ? 'open' : ''}>
+          <summary><span class="dot" style="background:${g.color}"></span> ${g.icon} ${g.label}
+            <span class="gavg" id="avg_${g.id}"></span><span class="caret">›</span></summary>
+          <div class="ctrl-content">
+            ${g.fields.map(([k, l]) => slider(k, l, 0, 100, '')).join('')}
+          </div>
+        </details>`;
+      });
+
+      root.innerHTML = html;
+    }
+
+    function buildPresets(root) {
+      root.querySelectorAll('.chip').forEach(c => c.remove());
+      Object.keys(PRESETS).forEach(name => {
+        const b = document.createElement('button');
+        b.className = 'chip'; b.textContent = name; b.dataset.preset = name;
+        root.appendChild(b);
+      });
+    }
+
+    function setSliderFill(input) {
+      const min = +input.min, max = +input.max;
+      const pct = ((+input.value - min) / (max - min)) * 100;
+      input.style.setProperty('--pct', pct + '%');
+    }
+
+    // Refresca SOLO los valores visibles de controles (sin reconstruir DOM).
+    function syncControls() {
+      document.querySelectorAll('input[type="range"]').forEach(inp => {
+        const k = inp.dataset.key;
+        inp.value = clamp(state[k], +inp.min, +inp.max);
+        const v = document.getElementById('v_' + k);
+        if (v) v.textContent = state[k] + (inp.dataset.suffix || '');
+        setSliderFill(inp);
+      });
+      const nm = document.getElementById('f_nombre'); if (nm) nm.value = state.nombre;
+      document.querySelectorAll('[data-seg]').forEach(seg => {
+        const name = seg.dataset.seg;
+        seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.val === String(state[name]))));
+      });
+      document.querySelectorAll('[data-sw]').forEach(sw => {
+        const name = sw.dataset.sw;
+        sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.val === String(state[name]))));
+      });
+      GROUPS.forEach(g => {
+        const el = document.getElementById('avg_' + g.id);
+        if (el) el.textContent = round(avg(g.fields.map(([k]) => clamp100(state[k])))) + ' / 100';
+      });
+    }
+
+    function render() {
+      const d = diagnose(state);
+
+      // Avatar
+      document.getElementById('avatarStage').innerHTML = avatarSVG(state);
+
+      // Identidad
+      document.getElementById('idName').textContent = state.nombre || 'Sin nombre';
+      document.getElementById('idAge').textContent = '· ' + state.edad + ' años';
+      document.getElementById('idSub').textContent =
+        `${buildLabel(state.complexion)} · ${state.altura} cm · ${d.arch.title}`;
+
+      // Condición
+      const sc = document.getElementById('condScore');
+      sc.textContent = round(d.overall);
+      sc.style.color = d.cond.color;
+      document.getElementById('condLabel').innerHTML = `${d.cond.label} <span style="color:var(--muted-2);font-weight:500">— ${d.cond.desc}</span>`;
+
+      // Barras de dimensión
+      document.getElementById('dimBars').innerHTML = DIMS.map(dim => {
+        const val = round(d.dims[dim.key]);
+        return `<div class="dim-bar">
+          <div class="top"><span>${dim.emoji} ${dim.label}</span><span class="val">${val}</span></div>
+          <div class="track"><i style="width:${val}%;background:linear-gradient(90deg,${dim.color},${shade(dim.color, 30)})"></i></div>
+        </div>`;
+      }).join('');
+
+      // Radar
+      document.getElementById('radarWrap').innerHTML = radarSVG(d.dims);
+
+      // Arquetipo
+      document.getElementById('archEmoji').textContent = d.arch.emoji;
+      document.getElementById('archTitle').textContent = d.arch.title;
+      document.getElementById('archDesc').textContent = d.arch.desc;
+
+      // Fortalezas / debilidades
+      const swItem = (it, color) => `<div class="sw-item">
+        <div class="top"><span>${it.label}</span><span class="val">${round(it.value)}</span></div>
+        <div class="mini-track"><i style="width:${round(it.value)}%;background:${color}"></i></div></div>`;
+      document.getElementById('strengths').innerHTML = d.strengths.map(it => swItem(it, '#4ade80')).join('');
+      document.getElementById('weaknesses').innerHTML = d.weaknesses.map(it => swItem(it, '#ff7a7a')).join('');
+
+      // Recomendaciones
+      const sevColor = { 'Prioridad': '#ff6b6b', 'Importante': '#ffb057', 'Pulir': '#5b8cff' };
+      let recoHtml = d.recos.map(r => `<div class="reco" style="border-left-color:${r.dim.color}">
+          <h4>${r.icon} ${r.title}
+            <span class="tag" style="background:${sevColor[r.sev]}22;color:${sevColor[r.sev]}">${r.sev} · ${round(r.score)}</span></h4>
+          <p>Dimensión <strong style="color:${r.dim.color}">${r.dim.label}</strong> entre las más bajas de tu perfil.</p>
+          <ul>${r.actions.map(a => `<li>${a}</li>`).join('')}</ul>
+        </div>`).join('');
+      if (d.habitFlags.length) {
+        recoHtml += `<div class="reco" style="border-left-color:#22d3ee">
+          <h4>🌿 Hábitos que frenan tu base</h4>
+          <ul>${d.habitFlags.map(h => `<li><strong>${h.t}:</strong> ${h.d}</li>`).join('')}</ul></div>`;
+      }
+      recoHtml += `<div class="reco" style="border-left-color:#34d399">
+        <h4>✨ Apóyate en tu fortaleza</h4>
+        <p>Tu dimensión más alta es <strong style="color:${d.topDim.color}">${d.topDim.label}</strong> (${round(d.dims[d.topDim.key])}).
+        Úsala como palanca: integra tus áreas débiles en lo que ya se te da bien.</p></div>`;
+      document.getElementById('reco').innerHTML = recoHtml;
+    }
+
+    function update() { syncControls(); render(); }
+
+    /* ---------------------------------------------------------- *
+     *  8. EVENTOS
+     * ---------------------------------------------------------- */
+
+    function bind() {
+      const controls = document.getElementById('controls');
+
+      controls.addEventListener('input', e => {
+        const t = e.target;
+        if (t.dataset.key) {
+          state[t.dataset.key] = t.type === 'range' ? +t.value : t.value;
+          if (t.type === 'range') {
+            const v = document.getElementById('v_' + t.dataset.key);
+            if (v) v.textContent = t.value + (t.dataset.suffix || '');
+            setSliderFill(t);
+            const g = GROUPS.find(g => g.fields.some(([k]) => k === t.dataset.key));
+            if (g) { const el = document.getElementById('avg_' + g.id);
+              if (el) el.textContent = round(avg(g.fields.map(([k]) => clamp100(state[k])))) + ' / 100'; }
+          }
+          render();
+        }
+      });
+
+      controls.addEventListener('click', e => {
+        const btn = e.target.closest('button[data-val]');
+        if (!btn) return;
+        const seg = btn.closest('[data-seg]'), sw = btn.closest('[data-sw]');
+        if (seg) { state[seg.dataset.seg] = btn.dataset.val;
+          seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === btn))); render(); }
+        else if (sw) { state[sw.dataset.sw] = btn.dataset.val;
+          sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === btn))); render(); }
+      });
+
+      document.getElementById('presets').addEventListener('click', e => {
+        const chip = e.target.closest('.chip[data-preset]');
+        if (!chip) return;
+        state = Object.assign({}, DEFAULTS, PRESETS[chip.dataset.preset], { nombre: state.nombre });
+        update();
+      });
+
+      document.getElementById('btnRandom').addEventListener('click', () => {
+        const r = (a, b) => Math.round(a + Math.random() * (b - a));
+        attributeList(state).forEach(({ key }) => { state[key] = r(15, 95); });
+        state.complexion = BUILDS[r(0, 3)][0];
+        state.peinado = HAIR_STYLES[r(0, 3)][0];
+        state.figura = FIGURES[r(0, 2)][0];
+        state.piel = SKIN_TONES[r(0, SKIN_TONES.length - 1)];
+        state.cabello = HAIR_COLORS[r(0, HAIR_COLORS.length - 1)];
+        state.altura = r(150, 200); state.edad = r(16, 70);
+        state.vitalidad = r(20, 95);
+        update();
+      });
+
+      document.getElementById('btnReset').addEventListener('click', () => {
+        state = Object.assign({}, DEFAULTS); update();
+      });
+
+      document.getElementById('btnSave').addEventListener('click', () => {
+        try { localStorage.setItem('dpdv_state', JSON.stringify(state));
+          flash(document.getElementById('btnSave'), '✓ Guardado'); } catch (_) {}
+      });
+
+      document.getElementById('btnExportSvg').addEventListener('click', () => {
+        download(`${slug(state.nombre)}-avatar.svg`, avatarSVG(state), 'image/svg+xml');
+      });
+      document.getElementById('btnExportTxt').addEventListener('click', () => {
+        download(`${slug(state.nombre)}-informe.txt`, textReport(state), 'text/plain');
+      });
+    }
+
+    function flash(btn, txt) {
+      const old = btn.innerHTML; btn.innerHTML = txt;
+      setTimeout(() => { btn.innerHTML = old; }, 1200);
+    }
+    const slug = s => (String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'personaje');
+
+    function download(name, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name; document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
+    }
+
+    function textReport(s) {
+      const d = diagnose(s);
+      const L = [];
+      L.push('INFORME DE PERSONAJE — DIAGNÓSTICO DE VIDA');
+      L.push('='.repeat(48));
+      L.push(`Nombre: ${s.nombre}    Edad: ${s.edad}    Altura: ${s.altura} cm`);
+      L.push(`Complexión: ${buildLabel(s.complexion)}`);
+      L.push(`Arquetipo: ${d.arch.title} — ${d.arch.desc}`);
+      L.push(`Condición general: ${round(d.overall)}/100 (${d.cond.label})`);
+      L.push('');
+      L.push('PERFIL POR DIMENSIONES');
+      L.push('-'.repeat(48));
+      DIMS.forEach(dim => {
+        const v = round(d.dims[dim.key]);
+        L.push(`${dim.label.padEnd(12)} ${String(v).padStart(3)}  ${'█'.repeat(Math.round(v / 5)).padEnd(20)}`);
+      });
+      L.push('');
+      L.push('FORTALEZAS:  ' + d.strengths.map(x => `${x.label} (${round(x.value)})`).join(', '));
+      L.push('A REFORZAR:  ' + d.weaknesses.map(x => `${x.label} (${round(x.value)})`).join(', '));
+      L.push('');
+      L.push('PLAN DE MEJORA');
+      L.push('-'.repeat(48));
+      d.recos.forEach(r => {
+        L.push(`• ${r.title} [${r.sev} · ${r.dim.label} ${round(r.score)}]`);
+        r.actions.forEach(a => L.push(`    - ${a}`));
+      });
+      if (d.habitFlags.length) {
+        L.push('');
+        L.push('HÁBITOS A VIGILAR:');
+        d.habitFlags.forEach(h => L.push(`    - ${h.t}: ${h.d}`));
+      }
+      L.push('');
+      L.push('Nota: guía de autoconocimiento, no es diagnóstico profesional.');
+      return L.join('\n');
+    }
+
+    /* ---------------------------------------------------------- *
+     *  9. INIT
+     * ---------------------------------------------------------- */
+
+    function init() {
+      try {
+        const saved = localStorage.getItem('dpdv_state');
+        if (saved) state = Object.assign({}, DEFAULTS, JSON.parse(saved));
+      } catch (_) {}
+      buildControls(document.getElementById('controls'));
+      buildPresets(document.getElementById('presets'));
+      bind();
+      update();
+    }
+
+    if (typeof document !== 'undefined') {
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+      else init();
+    }
+
+    // Exportar funciones puras para pruebas en Node (no afecta al navegador).
+    if (typeof module !== 'undefined' && module.exports) {
+      module.exports = { DEFAULTS, PRESETS, GROUPS, DIMS, dimensions, overallScore,
+        diagnose, avatarSVG, radarSVG, textReport, condition, archetype };
+    }
+  })();
+  </script>
 </body>
 </html>

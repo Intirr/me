@@ -36,7 +36,9 @@ sugiere qué cambiar o reforzar.
 
 ## 🚀 Uso
 
-No requiere instalación ni servidor. Abre `index.html` en cualquier navegador moderno.
+**Todo está dentro de `index.html`** (estructura, estilos y lógica embebidos): no hay
+archivos externos que cargar. Solo haz doble clic en `index.html` o ábrelo en cualquier
+navegador moderno.
 
 ```bash
 # opcional: servirlo en local
@@ -54,6 +56,7 @@ tiene dependencias en tiempo de ejecución):
 ```bash
 npm install        # instala el rasterizador SVG (solo para pruebas/preview)
 npm test           # valida el SVG (sin NaN/undefined), rangos y diagnóstico
+npm run test:dom   # integración del DOM con jsdom (requiere jsdom)
 npm run preview    # genera PNGs de muestra del avatar y el radar
 ```
 
@@ -63,12 +66,16 @@ y falla si detecta coordenadas inválidas, atributos vacíos o artefactos de ren
 ## 📁 Estructura
 
 ```
-index.html       Estructura de la página
-styles.css       Tema oscuro y diseño responsivo
-app.js           Estado, render del avatar/radar y motor de diagnóstico
-test-render.js   Pruebas de humo de las funciones puras
-preview.js       Genera PNGs de muestra (requiere @resvg/resvg-js)
+index.html       TODO: estructura + estilos (CSS) + lógica (JS) en un solo archivo
+load-app.js      Extrae las funciones del <script> de index.html para Node (tests)
+test-render.js   Pruebas de humo de las funciones puras (SVG, rangos, diagnóstico)
+test-dom.js      Prueba de integración del DOM con jsdom (interacciones reales)
+preview.js       Genera PNGs de muestra del avatar/radar (requiere @resvg/resvg-js)
+gen-hero.js      Genera docs/captura.png para este README
 ```
+
+> Las pruebas leen el código directamente del `<script>` embebido en `index.html`,
+> de modo que validan exactamente lo que se ejecuta en el navegador.
 
 ## ⚠️ Aviso
 

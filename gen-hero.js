@@ -1,7 +1,7 @@
 /* Genera docs/captura.png: montaje del avatar + radar para el README. */
 const fs = require('fs');
 const { Resvg } = require('@resvg/resvg-js');
-const M = require('./app.js');
+const M = require('./load-app.js');
 
 const s = Object.assign({}, M.DEFAULTS, M.PRESETS['Equilibrado'], { nombre: 'Alex' });
 const avatar = M.avatarSVG(s).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');

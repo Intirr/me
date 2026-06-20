@@ -1,7 +1,7 @@
 /* Renderiza muestras del avatar a PNG para inspección visual. */
 const fs = require('fs');
 const { Resvg } = require('@resvg/resvg-js');
-const M = require('./app.js');
+const M = require('./load-app.js');
 
 function png(svg, name) {
   const r = new Resvg(svg, { background: '#0c0f14', fitTo: { mode: 'width', value: 480 } });

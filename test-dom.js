@@ -9,7 +9,7 @@ let fails = 0;
 const check = (c, m) => { if (!c) { console.error('  ✗ ' + m); fails++; } else console.log('  ✓ ' + m); };
 
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-const appjs = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
+const appjs = require('./load-app.js').__source; // script embebido en index.html
 
 const dom = new JSDOM(html, { runScripts: 'outside-only', pretendToBeVisual: true, url: 'http://localhost/' });
 const { window } = dom;

@@ -5,10 +5,13 @@
   "private": true,
   "scripts": {
     "test": "node test-render.js",
-    "preview": "node preview.js"
+    "test:dom": "node test-dom.js",
+    "preview": "node preview.js",
+    "hero": "node gen-hero.js"
   },
-  "comment": "La aplicación (index.html + styles.css + app.js) NO necesita dependencias: se abre directamente en el navegador. Las dependencias de abajo solo se usan para las pruebas/previsualización en Node.",
+  "comment": "La aplicación es un único archivo index.html (estructura + CSS + JS embebidos) y NO necesita dependencias: se abre directamente en el navegador. Las dependencias de abajo solo se usan para las pruebas/previsualización en Node.",
   "devDependencies": {
-    "@resvg/resvg-js": "^2.6.2"
+    "@resvg/resvg-js": "^2.6.2",
+    "jsdom": "^29.1.1"
   }
 }

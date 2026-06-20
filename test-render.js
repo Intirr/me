@@ -1,7 +1,7 @@
 /* Pruebas de humo para las funciones puras de render.
    Detecta NaN/undefined en el SVG (causa de artefactos visuales)
    y valida rangos del diagnóstico. Ejecuta: node test-render.js   */
-const M = require('./app.js');
+const M = require('./load-app.js');
 
 let fails = 0;
 const check = (cond, msg) => { if (!cond) { console.error('  ✗ ' + msg); fails++; } };
