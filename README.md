@@ -12,17 +12,14 @@ sugiere qué cambiar o reforzar.
 
 ## ✨ Qué incluye
 
-- **Avatar visual en vivo (SVG)**, muy personalizable, que cambia con cada atributo:
-  - **Cuerpo**: complexión, altura, peso/grasa, tono muscular, anchura de hombros y
-    de cadera, longitud de cuello y postura.
-  - **Rostro**: tamaño de cabeza, 5 formas de cara (ovalada, redonda, cuadrada,
-    corazón, alargada), tamaño y color de ojos, 5 estilos de cejas, nariz, boca/labios
-    y orejas ajustables.
-  - **Piel, cabello y extras**: tono de piel y color de cabello (paleta + selector
-    libre), 6 peinados (rapado, corto, medio, largo, recogido, afro), vello facial
-    (bigote, perilla, barba…), gafas (redondas, cuadradas, de sol) y pecas.
-  - **Aura de vitalidad** y **expresión facial** que reflejan tu estado general; el
-    color de la ropa refleja tu dimensión dominante.
+- **Avatar genérico, sin rostro y negro (SVG)** que NO se personaliza a mano: se
+  **genera a partir de tu perfil** (habilidades, personalidad y hábitos) y cambia en vivo:
+  - **Corpulencia** según tu dimensión **Físico** (y Carácter).
+  - **Postura** (erguido ↔ encorvado) según **Bienestar** y **Carácter**.
+  - **Apertura de brazos y piernas** según **Social**.
+  - **Halo en la cabeza** según **Mente**.
+  - **Contorno luminoso** y **núcleo de energía** en el pecho cuyo **tamaño/brillo**
+    reflejan tu **condición general** y cuyo **color** es el de tu **dimensión dominante**.
   - 100 % vectorial → nítido a cualquier tamaño, sin pixelado ni artefactos de textura.
 
 - **Editor detallado** con más de 30 atributos organizados en grupos:

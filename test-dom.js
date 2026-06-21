@@ -40,22 +40,23 @@ check(document.querySelectorAll('#presets .chip').length === 6, '6 ejemplos (pre
 check(/\d/.test(document.getElementById('condScore').textContent), 'puntuación de condición numérica');
 check(document.querySelectorAll('#reco .reco').length >= 4, 'recomendaciones generadas');
 
-console.log('2) Click en preset "Atleta"');
+console.log('2) Sin controles físicos (eliminados)');
+check(document.querySelectorAll('[data-seg]').length === 0, 'no quedan controles segmentados físicos');
+check(document.querySelectorAll('[data-sw]').length === 0, 'no quedan paletas de color');
+check(!document.getElementById('f_complexion') && !document.getElementById('f_altura'), 'no hay controles de complexión/altura');
+
+console.log('3) El avatar cambia con las dimensiones (no con el físico)');
+const before = document.querySelector('#avatarStage svg').innerHTML;
+const f = document.getElementById('f_fuerza');
+f.value = '95';
+f.dispatchEvent(new window.Event('input', { bubbles: true }));
+check(document.getElementById('v_fuerza').textContent === '95', 'valor del slider actualizado');
+check(document.querySelector('#avatarStage svg').innerHTML !== before, 'el avatar se regenera al cambiar una habilidad');
+
+console.log('4) Click en preset "Atleta"');
 [...document.querySelectorAll('#presets .chip')].find(c => c.textContent === 'Atleta')
   .dispatchEvent(new window.Event('click', { bubbles: true }));
-check(document.getElementById('idSub').textContent.includes('Atlética'), 'preset aplica complexión atlética');
-
-console.log('3) Mover un slider (fuerza=90)');
-const f = document.getElementById('f_fuerza');
-f.value = '90';
-f.dispatchEvent(new window.Event('input', { bubbles: true }));
-check(document.getElementById('v_fuerza').textContent === '90', 'valor del slider actualizado');
-
-console.log('4) Segmented (peinado=largo) y swatch (piel)');
-[...document.querySelectorAll('[data-seg="peinado"] button')].find(b => b.dataset.val === 'largo')
-  .dispatchEvent(new window.Event('click', { bubbles: true }));
-document.querySelector('[data-sw="piel"] button').dispatchEvent(new window.Event('click', { bubbles: true }));
-check(document.querySelector('#avatarStage svg'), 'avatar sigue presente tras cambios');
+check(/\d/.test(document.getElementById('condScore').textContent), 'preset recalcula la condición');
 
 console.log('5) Botones: Aleatorio, Guardar, Reiniciar, Export');
 document.getElementById('btnRandom').dispatchEvent(new window.Event('click', { bubbles: true }));

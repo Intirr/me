@@ -10,14 +10,18 @@ function png(svg, name) {
 }
 
 const D = M.DEFAULTS;
+// Helpers: estado base con un nivel uniforme, subiendo una dimensión concreta.
+const flat = lvl => { const s = Object.assign({}, D); Object.keys(s).forEach(k => { if (typeof s[k] === 'number') s[k] = lvl; }); return s; };
+const boost = (lvl, dimKey, to) => { const s = flat(lvl); M.DIMS.find(d => d.key === dimKey).parts.forEach(p => { s[p] = to; }); return s; };
+
 const cases = {
   'prev-default.png': D,
-  'prev-barba-gafas.png': Object.assign({}, D, { complexion: 'atletica', tonoMuscular: 78, peso: 35, caraForma: 'cuadrada', vello: 'corta', gafas: 'cuadradas', peinado: 'corto', cabello: '#15110e', cejas: 'gruesas', nariz: 60, boca: 45 }),
-  'prev-afro-redonda.png': Object.assign({}, D, { complexion: 'media', peso: 55, caraForma: 'redonda', peinado: 'afro', piel: '#5a3420', cabello: '#15110e', ojos: '#3a2417', cejas: 'naturales', ojosTam: 70, nariz: 55, boca: 65, vitalidad: 85 }),
-  'prev-corazon-largo.png': Object.assign({}, D, { complexion: 'delgada', caraForma: 'corazon', peinado: 'largo', cabello: '#a76a32', piel: '#f7d9bf', ojos: '#3f6e7d', cejas: 'arqueadas', ojosTam: 78, boca: 70, pecas: 'si', cadera: 70, hombros: 35 }),
-  'prev-robusta-perilla.png': Object.assign({}, D, { complexion: 'robusta', peso: 80, caraForma: 'redonda', peinado: 'rapado', vello: 'perilla', piel: '#c98a5b', gafas: 'sol', nariz: 70, orejas: 70 }),
-  'prev-recogido.png': Object.assign({}, D, { complexion: 'media', caraForma: 'ovalada', peinado: 'recogido', cabello: '#3b2a1a', piel: '#e0a87e', ojos: '#3f7a66', cejas: 'finas', ojosTam: 75, boca: 75, cuello: 70, hombros: 40, cadera: 60 }),
-  'prev-bigote-larga.png': Object.assign({}, D, { complexion: 'media', caraForma: 'larga', peinado: 'medio', vello: 'bigote', cabello: '#6b4423', cejas: 'rectas', nariz: 75, altura: 195 }),
+  'prev-bajo.png': flat(16),                         // condición crítica
+  'prev-alto.png': flat(94),                         // condición excepcional
+  'prev-fisico.png': boost(40, 'fisico', 96),        // dominante: Físico (corpulento)
+  'prev-mente.png': boost(40, 'mente', 96),          // dominante: Mente (halo)
+  'prev-social.png': boost(40, 'social', 96),        // dominante: Social (postura abierta)
+  'prev-bienestar.png': boost(35, 'bienestar', 96),  // dominante: Bienestar (erguido)
 };
 Object.entries(cases).forEach(([n, s]) => png(M.avatarSVG(s), n));
 
