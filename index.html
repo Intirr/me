@@ -121,6 +121,13 @@
   }
   .chip:hover { color: var(--text); border-color: var(--accent); background: var(--panel-2); }
 
+  .btn.play {
+    text-decoration: none;
+    background: linear-gradient(180deg, #4ade80, #2fb765);
+    border-color: #4ade80; color: #052012;
+  }
+  .btn.play:hover { background: linear-gradient(180deg, #6ce89b, #38c974); }
+
   /* ----------------------------- Layout ----------------------------- */
   .app {
     display: grid;
@@ -349,6 +356,7 @@
       <button class="btn" id="btnRandom"><span class="ico">🎲</span> Aleatorio</button>
       <button class="btn" id="btnReset"><span class="ico">↺</span> Reiniciar</button>
       <button class="btn primary" id="btnSave"><span class="ico">💾</span> Guardar</button>
+      <a class="btn play" href="juego.html"><span class="ico">🎮</span> Jugar al RPG</a>
     </div>
   </header>
 
@@ -437,7 +445,9 @@
   </main>
 
   <footer class="site-footer">
-    Hecho como plantilla de diagnóstico personal · Todo el procesamiento ocurre en tu navegador.
+    Hecho como plantilla de diagnóstico personal · Todo el procesamiento ocurre en tu navegador.<br />
+    ¿Quieres jugarlo? <a href="juego.html" style="color:#4ade80">Ruta Propia</a>, el RPG 2D de mundo abierto
+    sobre desarrollo personal y negocios.
   </footer>
 
   <script>

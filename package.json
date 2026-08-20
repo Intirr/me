@@ -1,15 +1,17 @@
 {
-  "name": "disenador-de-personajes",
-  "version": "1.0.0",
-  "description": "Diseñador de personajes basado en habilidades reales, físico, personalidad y hábitos, con diagnóstico de la condición personal y plan de mejora.",
+  "name": "ruta-propia",
+  "version": "2.0.0",
+  "description": "RPG 2D de mundo abierto sobre desarrollo personal y negocios: defines las características de tu avatar y las desarrollas jugando. Incluye el diseñador de personajes con diagnóstico de vida.",
   "private": true,
   "scripts": {
-    "test": "node test-render.js",
-    "test:dom": "node test-dom.js",
+    "test": "node test-render.js && node test-game.js",
+    "test:dom": "node test-dom.js && node test-game-dom.js",
+    "test:all": "npm test && npm run test:dom",
     "preview": "node preview.js",
+    "preview:game": "node preview-game.js",
     "hero": "node gen-hero.js"
   },
-  "comment": "La aplicación es un único archivo index.html (estructura + CSS + JS embebidos) y NO necesita dependencias: se abre directamente en el navegador. Las dependencias de abajo solo se usan para las pruebas/previsualización en Node.",
+  "comment": "Tanto el juego (juego.html) como el diseñador (index.html) son archivos únicos con HTML + CSS + JS embebidos y NO necesitan dependencias: se abren directamente en el navegador. Las dependencias de abajo sólo se usan para las pruebas y las previsualizaciones en Node.",
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
     "jsdom": "^29.1.1"

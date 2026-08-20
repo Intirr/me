@@ -1,0 +1,3793 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Ruta Propia · RPG 2D de desarrollo personal y negocios</title>
+  <meta name="description" content="RPG de mundo abierto 2D donde defines las características de tu avatar y desarrollas tu vida y tus negocios: entrena, estudia, conecta, emprende y escala." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230c0f14'/><circle cx='50' cy='36' r='16' fill='%235b8cff'/><rect x='28' y='56' width='44' height='30' rx='14' fill='%2334d399'/></svg>" />
+
+  <style>
+  /* ============================================================
+     RUTA PROPIA — RPG 2D de mundo abierto
+     Desarrollo personal + negocios. Todo embebido en este archivo.
+     ============================================================ */
+
+  :root {
+    --bg:        #0c0f14;
+    --bg-2:      #0f141c;
+    --panel:     #141a23;
+    --panel-2:   #1a2230;
+    --panel-3:   #212c3d;
+    --border:    #28344a;
+    --border-2:  #344563;
+    --text:      #e8eef6;
+    --muted:     #93a1b5;
+    --muted-2:   #6c7c93;
+    --accent:    #5b8cff;
+    --accent-2:  #34d399;
+    --danger:    #ff6b6b;
+    --warn:      #ffb057;
+    --good:      #4ade80;
+    --gold:      #fbbf24;
+    --radius:    16px;
+    --radius-sm: 10px;
+    --shadow:    0 10px 30px rgba(0,0,0,.45);
+    --shadow-sm: 0 4px 14px rgba(0,0,0,.35);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+            "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+
+  body {
+    font-family: var(--font);
+    color: var(--text);
+    background: linear-gradient(180deg, var(--bg-2), var(--bg));
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.45;
+    overflow: hidden;
+  }
+
+  button { font-family: inherit; }
+
+  /* ---------------------------- Botones ---------------------------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 9px 14px; border-radius: 11px; cursor: pointer;
+    border: 1px solid var(--border-2); background: var(--panel-2); color: var(--text);
+    font-size: 13.5px; font-weight: 650; letter-spacing: .2px;
+    transition: transform .12s ease, background .18s ease, border-color .18s ease, opacity .18s;
+  }
+  .btn:hover:not(:disabled) { background: var(--panel-3); border-color: #405478; transform: translateY(-1px); }
+  .btn:active:not(:disabled) { transform: translateY(0); }
+  .btn:disabled { opacity: .42; cursor: not-allowed; }
+  .btn.primary { background: linear-gradient(180deg, #6d9bff, #4b7bf0); border-color: #6d9bff; color: #06101f; }
+  .btn.primary:hover:not(:disabled) { background: linear-gradient(180deg, #82abff, #5c88f5); }
+  .btn.good { background: linear-gradient(180deg, #4ade80, #2fb765); border-color: #4ade80; color: #052012; }
+  .btn.ghost { background: transparent; }
+  .btn.sm { padding: 6px 10px; font-size: 12px; border-radius: 9px; }
+  .btn.wide { width: 100%; }
+
+  /* =============================================================
+     PANTALLA DE CREACIÓN
+     ============================================================= */
+  .screen { position: fixed; inset: 0; display: none; }
+  .screen.on { display: block; }
+
+  #screenCreate {
+    overflow-y: auto;
+    background:
+      radial-gradient(1200px 700px at 12% -8%, rgba(91,140,255,.14), transparent 60%),
+      radial-gradient(1000px 600px at 100% 0%, rgba(52,211,153,.10), transparent 55%),
+      linear-gradient(180deg, var(--bg-2), var(--bg));
+  }
+
+  .create-wrap { max-width: 1280px; margin: 0 auto; padding: 22px 18px 60px; }
+
+  .create-head { text-align: center; margin-bottom: 18px; }
+  .create-head .kicker {
+    display: inline-block; font-size: 11.5px; letter-spacing: 2.4px; text-transform: uppercase;
+    color: var(--accent); background: rgba(91,140,255,.10); border: 1px solid rgba(91,140,255,.3);
+    padding: 4px 12px; border-radius: 999px; margin-bottom: 10px;
+  }
+  .create-head h1 { margin: 0 0 6px; font-size: 32px; letter-spacing: -.6px; }
+  .create-head p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+  .create-grid {
+    display: grid; gap: 16px; align-items: start;
+    grid-template-columns: 300px minmax(330px, 1fr) minmax(320px, 1.05fr);
+  }
+  .create-grid > .col { display: grid; gap: 16px; align-items: start; }
+  .create-sticky { position: sticky; top: 18px; }
+  @media (max-width: 1180px) { .create-grid { grid-template-columns: 280px 1fr; } }
+  @media (max-width: 840px)  { .create-grid { grid-template-columns: 1fr; } .create-sticky { position: static; } }
+
+  .card {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow-sm); overflow: hidden;
+  }
+  .card > .head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,.015);
+  }
+  .card > .head h2 { margin: 0; font-size: 14.5px; letter-spacing: .2px; }
+  .card > .head .hint { font-size: 11.5px; color: var(--muted-2); }
+  .card > .body { padding: 16px; }
+
+  .avatar-stage {
+    width: 100%; aspect-ratio: 320/440; border-radius: 14px;
+    background: radial-gradient(120% 90% at 50% 12%, #182233, #0b0f16 72%);
+    border: 1px solid var(--border); display: grid; place-items: center; overflow: hidden;
+  }
+  .avatar-stage svg { width: 100%; height: 100%; display: block; }
+
+  .field { margin-bottom: 12px; }
+  .field > label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+  .input, select.input {
+    width: 100%; padding: 9px 11px; border-radius: 10px; font-size: 14px;
+    background: #0e131b; border: 1px solid var(--border-2); color: var(--text);
+  }
+  .input:focus { outline: 2px solid rgba(91,140,255,.45); outline-offset: 1px; }
+  .row2 { display: grid; grid-template-columns: 1fr 92px; gap: 10px; }
+
+  .pool {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 12px; border-radius: 12px; margin-bottom: 12px;
+    background: rgba(91,140,255,.08); border: 1px solid rgba(91,140,255,.28);
+  }
+  .pool .n { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .pool .n.zero { color: var(--muted-2); }
+  .pool .t { font-size: 12px; color: var(--muted); }
+
+  .stat-row {
+    display: grid; grid-template-columns: 128px 1fr 34px auto; gap: 10px; align-items: center;
+    padding: 7px 0; border-bottom: 1px dashed rgba(255,255,255,.05);
+  }
+  .stat-row:last-child { border-bottom: 0; }
+  .stat-row .nm { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; }
+  .stat-row .nm em { font-style: normal; font-size: 15px; }
+  .stat-row .bar { height: 9px; border-radius: 99px; background: #0d121a; border: 1px solid var(--border); overflow: hidden; }
+  .stat-row .bar > i { display: block; height: 100%; border-radius: 99px; transition: width .2s ease; }
+  .stat-row .vv { font-size: 13px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+  .stat-row .pm { display: flex; gap: 4px; }
+  .stat-row .pm button {
+    width: 26px; height: 26px; border-radius: 8px; cursor: pointer; font-size: 15px; line-height: 1;
+    background: var(--panel-2); border: 1px solid var(--border-2); color: var(--text);
+  }
+  .stat-row .pm button:hover:not(:disabled) { background: var(--panel-3); }
+  .stat-row .pm button:disabled { opacity: .3; cursor: not-allowed; }
+  .stat-desc { font-size: 11.5px; color: var(--muted-2); margin: -2px 0 8px; }
+
+  .opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .opt {
+    text-align: left; cursor: pointer; padding: 11px 12px; border-radius: 12px;
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+    transition: border-color .16s, background .16s, transform .12s;
+  }
+  .opt:hover { border-color: var(--border-2); transform: translateY(-1px); }
+  .opt.sel { border-color: var(--accent); background: rgba(91,140,255,.12); box-shadow: 0 0 0 1px rgba(91,140,255,.35) inset; }
+  .opt .t { font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+  .opt .d { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+  .opt .b { font-size: 11px; color: var(--accent-2); margin-top: 5px; font-weight: 600; }
+
+  .create-actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+  .warnline { text-align: center; color: var(--warn); font-size: 12.5px; min-height: 18px; margin-top: 8px; }
+
+  /* =============================================================
+     PANTALLA DE JUEGO
+     ============================================================= */
+  #screenGame { background: #0a1014; }
+  #world { display: block; width: 100%; height: 100%; image-rendering: auto; touch-action: none; }
+
+  .hud { position: absolute; z-index: 5; pointer-events: none; }
+  .hud > * { pointer-events: auto; }
+
+  .hud-top { top: 10px; left: 10px; right: 10px; display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 11px;
+    background: rgba(15,20,28,.86); border: 1px solid var(--border); backdrop-filter: blur(7px);
+    font-size: 12.5px; font-weight: 650; box-shadow: var(--shadow-sm); white-space: nowrap;
+  }
+  .chip .k { color: var(--muted-2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; }
+  .chip .v { font-variant-numeric: tabular-nums; }
+  .chip.money .v { color: var(--gold); }
+  .chip.debt .v { color: var(--danger); }
+  .spacer { flex: 1 1 auto; }
+
+  .hud-left { top: 58px; left: 10px; width: 214px; display: flex; flex-direction: column; gap: 7px; }
+  .meter {
+    background: rgba(15,20,28,.86); border: 1px solid var(--border); border-radius: 11px;
+    padding: 7px 10px; backdrop-filter: blur(7px); box-shadow: var(--shadow-sm);
+  }
+  .meter .lbl { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .meter .lbl b { color: var(--text); font-variant-numeric: tabular-nums; font-weight: 700; }
+  .meter .bar { height: 8px; border-radius: 99px; background: #0b1019; overflow: hidden; border: 1px solid rgba(255,255,255,.05); }
+  .meter .bar > i { display: block; height: 100%; border-radius: 99px; transition: width .25s ease; }
+
+  .hud-bottom { left: 10px; right: 10px; bottom: 10px; display: flex; align-items: flex-end; gap: 10px; }
+  .keyhelp {
+    font-size: 11.5px; color: var(--muted); background: rgba(15,20,28,.8); border: 1px solid var(--border);
+    border-radius: 10px; padding: 6px 10px; backdrop-filter: blur(7px);
+  }
+  .keyhelp kbd {
+    font-family: var(--mono); font-size: 10.5px; background: var(--panel-3); border: 1px solid var(--border-2);
+    border-radius: 5px; padding: 1px 5px; color: var(--text);
+  }
+  .menu-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .prompt {
+    position: absolute; left: 50%; bottom: 92px; transform: translateX(-50%); z-index: 6;
+    background: rgba(15,20,28,.93); border: 1px solid var(--accent); border-radius: 13px;
+    padding: 9px 16px; font-size: 13.5px; font-weight: 650; box-shadow: var(--shadow);
+    display: none; align-items: center; gap: 9px; backdrop-filter: blur(7px); white-space: nowrap;
+  }
+  .prompt.on { display: flex; }
+  .prompt kbd {
+    font-family: var(--mono); background: var(--accent); color: #06101f; border-radius: 6px;
+    padding: 2px 7px; font-size: 11.5px; font-weight: 800;
+  }
+
+  /* Registro flotante de eventos */
+  .toasts { position: absolute; right: 10px; top: 58px; z-index: 7; width: 288px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .toast {
+    background: rgba(15,20,28,.92); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 10px; padding: 7px 11px; font-size: 12.5px; box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(7px); animation: toastIn .22s ease; max-width: 100%;
+  }
+  .toast.good { border-left-color: var(--good); }
+  .toast.bad  { border-left-color: var(--danger); }
+  .toast.warn { border-left-color: var(--warn); }
+  .toast.gold { border-left-color: var(--gold); }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+
+  /* Mando táctil */
+  .touchpad { position: absolute; left: 16px; bottom: 92px; z-index: 6; display: none; }
+  .touchpad.on { display: block; }
+  .dpad { display: grid; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(3, 52px); gap: 4px; }
+  .dpad button {
+    border-radius: 12px; background: rgba(26,34,48,.82); border: 1px solid var(--border-2);
+    color: var(--text); font-size: 19px; touch-action: none; user-select: none; -webkit-user-select: none;
+  }
+  .dpad button:active { background: var(--panel-3); }
+  .dpad .sp { visibility: hidden; }
+  .touch-e {
+    position: absolute; right: 16px; bottom: 96px; z-index: 6; display: none;
+    width: 70px; height: 70px; border-radius: 50%; font-size: 15px; font-weight: 800;
+    background: rgba(91,140,255,.85); border: 1px solid #8ab0ff; color: #06101f;
+  }
+  .touch-e.on { display: block; }
+
+  /* =============================================================
+     MODALES
+     ============================================================= */
+  .modal-back {
+    position: fixed; inset: 0; z-index: 20; background: rgba(4,7,12,.72);
+    backdrop-filter: blur(3px); display: none; padding: 18px; overflow-y: auto;
+  }
+  .modal-back.on { display: block; }
+  .modal {
+    max-width: 940px; margin: 24px auto; background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--border-2); border-radius: var(--radius); box-shadow: var(--shadow);
+    animation: modalIn .18s ease;
+  }
+  .modal.narrow { max-width: 560px; }
+  @keyframes modalIn { from { opacity: 0; transform: translateY(10px) scale(.99); } to { opacity: 1; transform: none; } }
+  .modal .m-head {
+    display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--panel); border-radius: var(--radius) var(--radius) 0 0; z-index: 2;
+  }
+  .modal .m-head .ic { font-size: 24px; }
+  .modal .m-head h2 { margin: 0; font-size: 17px; }
+  .modal .m-head .sub { font-size: 12px; color: var(--muted); }
+  .modal .m-head .x {
+    margin-left: auto; width: 32px; height: 32px; border-radius: 9px; cursor: pointer; font-size: 16px;
+    background: var(--panel-2); border: 1px solid var(--border-2); color: var(--muted);
+  }
+  .modal .m-head .x:hover { background: var(--panel-3); color: var(--text); }
+  .modal .m-body { padding: 16px 18px 20px; }
+
+  .tabs { display: flex; gap: 6px; padding: 10px 18px 0; flex-wrap: wrap; }
+  .tab {
+    padding: 7px 13px; border-radius: 10px 10px 0 0; cursor: pointer; font-size: 12.5px; font-weight: 650;
+    background: transparent; border: 1px solid transparent; border-bottom: 0; color: var(--muted);
+  }
+  .tab.on { background: var(--panel-2); border-color: var(--border); color: var(--text); }
+  .tab-panel { display: none; }
+  .tab-panel.on { display: block; }
+
+  /* Lista de acciones de un lugar */
+  .act-list { display: grid; gap: 9px; }
+  .act {
+    display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+    padding: 12px 14px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--border);
+  }
+  .act.locked { opacity: .55; }
+  .act .t { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .act .d { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .act .costs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 7px; }
+  .pill {
+    font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+    background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--muted);
+    letter-spacing: .2px; white-space: nowrap;
+  }
+  .pill.time  { color: #a5c3ff; border-color: rgba(91,140,255,.4); }
+  .pill.en    { color: #86efac; border-color: rgba(74,222,128,.4); }
+  .pill.money { color: var(--gold); border-color: rgba(251,191,36,.4); }
+  .pill.cost  { color: var(--danger); border-color: rgba(255,107,107,.4); }
+  .pill.xp    { color: #d8b4fe; border-color: rgba(176,124,255,.4); }
+  .pill.req   { color: var(--warn); border-color: rgba(255,176,87,.45); }
+
+  .empty { text-align: center; color: var(--muted-2); font-size: 13px; padding: 26px 10px; }
+
+  .kv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px; margin-bottom: 14px; }
+  .kv {
+    padding: 10px 12px; border-radius: 11px; background: var(--panel-2); border: 1px solid var(--border);
+  }
+  .kv .k { font-size: 10.5px; color: var(--muted-2); text-transform: uppercase; letter-spacing: .7px; }
+  .kv .v { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 1px; }
+
+  .sect-title { display: flex; align-items: center; gap: 10px; margin: 18px 0 10px; }
+  .sect-title span { font-size: 12px; text-transform: uppercase; letter-spacing: 1.4px; color: var(--muted-2); font-weight: 700; }
+  .sect-title .ln { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+  .biz {
+    padding: 13px 14px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--border); margin-bottom: 10px;
+  }
+  .biz .top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .biz .top .nm { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .biz .top .lv { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: rgba(91,140,255,.14); border: 1px solid rgba(91,140,255,.4); color: #a5c3ff; font-weight: 700; }
+  .biz .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin: 10px 0; }
+  .biz .stats div { font-size: 11.5px; color: var(--muted); }
+  .biz .stats b { display: block; font-size: 14px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .biz .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .quest {
+    display: grid; grid-template-columns: 30px 1fr auto; gap: 11px; align-items: start;
+    padding: 11px 13px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--border); margin-bottom: 8px;
+  }
+  .quest.done { opacity: .62; }
+  .quest .mk { font-size: 19px; text-align: center; }
+  .quest .t { font-size: 13.5px; font-weight: 700; }
+  .quest .d { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .quest .prog { margin-top: 7px; height: 6px; border-radius: 99px; background: #0b1019; overflow: hidden; border: 1px solid rgba(255,255,255,.05); }
+  .quest .prog > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  .quest .rw { font-size: 11px; color: var(--gold); font-weight: 700; text-align: right; white-space: nowrap; }
+
+  .log-list { max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+  .log-line { font-size: 12.5px; padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,.02); border-left: 2px solid var(--border-2); }
+  .log-line .d { color: var(--muted-2); font-family: var(--mono); font-size: 11px; margin-right: 7px; }
+  .log-line.good { border-left-color: var(--good); }
+  .log-line.bad { border-left-color: var(--danger); }
+  .log-line.warn { border-left-color: var(--warn); }
+  .log-line.gold { border-left-color: var(--gold); }
+
+  .minimap-wrap { display: grid; place-items: center; }
+  .minimap-wrap canvas { border-radius: 12px; border: 1px solid var(--border-2); max-width: 100%; image-rendering: pixelated; }
+  .legend { display: flex; gap: 8px 14px; flex-wrap: wrap; margin-top: 14px; justify-content: center; }
+  .legend div { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+
+  .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+  .item { padding: 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--border); }
+  .item .t { font-size: 13.5px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+  .item .d { font-size: 11.5px; color: var(--muted); margin: 4px 0 9px; min-height: 32px; }
+  .item.owned { border-color: rgba(74,222,128,.45); background: rgba(74,222,128,.06); }
+
+  .radar-wrap { display: grid; place-items: center; }
+  .radar-wrap svg { width: 100%; max-width: 330px; height: auto; }
+
+  .profile-grid { display: grid; grid-template-columns: 260px 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 760px) { .profile-grid { grid-template-columns: 1fr; } .hud-left { display: none; } }
+
+  .dialog-txt { font-size: 14px; line-height: 1.6; }
+  .dialog-txt em { color: var(--accent); font-style: normal; font-weight: 700; }
+  .choice-list { display: grid; gap: 8px; margin-top: 14px; }
+
+  .tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .banner {
+    padding: 10px 13px; border-radius: 11px; font-size: 12.5px; margin-bottom: 12px;
+    background: rgba(255,176,87,.1); border: 1px solid rgba(255,176,87,.35); color: #ffd7a5;
+  }
+  .banner.ok { background: rgba(74,222,128,.1); border-color: rgba(74,222,128,.35); color: #bbf7d0; }
+  .banner.bad { background: rgba(255,107,107,.1); border-color: rgba(255,107,107,.35); color: #ffc9c9; }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-2); background-clip: padding-box; }
+  </style>
+</head>
+<body>
+
+<!-- =====================================================================
+     PANTALLA 1 · CREACIÓN DEL PERSONAJE
+     El jugador define las características que definen su avatar.
+     ===================================================================== -->
+<div class="screen on" id="screenCreate">
+  <div class="create-wrap">
+    <div class="create-head">
+      <span class="kicker">RPG de mundo abierto 2D</span>
+      <h1>Ruta Propia</h1>
+      <p>Define las características de tu avatar. Todo lo que elijas cambia cómo se ve
+         y cómo rinde en el mundo: desarrollo personal y negocios.</p>
+    </div>
+
+    <div class="create-grid">
+      <!-- Columna 1: avatar en vivo -->
+      <div class="card create-sticky">
+        <div class="head"><h2>Tu avatar</h2><span class="hint">se genera con tus características</span></div>
+        <div class="body">
+          <div class="avatar-stage" id="createAvatar"></div>
+          <div class="tag-row" id="createTags"></div>
+          <p class="stat-desc" style="margin-top:10px">
+            El avatar no se dibuja a mano: su complexión, postura, apertura, halo mental
+            y núcleo de energía se derivan de las características que repartes.
+          </p>
+        </div>
+      </div>
+
+      <!-- Columna 2: lo principal — las características -->
+      <div class="col">
+        <div class="card">
+          <div class="head"><h2>Identidad</h2><span class="hint">quién eres</span></div>
+          <div class="body" style="padding-bottom:4px">
+            <div class="row2">
+              <div class="field">
+                <label for="inName">Nombre</label>
+                <input class="input" id="inName" type="text" maxlength="22" value="Alex" autocomplete="off" />
+              </div>
+              <div class="field">
+                <label for="inAge">Edad</label>
+                <input class="input" id="inAge" type="number" min="16" max="80" value="26" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="head">
+            <h2>Características</h2>
+            <span class="hint">base 10 · máximo 35 al empezar</span>
+          </div>
+          <div class="body">
+            <div class="pool">
+              <div>
+                <div class="t">Puntos por repartir</div>
+                <div class="stat-desc" style="margin:0">Subirás más al ganar niveles jugando.</div>
+              </div>
+              <div class="n" id="poolLeft">60</div>
+            </div>
+            <div id="statRows"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna 3: de dónde vienes y qué te hace distinto -->
+      <div class="col">
+        <div class="card">
+          <div class="head"><h2>Trasfondo</h2><span class="hint">de dónde vienes</span></div>
+          <div class="body"><div class="opt-grid" id="bgGrid"></div></div>
+        </div>
+
+        <div class="card">
+          <div class="head"><h2>Rasgo distintivo</h2><span class="hint">qué te hace diferente</span></div>
+          <div class="body"><div class="opt-grid" id="perkGrid"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="warnline" id="createWarn"></div>
+    <div class="create-actions">
+      <button class="btn" id="btnRandomChar"><span>🎲</span> Personaje aleatorio</button>
+      <button class="btn" id="btnResetChar"><span>↺</span> Reiniciar</button>
+      <button class="btn" id="btnLoadSave"><span>📂</span> Continuar partida</button>
+      <button class="btn primary" id="btnStart"><span>▶</span> Empezar la aventura</button>
+    </div>
+
+    <p class="stat-desc" style="text-align:center;margin-top:18px">
+      Todo ocurre en tu navegador: la partida se guarda en este dispositivo y no se envía a ningún sitio.
+      ¿Buscabas sólo el análisis de un perfil? Abre el
+      <a href="index.html" style="color:var(--accent)">Diseñador de Personajes</a>.
+    </p>
+  </div>
+</div>
+
+<!-- =====================================================================
+     PANTALLA 2 · MUNDO ABIERTO
+     ===================================================================== -->
+<div class="screen" id="screenGame">
+  <canvas id="world"></canvas>
+
+  <div class="hud hud-top">
+    <div class="chip"><span class="k">Día</span><span class="v" id="hudDay">1</span></div>
+    <div class="chip"><span id="hudClockIcon">🌤️</span><span class="v" id="hudClock">07:00</span></div>
+    <div class="chip money"><span class="k">Caja</span><span class="v" id="hudMoney">0 €</span></div>
+    <div class="chip" id="hudDebtChip" style="display:none"><span class="k">Deuda</span><span class="v" id="hudDebt">0 €</span></div>
+    <div class="chip"><span class="k">Nivel</span><span class="v" id="hudLevel">1</span></div>
+    <div class="chip" id="hudPointsChip" style="display:none"><span class="k">Puntos</span><span class="v" id="hudPoints">0</span></div>
+    <div class="spacer"></div>
+    <div class="chip"><span id="hudPlace">🌳 Barrio</span></div>
+  </div>
+
+  <div class="hud hud-left" id="hudMeters"></div>
+
+  <div class="toasts" id="toasts"></div>
+
+  <div class="prompt" id="prompt"><kbd>E</kbd><span id="promptText">Entrar</span></div>
+
+  <div class="touchpad" id="touchpad">
+    <div class="dpad">
+      <button class="sp"></button><button data-dir="up">▲</button><button class="sp"></button>
+      <button data-dir="left">◀</button><button class="sp"></button><button data-dir="right">▶</button>
+      <button class="sp"></button><button data-dir="down">▼</button><button class="sp"></button>
+    </div>
+  </div>
+  <button class="touch-e" id="touchE">E</button>
+
+  <div class="hud hud-bottom">
+    <div class="keyhelp" id="keyhelp">
+      <kbd>W A S D</kbd> moverse · <kbd>E</kbd> interactuar · <kbd>P</kbd> perfil ·
+      <kbd>N</kbd> negocios · <kbd>Q</kbd> misiones · <kbd>M</kbd> mapa · <kbd>Esc</kbd> cerrar
+    </div>
+    <div class="spacer"></div>
+    <div class="menu-row">
+      <button class="btn sm" data-open="profile">👤 Perfil</button>
+      <button class="btn sm" data-open="biz">💼 Negocios</button>
+      <button class="btn sm" data-open="quests">🎯 Misiones</button>
+      <button class="btn sm" data-open="map">🗺️ Mapa</button>
+      <button class="btn sm" data-open="log">📜 Diario</button>
+      <button class="btn sm" id="btnSaveGame">💾</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     MODALES
+     ===================================================================== -->
+<div class="modal-back" id="modalBack">
+  <div class="modal" id="modal">
+    <div class="m-head">
+      <span class="ic" id="mIcon">🏠</span>
+      <div>
+        <h2 id="mTitle">Lugar</h2>
+        <div class="sub" id="mSub"></div>
+      </div>
+      <button class="x" id="mClose" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="mTabs" class="tabs" style="display:none"></div>
+    <div class="m-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+/* ==================================================================
+   RUTA PROPIA — RPG 2D de mundo abierto
+   Desarrollo personal + negocios.
+
+   Todo el juego vive en este archivo. La lógica pura (mundo,
+   simulación, economía, misiones, avatar) se exporta al final para
+   poder probarla en Node sin navegador.
+   ================================================================== */
+(function () {
+  'use strict';
+
+  /* ================================================================
+     1. UTILIDADES
+     ================================================================ */
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const c100 = v => clamp(Number(v) || 0, 0, 100);
+  const round = v => Math.round(v);
+  const avg = a => a.reduce((x, y) => x + y, 0) / (a.length || 1);
+  const fmt = n => Math.round(n * 100) / 100;
+  const esc = s => String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // PRNG determinista (mulberry32): mismo seed => mismo mundo y mismos eventos.
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function hex2rgb(h) {
+    h = String(h).replace('#', '');
+    if (h.length === 3) h = h.split('').map(c => c + c).join('');
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  }
+  const _c = n => clamp(Math.round(n), 0, 255).toString(16).padStart(2, '0');
+  const rgb2hex = (r, g, b) => '#' + _c(r) + _c(g) + _c(b);
+  function mix(h1, h2, t) {
+    const a = hex2rgb(h1), b = hex2rgb(h2);
+    return rgb2hex(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t);
+  }
+  const rgba = (hex, a) => { const [r, g, b] = hex2rgb(hex); return `rgba(${r},${g},${b},${a})`; };
+
+  const money = n => (Math.round(n)).toLocaleString('es-ES') + ' €';
+  const hhmm = h => {
+    const t = clamp(h, 0, 24);
+    const hh = Math.floor(t), mm = Math.round((t - hh) * 60);
+    return String(hh % 24).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+  };
+
+  /* ================================================================
+     2. CARACTERÍSTICAS DEL PERSONAJE
+     ================================================================ */
+
+  const STATS = [
+    { key: 'vigor',       label: 'Vigor',       icon: '💪', color: '#ff6b6b',
+      desc: 'Energía máxima, aguante físico y recuperación.' },
+    { key: 'intelecto',   label: 'Intelecto',   icon: '🧠', color: '#5b8cff',
+      desc: 'Aprendizaje, análisis y estrategia de negocio.' },
+    { key: 'disciplina',  label: 'Disciplina',  icon: '🎯', color: '#b07cff',
+      desc: 'Constancia: gastas menos energía y mantienes rachas.' },
+    { key: 'carisma',     label: 'Carisma',     icon: '🗣️', color: '#ffb057',
+      desc: 'Ventas, negociación y primeras impresiones.' },
+    { key: 'creatividad', label: 'Creatividad', icon: '🎨', color: '#f472b6',
+      desc: 'Ideas, producto y diferenciación en el mercado.' },
+    { key: 'finanzas',    label: 'Finanzas',    icon: '💰', color: '#fbbf24',
+      desc: 'Márgenes, inversión y control del dinero.' },
+    { key: 'liderazgo',   label: 'Liderazgo',   icon: '🤝', color: '#34d399',
+      desc: 'Equipo, delegación y alianzas duraderas.' },
+    { key: 'equilibrio',  label: 'Equilibrio',  icon: '🧘', color: '#22d3ee',
+      desc: 'Manejo del estrés, ánimo y sostenibilidad.' },
+  ];
+  const STAT_KEYS = STATS.map(s => s.key);
+  const STAT_BY = {};
+  STATS.forEach(s => { STAT_BY[s.key] = s; });
+
+  const START_BASE = 10;   // valor inicial de cada característica
+  const START_POOL = 60;   // puntos a repartir en la creación
+  const START_MAX  = 35;   // tope por característica al empezar
+
+  const BACKGROUNDS = [
+    { id: 'estudiante', name: 'Estudiante', icon: '🎓', money: 400, debt: 600,
+      desc: 'Sales de la universidad con deuda y muchas ganas.',
+      bonus: { intelecto: 4, creatividad: 2 },
+      perkText: 'Formación un 25 % más barata.' },
+    { id: 'empleado', name: 'Empleado', icon: '🏢', money: 1500, debt: 0,
+      desc: 'Nómina estable, poco tiempo libre.',
+      bonus: { disciplina: 4, finanzas: 2 },
+      perkText: 'Empiezas con empleo: +20 % de sueldo por turno.' },
+    { id: 'autodidacta', name: 'Autodidacta', icon: '📚', money: 700, debt: 0,
+      desc: 'Aprendiste solo, a base de curiosidad.',
+      bonus: { creatividad: 4, intelecto: 2 },
+      perkText: 'Estudiar da un 30 % más de experiencia.' },
+    { id: 'comercial', name: 'Comercial', icon: '🤝', money: 900, debt: 0,
+      desc: 'Vendiste de todo antes de cumplir los 20.',
+      bonus: { carisma: 5, liderazgo: 1 },
+      perkText: 'Tus negocios facturan un 15 % más.' },
+    { id: 'deportista', name: 'Deportista', icon: '🏅', money: 600, debt: 0,
+      desc: 'Cuerpo entrenado, cabeza acostumbrada a la rutina.',
+      bonus: { vigor: 5, equilibrio: 1 },
+      perkText: 'Energía máxima +15.' },
+    { id: 'heredero', name: 'Heredero', icon: '💎', money: 6000, debt: 0,
+      desc: 'Dinero de sobra, disciplina por construir.',
+      bonus: { finanzas: 4, carisma: 2, disciplina: -3 },
+      perkText: 'Contactos de familia: inversión inicial más fácil.' },
+  ];
+
+  const PERKS = [
+    { id: 'madrugador', name: 'Madrugador', icon: '🌅',
+      desc: 'Te levantas a las 6:00 y rindes más por la mañana.',
+      bonusText: '+15 % de experiencia antes de las 12:00' },
+    { id: 'networker', name: 'Networker', icon: '📇',
+      desc: 'La gente te recuerda: haces contactos con facilidad.',
+      bonusText: 'Contactos y reputación social +60 %' },
+    { id: 'ahorrador', name: 'Ahorrador', icon: '🐖',
+      desc: 'Controlas cada euro que sale de tu bolsillo.',
+      bonusText: 'Gastos diarios −30 %' },
+    { id: 'resiliente', name: 'Resiliente', icon: '🛡️',
+      desc: 'La presión te afecta menos que a los demás.',
+      bonusText: 'El estrés sube un 35 % más lento' },
+    { id: 'analitico', name: 'Analítico', icon: '📊',
+      desc: 'Lees los números antes de decidir.',
+      bonusText: 'Ingresos de tus negocios +12 %' },
+    { id: 'incansable', name: 'Incansable', icon: '🔋',
+      desc: 'Aguantas jornadas que tumbarían a cualquiera.',
+      bonusText: 'Las acciones cuestan un 15 % menos de energía' },
+  ];
+
+  /* ================================================================
+     3. OBJETOS Y NEGOCIOS
+     ================================================================ */
+
+  const ITEMS = [
+    { id: 'portatil',  name: 'Portátil',           icon: '💻', cost: 900,
+      desc: 'Trabajar desde cualquier sitio. Tus negocios rinden +10 %.',
+      mods: { bizMul: 0.10 } },
+    { id: 'traje',     name: 'Traje a medida',     icon: '👔', cost: 650,
+      desc: 'Primeras impresiones impecables. Carisma efectivo +12 %.',
+      mods: { charismaMul: 0.12 } },
+    { id: 'bici',      name: 'Bicicleta',          icon: '🚲', cost: 320,
+      desc: 'Te mueves más rápido por la ciudad.',
+      mods: { speedMul: 0.45 } },
+    { id: 'colchon',   name: 'Buen colchón',       icon: '🛏️', cost: 780,
+      desc: 'Dormir recupera un 20 % más de energía.',
+      mods: { sleepMul: 0.20 } },
+    { id: 'cafetera',  name: 'Cafetera de casa',   icon: '☕', cost: 240,
+      desc: 'Cada mañana empiezas con +8 de energía.',
+      mods: { morningEnergy: 8 } },
+    { id: 'agenda',    name: 'Agenda y sistema',   icon: '🗓️', cost: 180,
+      desc: 'Planificas mejor: las acciones cuestan 15 min menos.',
+      mods: { timeCut: 0.25 } },
+    { id: 'libros',    name: 'Biblioteca personal', icon: '📕', cost: 520,
+      desc: 'Estudiar en casa es posible: experiencia mental +15 %.',
+      mods: { mindXpMul: 0.15 } },
+    { id: 'gimcasa',   name: 'Gimnasio en casa',   icon: '🏋️', cost: 1400,
+      desc: 'Entrenas sin desplazarte: experiencia física +20 %.',
+      mods: { bodyXpMul: 0.20 } },
+  ];
+  const ITEM_BY = {}; ITEMS.forEach(i => { ITEM_BY[i.id] = i; });
+
+  const BIZ_TYPES = [
+    { id: 'puesto', name: 'Puesto de mercado', icon: '🥕', cost: 600, base: 52, upkeep: 14,
+      stats: ['carisma', 'disciplina'], req: {},
+      desc: 'Poca inversión, mucho madrugar. La escuela de todo comerciante.' },
+    { id: 'tienda', name: 'Tienda online', icon: '🛍️', cost: 1500, base: 82, upkeep: 26,
+      stats: ['creatividad', 'finanzas'], req: { finanzas: 22 },
+      desc: 'Vendes mientras duermes… si sabes traer visitas.' },
+    { id: 'agencia', name: 'Agencia de servicios', icon: '🧑‍💼', cost: 3200, base: 148, upkeep: 55,
+      stats: ['liderazgo', 'carisma'], req: { carisma: 34, liderazgo: 26 },
+      desc: 'Vendes horas y talento. Escala con equipo.' },
+    { id: 'cafeteria', name: 'Cafetería de barrio', icon: '☕', cost: 6000, base: 235, upkeep: 105,
+      stats: ['liderazgo', 'finanzas'], req: { finanzas: 40, liderazgo: 32 },
+      desc: 'Un local con alma. Costes fijos altos, comunidad fiel.' },
+    { id: 'startup', name: 'Startup tecnológica', icon: '🚀', cost: 11000, base: 400, upkeep: 210,
+      stats: ['intelecto', 'creatividad'], req: { intelecto: 48, creatividad: 42, finanzas: 35 },
+      desc: 'Alto riesgo, alto techo. Necesita producto y aguante.' },
+  ];
+  const BIZ_BY = {}; BIZ_TYPES.forEach(b => { BIZ_BY[b.id] = b; });
+
+  /* ================================================================
+     4. LUGARES DEL MUNDO Y SUS ACCIONES
+
+     Cada acción usa el mismo esquema compacto:
+       h    horas que consume        e    energía que cuesta
+       c    coste en €               m    ingreso base en €
+       g    experiencia por característica  { vigor: 20, ... }
+       st   estrés (+sube / −baja)   mo   ánimo (+sube / −baja)
+       net  contactos que ganas      rep  reputación que ganas
+       req  requisitos { stat:{}, money, level, biz, item, net, rep }
+       sp   acción especial (dormir, banco, tienda, fundar negocio…)
+       once 'dia' | 'partida'        min/max  franja horaria permitida
+     ================================================================ */
+
+  const PLACES = [
+    /* ---------------------------- NORTE ---------------------------- */
+    { id: 'casa', name: 'Tu apartamento', icon: '🏠', color: '#8b6f47', kind: 'building',
+      x: 12, y: 10, w: 7, h: 7, hint: 'Entrar en casa',
+      about: 'Tu base. Aquí descansas, planificas y, si te equipas, también entrenas y estudias.',
+      actions: [
+        { id: 'dormir', label: 'Dormir hasta mañana', icon: '🛌', sp: 'dormir',
+          desc: 'Cierra el día: cobras tus negocios, pagas gastos y recuperas energía.' },
+        { id: 'siesta', label: 'Siesta corta', icon: '😴', h: 1, e: -22, st: -6, mo: 2,
+          desc: 'Una hora para recargar sin perder el día.' },
+        { id: 'planificar', label: 'Planificar el día', icon: '🗓️', h: 0.5, e: 4, once: 'dia',
+          g: { disciplina: 20 }, mo: 6, st: -4,
+          desc: 'Decides tus prioridades antes de que el día decida por ti.' },
+        { id: 'estudiarcasa', label: 'Estudiar en casa', icon: '📖', h: 2, e: 12,
+          g: { intelecto: 22, disciplina: 8 }, st: 4, req: { item: 'libros' },
+          desc: 'Con tu biblioteca personal no necesitas salir para aprender.' },
+        { id: 'entrenarcasa', label: 'Entrenar en casa', icon: '🏋️', h: 1, e: 16,
+          g: { vigor: 20, disciplina: 8 }, st: -4, mo: 3, req: { item: 'gimcasa' },
+          desc: 'Sin excusas ni desplazamientos.' },
+        { id: 'remoto', label: 'Trabajar en remoto', icon: '💻', h: 3, e: 18,
+          g: { disciplina: 14, creatividad: 8 }, st: 6, req: { item: 'portatil', biz: true },
+          sp: 'trabajoNegocio',
+          desc: 'Empujas tu negocio desde el salón.' },
+      ] },
+
+    { id: 'gimnasio', name: 'Gimnasio Titán', icon: '🏋️', color: '#ff6b6b', kind: 'building',
+      x: 30, y: 9, w: 8, h: 8, hint: 'Entrar al gimnasio',
+      about: 'Hierro, sudor y constancia. El cuerpo sostiene todo lo demás.',
+      actions: [
+        { id: 'fuerza', label: 'Entrenar fuerza', icon: '💪', h: 1.5, e: 22, c: 10,
+          g: { vigor: 28, disciplina: 10 }, st: -6, mo: 5,
+          desc: 'Progresión de cargas. Duele hoy, paga siempre.' },
+        { id: 'cardio', label: 'Sesión de cardio', icon: '🏃', h: 1, e: 18, c: 10,
+          g: { vigor: 20, equilibrio: 10 }, st: -10, mo: 4,
+          desc: 'Corazón fuerte, cabeza despejada.' },
+        { id: 'clase', label: 'Clase colectiva', icon: '🤸', h: 1.5, e: 20, c: 18,
+          g: { vigor: 16, carisma: 12 }, net: 1, st: -8, mo: 6,
+          desc: 'Entrenas rodeado de gente: sudor y contactos.' },
+        { id: 'avanzado', label: 'Bloque de alto rendimiento', icon: '🔥', h: 2, e: 30, c: 25,
+          g: { vigor: 44, disciplina: 16 }, st: 4, mo: 6, req: { stat: { vigor: 40 } },
+          desc: 'Sólo si tu cuerpo ya aguanta el ritmo.' },
+      ] },
+
+    { id: 'zen', name: 'Centro Zen', icon: '🧘', color: '#22d3ee', kind: 'building',
+      x: 48, y: 10, w: 7, h: 7, hint: 'Entrar al centro',
+      about: 'Aquí se trabaja lo que no se ve: la cabeza que dirige el resto.',
+      actions: [
+        { id: 'meditar', label: 'Meditar', icon: '🧘', h: 1, e: 6, c: 12,
+          g: { equilibrio: 24 }, st: -20, mo: 7,
+          desc: 'Veinte minutos de silencio valen por horas de ruido.' },
+        { id: 'yoga', label: 'Clase de yoga', icon: '🤍', h: 1.5, e: 12, c: 20,
+          g: { equilibrio: 18, vigor: 10 }, st: -14, mo: 6,
+          desc: 'Movilidad, respiración y una tregua para el cuerpo.' },
+        { id: 'coaching', label: 'Sesión de coaching', icon: '🗨️', h: 2, e: 10, c: 90,
+          g: { equilibrio: 30, disciplina: 14, liderazgo: 8 }, st: -26, mo: 12,
+          desc: 'Alguien que te devuelve las preguntas correctas.' },
+        { id: 'talleremocional', label: 'Taller de gestión emocional', icon: '🌊', h: 3, e: 20, c: 170,
+          g: { equilibrio: 52, liderazgo: 12 }, st: -30, mo: 14, net: 1, req: { level: 3 },
+          desc: 'Un día entero para aprender a no romperte bajo presión.' },
+      ] },
+
+    { id: 'clinica', name: 'Centro de Salud', icon: '🩺', color: '#e5e7eb', kind: 'building',
+      x: 86, y: 9, w: 8, h: 8, hint: 'Entrar al centro de salud',
+      about: 'Mantenimiento preventivo del único vehículo que no puedes cambiar.',
+      actions: [
+        { id: 'chequeo', label: 'Chequeo general', icon: '🔬', h: 1.5, e: 8, c: 55,
+          g: { vigor: 12, equilibrio: 12 }, st: -8, mo: 4, sp: 'curar',
+          desc: 'Saber cómo estás de verdad. Quita cualquier malestar.' },
+        { id: 'fisio', label: 'Fisioterapia', icon: '💆', h: 1, e: 6, c: 45,
+          g: { vigor: 16, equilibrio: 8 }, st: -14, mo: 5,
+          desc: 'Recupera lo que el entrenamiento se llevó.' },
+        { id: 'nutri', label: 'Plan nutricional', icon: '🥗', h: 1.5, e: 8, c: 110,
+          g: { vigor: 18, disciplina: 16, equilibrio: 10 }, st: -6, mo: 6, sp: 'dieta',
+          desc: 'Comer bien deja de ser suerte y pasa a ser sistema.' },
+      ] },
+
+    { id: 'parque', name: 'Parque Sol', icon: '🌳', color: '#34d399', kind: 'spot',
+      x: 72, y: 12, hint: 'Usar el parque',
+      about: 'Aire libre gratis: el mejor gimnasio y el mejor despacho para pensar.',
+      actions: [
+        { id: 'correr', label: 'Salir a correr', icon: '🏃', h: 1, e: 16,
+          g: { vigor: 22, disciplina: 8, equilibrio: 6 }, st: -12, mo: 6,
+          desc: 'Cero euros, cero excusas.' },
+        { id: 'pasear', label: 'Pasear y pensar', icon: '🚶', h: 1, e: 4,
+          g: { equilibrio: 14, creatividad: 12 }, st: -14, mo: 8,
+          desc: 'Caminar sin móvil: donde aparecen las ideas.' },
+        { id: 'leerparque', label: 'Leer al aire libre', icon: '📗', h: 1.5, e: 6,
+          g: { intelecto: 18, equilibrio: 8 }, st: -8, mo: 5,
+          desc: 'Un banco, un libro y nadie que te interrumpa.' },
+        { id: 'running', label: 'Quedada de running', icon: '👟', h: 1.5, e: 20,
+          g: { vigor: 18, carisma: 10 }, net: 1, st: -10, mo: 7,
+          desc: 'Correr acompañado hace que vuelvas la semana siguiente.' },
+      ] },
+
+    /* ---------------------------- CENTRO --------------------------- */
+    { id: 'plaza', name: 'Plaza Mayor', icon: '⛲', color: '#a8a29e', kind: 'spot',
+      x: 40, y: 26, hint: 'Quedarte en la plaza',
+      about: 'El corazón de la ciudad: gente, ruido y oportunidades sin filtro.',
+      actions: [
+        { id: 'observar', label: 'Observar y tomar notas', icon: '📝', h: 1, e: 4,
+          g: { creatividad: 16, intelecto: 8 }, st: -4,
+          desc: 'Mirar de verdad a la gente es investigación de mercado gratis.' },
+        { id: 'charlar', label: 'Charlar con desconocidos', icon: '💬', h: 1, e: 8,
+          g: { carisma: 16 }, net: 1, st: 2, mo: 6,
+          desc: 'Cada conversación entrena el músculo social.' },
+        { id: 'validar', label: 'Validar tu idea en la calle', icon: '🔎', h: 1.5, e: 12,
+          g: { carisma: 12, creatividad: 14, finanzas: 8 }, rep: 3, net: 1, req: { biz: true },
+          desc: 'Pregunta a quien podría pagarte, no a tus amigos.' },
+        { id: 'publico', label: 'Hablar en público', icon: '📣', h: 2, e: 20,
+          g: { carisma: 34, liderazgo: 12 }, net: 2, rep: 4, st: 12, mo: 8,
+          req: { stat: { carisma: 30 } },
+          desc: 'Subirte a algo y sostener la mirada de cincuenta personas.' },
+      ] },
+
+    { id: 'biblioteca', name: 'Biblioteca Central', icon: '📚', color: '#5b8cff', kind: 'building',
+      x: 12, y: 23, w: 9, h: 8, hint: 'Entrar a la biblioteca',
+      about: 'Silencio barato y conocimiento acumulado durante siglos.',
+      actions: [
+        { id: 'leer', label: 'Leer un libro', icon: '📖', h: 2, e: 10,
+          g: { intelecto: 26, equilibrio: 6 }, st: -6, mo: 3,
+          desc: 'La forma más barata de robarle años de experiencia a alguien.' },
+        { id: 'finanzasbib', label: 'Estudiar finanzas', icon: '📈', h: 2, e: 14,
+          g: { finanzas: 28, intelecto: 10 }, st: 4,
+          desc: 'Entender el dinero antes de tener que gestionarlo.' },
+        { id: 'curso', label: 'Curso online', icon: '🖥️', h: 3, e: 18, c: 55,
+          g: { intelecto: 24, creatividad: 16, disciplina: 8 }, st: 6,
+          desc: 'Formación estructurada sin salir del edificio.' },
+        { id: 'clublectura', label: 'Club de lectura', icon: '🫂', h: 1.5, e: 8,
+          g: { intelecto: 14, carisma: 12 }, net: 1, mo: 5, st: -4,
+          desc: 'Discutir lo leído fija el doble de lo que retienes solo.' },
+      ] },
+
+    { id: 'cafe', name: 'Café Aroma', icon: '☕', color: '#c8975b', kind: 'building',
+      x: 30, y: 24, w: 7, h: 7, hint: 'Entrar al café',
+      about: 'Donde se cierran más tratos que en muchas oficinas.',
+      actions: [
+        { id: 'networking', label: 'Café con alguien', icon: '🤝', h: 1, e: 5, c: 6,
+          g: { carisma: 16, liderazgo: 6 }, net: 1, mo: 7, st: -6,
+          desc: 'Una hora, un café y una relación que puede valer años.' },
+        { id: 'trabajarcafe', label: 'Trabajar desde el café', icon: '💼', h: 2, e: 12, c: 8,
+          g: { creatividad: 14, disciplina: 10 }, st: 4,
+          desc: 'Cambiar de entorno desbloquea cosas.' },
+        { id: 'mentor', label: 'Sesión con un mentor', icon: '🧭', h: 1.5, e: 10, c: 25,
+          g: { intelecto: 18, liderazgo: 18, finanzas: 10 }, rep: 4, mo: 8,
+          req: { net: 3 },
+          desc: 'Atajos que sólo da quien ya recorrió el camino.', reqText: '3 contactos' },
+        { id: 'desayuno', label: 'Desayuno de negocios', icon: '🥐', h: 2, e: 12, c: 32,
+          g: { carisma: 20, finanzas: 12 }, net: 2, rep: 3, mo: 5,
+          desc: 'Hablar de números con la mesa puesta.' },
+      ] },
+
+    { id: 'universidad', name: 'Universidad', icon: '🎓', color: '#b07cff', kind: 'building',
+      x: 48, y: 22, w: 11, h: 9, hint: 'Entrar a la universidad',
+      about: 'Formación seria: cara, lenta y con efectos que duran toda la partida.',
+      actions: [
+        { id: 'claseuni', label: 'Asistir a una clase', icon: '📐', h: 3, e: 18, c: 35,
+          g: { intelecto: 36, disciplina: 10 }, st: 6,
+          desc: 'Fundamentos sólidos, aunque no sean espectaculares.' },
+        { id: 'grupo', label: 'Grupo de estudio', icon: '👥', h: 2, e: 14,
+          g: { intelecto: 20, carisma: 10 }, net: 1, st: 2,
+          desc: 'Estudiar con otros y explicar lo aprendido.' },
+        { id: 'certificacion', label: 'Certificación profesional', icon: '📜', h: 4, e: 26, c: 320,
+          g: { intelecto: 40, finanzas: 22, disciplina: 14 }, rep: 6, st: 10, sp: 'titulo',
+          desc: 'Un papel que abre puertas y sube tu sueldo.' },
+        { id: 'master', label: 'Máster en negocios', icon: '🏅', h: 5, e: 34, c: 1400,
+          g: { finanzas: 60, liderazgo: 44, intelecto: 30 }, rep: 12, net: 3, st: 16, sp: 'titulo',
+          req: { stat: { finanzas: 30 }, level: 4 },
+          desc: 'La inversión más cara del mapa. También la que más multiplica.' },
+      ] },
+
+    { id: 'club', name: 'Club Social Aurora', icon: '🎭', color: '#f472b6', kind: 'building',
+      x: 66, y: 23, w: 9, h: 8, hint: 'Entrar al club',
+      about: 'Tu red de contactos vive aquí. Los negocios no se hacen solos.',
+      actions: [
+        { id: 'evento', label: 'Evento de networking', icon: '🥂', h: 3, e: 22, c: 25,
+          g: { carisma: 22, liderazgo: 10 }, net: 3, rep: 5, st: 8, mo: 6,
+          desc: 'Muchas tarjetas, algunas conversaciones que importan.' },
+        { id: 'improv', label: 'Taller de improvisación', icon: '🎬', h: 2, e: 16, c: 30,
+          g: { creatividad: 26, carisma: 16 }, mo: 10, st: -8,
+          desc: 'Perder el miedo al ridículo es una ventaja competitiva.' },
+        { id: 'charla', label: 'Dar una charla', icon: '🎤', h: 2, e: 20,
+          g: { carisma: 26, liderazgo: 20 }, net: 2, rep: 8, st: 14,
+          req: { stat: { carisma: 38 }, net: 5 },
+          desc: 'Enseñar lo que sabes te posiciona como referente.', reqText: '5 contactos' },
+        { id: 'cenainv', label: 'Cena con inversores', icon: '🍷', h: 3, e: 22, c: 140,
+          g: { carisma: 18, finanzas: 16, liderazgo: 12 }, net: 4, rep: 10, st: 10,
+          req: { net: 8, rep: 25 },
+          desc: 'Aquí es donde el capital decide en quién confía.', reqText: '8 contactos · 25 reputación' },
+      ] },
+
+    /* -------------------------- FINANCIERO ------------------------- */
+    { id: 'banco', name: 'Banco Meridiano', icon: '🏦', color: '#fbbf24', kind: 'building',
+      x: 12, y: 38, w: 9, h: 9, hint: 'Entrar al banco',
+      about: 'Ahorro, deuda e intereses. El dinero también trabaja mientras duermes.',
+      actions: [
+        { id: 'depositar', label: 'Ingresar en ahorro', icon: '📥', sp: 'depositar', h: 0.5, e: 2,
+          desc: 'Tu ahorro renta un 0,25 % diario. Lo que no ves, no lo gastas.' },
+        { id: 'retirar', label: 'Retirar del ahorro', icon: '📤', sp: 'retirar', h: 0.5, e: 2,
+          desc: 'Recupera parte de tu colchón cuando lo necesites.' },
+        { id: 'prestamo', label: 'Pedir un préstamo', icon: '🏧', sp: 'prestamo', h: 1, e: 6,
+          desc: 'Capital ya, con un 1 % de interés diario. Úsalo para invertir, no para vivir.' },
+        { id: 'amortizar', label: 'Amortizar deuda', icon: '✂️', sp: 'amortizar', h: 0.5, e: 4,
+          desc: 'Quitarte intereses de encima es la mejor rentabilidad garantizada.' },
+        { id: 'asesor', label: 'Asesoría financiera', icon: '📊', h: 1, e: 6, c: 60,
+          g: { finanzas: 30, intelecto: 8 }, st: 2,
+          desc: 'Ordenar tus números con alguien que los ve todos los días.' },
+      ] },
+
+    { id: 'torre', name: 'Torre Corporativa', icon: '🏢', color: '#94a3b8', kind: 'building',
+      x: 30, y: 36, w: 9, h: 11, hint: 'Entrar a la oficina',
+      about: 'Tu empleo: ingresos previsibles a cambio de tus mejores horas.',
+      actions: [
+        { id: 'turno', label: 'Jornada completa', icon: '🕘', h: 6, e: 32, sp: 'trabajo',
+          g: { disciplina: 16, finanzas: 8 }, st: 16, mo: -4, max: 20,
+          desc: 'Ocho horas de tu vida a cambio de la nómina.' },
+        { id: 'medio', label: 'Media jornada', icon: '🕐', h: 3, e: 17, sp: 'trabajoMedio',
+          g: { disciplina: 9, finanzas: 4 }, st: 8, mo: -2, max: 21,
+          desc: 'Cobras la mitad y te queda tarde para lo tuyo.' },
+        { id: 'aumento', label: 'Pedir un aumento', icon: '📈', h: 1, e: 10, sp: 'aumento',
+          g: { carisma: 14 }, st: 10,
+          desc: 'Negociar tu sueldo es la hora mejor pagada del año.' },
+        { id: 'ascenso', label: 'Optar a un puesto mejor', icon: '🪜', h: 2, e: 16, sp: 'ascenso',
+          g: { carisma: 10, intelecto: 10 }, st: 12, req: { stat: { intelecto: 35 } },
+          desc: 'Entrevista interna: más responsabilidad, más nómina.' },
+        { id: 'formacion', label: 'Formación interna', icon: '🧑‍🏫', h: 2, e: 12,
+          g: { disciplina: 20, liderazgo: 14 }, net: 1, st: 4,
+          desc: 'Aprovechar lo que la empresa paga por ti.' },
+      ] },
+
+    { id: 'coworking', name: 'Coworking Nodo', icon: '🧑‍💻', color: '#5b8cff', kind: 'building',
+      x: 48, y: 38, w: 10, h: 9, hint: 'Entrar al coworking',
+      about: 'Mesa, wifi y gente construyendo cosas. Aquí crece tu negocio.',
+      actions: [
+        { id: 'trabajonegocio', label: 'Trabajar en tu negocio', icon: '⚙️', h: 3, e: 20,
+          sp: 'trabajoNegocio', g: { disciplina: 14, finanzas: 10 }, st: 8, req: { biz: true },
+          desc: 'Operaciones, clientes y las mil cosas pequeñas.' },
+        { id: 'producto', label: 'Mejorar el producto', icon: '🛠️', h: 3, e: 22,
+          sp: 'producto', g: { creatividad: 20, intelecto: 12 }, st: 8, req: { biz: true },
+          desc: 'Lo que haces mejor hoy te factura durante meses.' },
+        { id: 'socio', label: 'Buscar socio o equipo', icon: '👯', h: 2, e: 14,
+          g: { liderazgo: 20, carisma: 12 }, net: 2, rep: 2,
+          desc: 'Nadie construye algo grande solo.' },
+        { id: 'profundo', label: 'Sesión de trabajo profundo', icon: '🎯', h: 4, e: 26,
+          g: { intelecto: 28, disciplina: 24 }, st: 12, mo: -2,
+          desc: 'Cuatro horas sin notificaciones. Duro y rentable.' },
+      ] },
+
+    { id: 'incubadora', name: 'Incubadora Impulso', icon: '🚀', color: '#34d399', kind: 'building',
+      x: 66, y: 38, w: 9, h: 9, hint: 'Entrar a la incubadora',
+      about: 'Donde una idea se convierte en una empresa con papeles y cuentas.',
+      actions: [
+        { id: 'fundar', label: 'Registrar un negocio', icon: '📋', sp: 'fundar', h: 2, e: 14,
+          desc: 'Elige tu modelo de negocio y pon el dinero encima de la mesa.' },
+        { id: 'pitch', label: 'Presentar a inversores', icon: '🎙️', sp: 'pitch', h: 2, e: 20,
+          g: { carisma: 18, finanzas: 12 }, st: 14, req: { biz: true },
+          desc: 'Diez minutos para levantar capital. Tu reputación decide.' },
+        { id: 'mentoria', label: 'Mentoría de negocio', icon: '🧭', h: 2, e: 12, c: 85,
+          g: { liderazgo: 22, finanzas: 18 }, rep: 3, st: -4,
+          desc: 'Que alguien te señale el error antes de que te cueste dinero.' },
+        { id: 'modelo', label: 'Taller de modelo de negocio', icon: '🧩', h: 3, e: 18, c: 160,
+          g: { finanzas: 26, creatividad: 22, intelecto: 12 }, rep: 4, net: 1, st: 6,
+          desc: 'Pasar de "tengo una idea" a "sé cómo gana dinero".' },
+      ] },
+
+    /* ------------------------------ SUR ---------------------------- */
+    { id: 'mercado', name: 'Mercado Central', icon: '🛒', color: '#f59e0b', kind: 'building',
+      x: 12, y: 54, w: 12, h: 9, hint: 'Entrar al mercado',
+      about: 'Producto fresco, precios reales y comerciantes que llevan décadas.',
+      actions: [
+        { id: 'compra', label: 'Comprar comida de verdad', icon: '🥦', h: 1, e: 5, c: 48,
+          g: { vigor: 10, equilibrio: 12, disciplina: 6 }, mo: 5, sp: 'despensa',
+          desc: 'Llenar la nevera bien: menos energía perdida toda la semana.' },
+        { id: 'ayudar', label: 'Echar una mano en un puesto', icon: '🧺', h: 3, e: 22, sp: 'jornal',
+          g: { carisma: 14, disciplina: 10, vigor: 8 }, st: 6,
+          desc: 'Trabajo honesto por horas: dinero rápido y calle.' },
+        { id: 'competencia', label: 'Estudiar a la competencia', icon: '🕵️', h: 1.5, e: 10,
+          g: { finanzas: 16, creatividad: 14, intelecto: 8 }, rep: 2,
+          desc: 'Precios, colas, caras. Toda la información está a la vista.' },
+        { id: 'proveedores', label: 'Negociar con proveedores', icon: '📦', h: 1.5, e: 12,
+          sp: 'proveedores', g: { finanzas: 20, carisma: 14 }, st: 6, req: { biz: true },
+          desc: 'Cada punto de margen que arañas es beneficio limpio.' },
+      ] },
+
+    { id: 'bazar', name: 'Bazar Suministros', icon: '🏪', color: '#a78bfa', kind: 'building',
+      x: 30, y: 55, w: 8, h: 8, hint: 'Entrar al bazar',
+      about: 'Herramientas que compras una vez y te acompañan toda la partida.',
+      actions: [
+        { id: 'comprar', label: 'Ver el catálogo', icon: '🛍️', sp: 'tienda', h: 0.5, e: 2,
+          desc: 'Equípate: cada objeto cambia cómo juegas.' },
+      ] },
+
+    { id: 'escuela', name: 'Escuela de Oficios', icon: '🔧', color: '#fb923c', kind: 'building',
+      x: 48, y: 54, w: 9, h: 9, hint: 'Entrar a la escuela',
+      about: 'Formación práctica y rápida. Habilidades que se venden mañana mismo.',
+      actions: [
+        { id: 'taller', label: 'Taller práctico', icon: '🪚', h: 3, e: 20, c: 70,
+          g: { disciplina: 24, creatividad: 16, vigor: 8 }, st: 4,
+          desc: 'Trabajar con las manos ordena la cabeza.' },
+        { id: 'ventas', label: 'Curso de ventas', icon: '💬', h: 3, e: 18, c: 130,
+          g: { carisma: 36, finanzas: 12 }, rep: 3, st: 6,
+          desc: 'Vender no es engañar: es entender y proponer.' },
+        { id: 'lider', label: 'Curso de liderazgo', icon: '🧑‍✈️', h: 3, e: 18, c: 190,
+          g: { liderazgo: 38, carisma: 12, equilibrio: 8 }, rep: 4, st: 4,
+          desc: 'Dirigir personas es una habilidad, no un cargo.' },
+        { id: 'darclase', label: 'Dar una clase', icon: '🧑‍🏫', h: 3, e: 20, sp: 'darClase',
+          g: { liderazgo: 20, carisma: 14 }, rep: 5, mo: 8,
+          req: { stat: { intelecto: 45 } },
+          desc: 'Te pagan por enseñar lo que ya dominas.' },
+      ] },
+
+    { id: 'estudio', name: 'Estudio Creativo', icon: '🎨', color: '#f472b6', kind: 'building',
+      x: 66, y: 55, w: 9, h: 8, hint: 'Entrar al estudio',
+      about: 'Prototipos, marca y obra propia. La diferenciación se fabrica aquí.',
+      actions: [
+        { id: 'prototipar', label: 'Prototipar una idea', icon: '🧪', h: 3, e: 18, c: 45,
+          g: { creatividad: 30, intelecto: 10 }, st: 4,
+          desc: 'Hacerlo feo y real antes que perfecto e imaginario.' },
+        { id: 'marca', label: 'Diseñar tu marca', icon: '🏷️', h: 2, e: 14, c: 95,
+          sp: 'marca', g: { creatividad: 18, carisma: 10 }, rep: 8, req: { biz: true },
+          desc: 'Que te recuerden vale más que un anuncio.' },
+        { id: 'colaborar', label: 'Colaborar con otros creadores', icon: '🤗', h: 2, e: 14,
+          g: { creatividad: 20, carisma: 12 }, net: 2, mo: 7, st: -6,
+          desc: 'Mezclar mundos produce ideas que no se te ocurrirían solo.' },
+        { id: 'vender', label: 'Vender tu obra', icon: '🖼️', h: 2, e: 16, sp: 'venderObra',
+          g: { creatividad: 14, carisma: 10 }, req: { stat: { creatividad: 40 } },
+          desc: 'Cobrar por lo que creas cambia cómo lo creas.' },
+      ] },
+
+    { id: 'feria', name: 'Centro de Ferias', icon: '🎪', color: '#38bdf8', kind: 'building',
+      x: 84, y: 54, w: 11, h: 9, hint: 'Entrar al recinto ferial',
+      about: 'Escaparate, competencia y conferencias: donde se acelera un negocio.',
+      actions: [
+        { id: 'stand', label: 'Montar un stand', icon: '🎟️', h: 4, e: 28, c: 220,
+          sp: 'stand', g: { carisma: 18, finanzas: 10 }, net: 3, rep: 10, st: 12,
+          req: { biz: true },
+          desc: 'Un día entero delante de clientes potenciales.' },
+        { id: 'conferencia', label: 'Asistir a una conferencia', icon: '🎧', h: 4, e: 22, c: 120,
+          g: { intelecto: 24, finanzas: 14, creatividad: 12 }, net: 3, rep: 4, st: 6,
+          desc: 'Ideas nuevas y una agenda más llena.' },
+        { id: 'concurso', label: 'Concurso de startups', icon: '🏆', h: 3, e: 24, sp: 'concurso',
+          g: { carisma: 16, liderazgo: 12 }, st: 16, req: { biz: true, bizLevel: 2 },
+          desc: 'Premio en metálico y foco mediático… si convences al jurado.',
+          reqText: 'un negocio de nivel 2' },
+        { id: 'empleoferia', label: 'Feria de empleo', icon: '🧳', h: 2, e: 12, sp: 'feriaEmpleo',
+          g: { carisma: 12, intelecto: 6 }, net: 2,
+          desc: 'Ofertas mejores que la tuya, si sabes presentarte.' },
+      ] },
+
+    { id: 'muelle', name: 'Muelle del Sur', icon: '⚓', color: '#38bdf8', kind: 'spot',
+      x: 40, y: 76, hint: 'Bajar al muelle',
+      about: 'El borde del mapa: agua, silencio y perspectiva.',
+      actions: [
+        { id: 'nadar', label: 'Nadar', icon: '🏊', h: 1.5, e: 20,
+          g: { vigor: 20, equilibrio: 14 }, st: -18, mo: 9,
+          desc: 'Agua fría, cabeza clara.' },
+        { id: 'pescar', label: 'Pescar', icon: '🎣', h: 2, e: 8, sp: 'pescar',
+          g: { equilibrio: 20, disciplina: 12 }, st: -20, mo: 8,
+          desc: 'Entrenar la paciencia. A veces también cenas gratis.' },
+        { id: 'atardecer', label: 'Ver el atardecer', icon: '🌇', h: 1, e: 2, min: 18,
+          g: { equilibrio: 16 }, st: -24, mo: 16,
+          desc: 'Sólo a partir de las 18:00. Sin móvil.' },
+        { id: 'rumbo', label: 'Reflexionar sobre tu rumbo', icon: '🧭', h: 1, e: 5, sp: 'rumbo',
+          g: { disciplina: 14, equilibrio: 14, intelecto: 8 }, st: -12, mo: 6,
+          desc: '¿Vas donde querías ir? Revisar el mapa también es avanzar.' },
+      ] },
+  ];
+  const PLACE_BY = {}; PLACES.forEach(p => { PLACE_BY[p.id] = p; });
+
+  /* ================================================================
+     5. PERSONAJES, MISIONES, LOGROS Y EVENTOS
+     ================================================================ */
+
+  // NPCs que pasean por la ciudad. Cada uno da consejo y, una vez, un empujón.
+  const NPCS = [
+    { id: 'marta', name: 'Marta', role: 'Dueña del mercado', icon: '🧕', color: '#f59e0b',
+      x: 20, y: 66, range: 8,
+      lines: [
+        'Llevo treinta años aquí. El secreto no es vender mucho un día, es abrir todos los días.',
+        'Los números pequeños, mirados a diario, se vuelven grandes.',
+      ],
+      gift: { net: 1, g: { finanzas: 20 }, text: 'Marta te enseña cómo lleva sus cuentas en una libreta.' } },
+    { id: 'diego', name: 'Diego', role: 'Entrenador', icon: '🧑‍🦱', color: '#ff6b6b',
+      x: 40, y: 18, range: 9,
+      lines: [
+        'Tu cuerpo es el equipo con el que trabajas. Nadie rinde con la batería al 20 %.',
+        'No busques motivación. Busca una hora fija y repite.',
+      ],
+      gift: { g: { vigor: 24, disciplina: 12 }, text: 'Diego te corrige la técnica y te apunta una rutina.' } },
+    { id: 'sara', name: 'Sara', role: 'Inversora', icon: '👩‍💼', color: '#34d399',
+      x: 70, y: 49, range: 10,
+      lines: [
+        'No invierto en ideas, invierto en gente que ejecuta. Enséñame lo que ya hiciste.',
+        'Si no sabes tu margen de memoria, todavía no tienes un negocio.',
+      ],
+      gift: { rep: 6, net: 2, g: { finanzas: 18 }, text: 'Sara te da su contacto y dos consejos que valen dinero.' } },
+    { id: 'tomas', name: 'Tomás', role: 'Librero', icon: '👴', color: '#5b8cff',
+      x: 18, y: 33, range: 8,
+      lines: [
+        'Un libro al mes durante diez años te convierte en otra persona.',
+        'Leer sin aplicar es entretenimiento caro.',
+      ],
+      gift: { g: { intelecto: 24 }, text: 'Tomás te presta un libro que llevaba años guardando.' } },
+    { id: 'nadia', name: 'Nadia', role: 'Artista', icon: '👩‍🎨', color: '#f472b6',
+      x: 70, y: 64, range: 9,
+      lines: [
+        'Copia hasta que te salga tu voz. Nadie empieza siendo original.',
+        'Enseña el trabajo antes de que esté perfecto. Perfecto no llega nunca.',
+      ],
+      gift: { g: { creatividad: 26 }, net: 1, text: 'Nadia te invita a su próximo proyecto colectivo.' } },
+    { id: 'luis', name: 'Luis', role: 'Médico de familia', icon: '🧑‍⚕️', color: '#22d3ee',
+      x: 88, y: 19, range: 9,
+      lines: [
+        'El estrés sostenido no se nota hasta que se nota. Descansa antes de necesitarlo.',
+        'Dormir es la única mejora de rendimiento gratis que existe.',
+      ],
+      gift: { g: { equilibrio: 22 }, st: -20, text: 'Luis te explica cómo bajar pulsaciones en dos minutos.' } },
+  ];
+
+  /* --------------------------- Misiones --------------------------- */
+  // check(s) -> {cur, max}. Se completan solas al cumplirse.
+  const QUESTS = [
+    { id: 'q1', name: 'El primer paso', icon: '👣', chain: 1,
+      desc: 'Haz 3 acciones de desarrollo personal (entrenar, estudiar, meditar…).',
+      reward: { money: 120, xp: 60 },
+      check: s => ({ cur: Math.min(s.counters.dev, 3), max: 3 }) },
+    { id: 'q2', name: 'Una rutina, no un impulso', icon: '🔁', chain: 2,
+      desc: 'Planifica el día y duerme bien 3 días distintos.',
+      reward: { xp: 90, g: { disciplina: 25 } },
+      check: s => ({ cur: Math.min(s.counters.planDays, 3), max: 3 }) },
+    { id: 'q3', name: 'Colchón de seguridad', icon: '🛟', chain: 3,
+      desc: 'Acumula 1.500 € entre caja y ahorro.',
+      reward: { xp: 120, g: { finanzas: 30 } },
+      check: s => ({ cur: Math.min(s.money + s.savings, 1500), max: 1500 }) },
+    { id: 'q4', name: 'Red de verdad', icon: '📇', chain: 4,
+      desc: 'Consigue 8 contactos profesionales.',
+      reward: { xp: 130, rep: 5, g: { carisma: 25 } },
+      check: s => ({ cur: Math.min(s.net, 8), max: 8 }) },
+    { id: 'q5', name: 'Da el salto', icon: '📋', chain: 5,
+      desc: 'Registra tu primer negocio en la incubadora.',
+      reward: { xp: 200, rep: 8 },
+      check: s => ({ cur: Math.min(s.bizs.length, 1), max: 1 }) },
+    { id: 'q6', name: 'Primeros ingresos', icon: '💶', chain: 6,
+      desc: 'Gana 800 € acumulados con tus negocios.',
+      reward: { xp: 220, g: { finanzas: 30, carisma: 20 } },
+      check: s => ({ cur: Math.min(s.counters.bizEarned, 800), max: 800 }) },
+    { id: 'q7', name: 'No estás solo', icon: '👥', chain: 7,
+      desc: 'Contrata a tu primer empleado.',
+      reward: { xp: 250, g: { liderazgo: 35 } },
+      check: s => ({ cur: Math.min(s.bizs.reduce((a, b) => a + b.emp, 0), 1), max: 1 }) },
+    { id: 'q8', name: 'Escala', icon: '📈', chain: 8,
+      desc: 'Lleva un negocio hasta el nivel 3.',
+      reward: { xp: 320, rep: 10, money: 500 },
+      check: s => ({ cur: Math.min(s.bizs.reduce((a, b) => Math.max(a, b.level), 0), 3), max: 3 }) },
+    { id: 'q9', name: 'Persona completa', icon: '🧬', chain: 9,
+      desc: 'Ten todas tus características por encima de 45.',
+      reward: { xp: 400, g: { equilibrio: 30 } },
+      check: s => ({ cur: STAT_KEYS.filter(k => s.stats[k] >= 45).length, max: STAT_KEYS.length }) },
+    { id: 'q10', name: 'Libertad financiera', icon: '🕊️', chain: 10,
+      desc: 'Que tus ingresos pasivos diarios superen tus gastos diarios.',
+      reward: { xp: 600, rep: 20, money: 1000 },
+      check: s => {
+        const inc = totalBizIncome(s), exp = dailyExpenses(s);
+        return { cur: Math.min(inc, Math.max(exp, 1)), max: Math.max(exp, 1) };
+      } },
+  ];
+
+  const ACHIEVEMENTS = [
+    { id: 'a1', name: 'Madrugón', icon: '🌅', desc: 'Empieza una acción antes de las 8:00.' },
+    { id: 'a2', name: 'Cuerpo serio', icon: '💪', desc: 'Alcanza 60 de Vigor.' },
+    { id: 'a3', name: 'Mente serena', icon: '🧘', desc: 'Alcanza 60 de Equilibrio.' },
+    { id: 'a4', name: 'Primer euro propio', icon: '🪙', desc: 'Cobra el primer ingreso de un negocio.' },
+    { id: 'a5', name: 'Sin deudas', icon: '✂️', desc: 'Quédate a cero de deuda tras haber debido dinero.' },
+    { id: 'a6', name: 'Cinco cifras', icon: '💰', desc: 'Ten 10.000 € entre caja y ahorro.' },
+    { id: 'a7', name: 'Referente', icon: '⭐', desc: 'Llega a 60 de reputación.' },
+    { id: 'a8', name: 'Imperio', icon: '🏛️', desc: 'Ten 3 negocios a la vez.' },
+    { id: 'a9', name: 'Constancia', icon: '🔥', desc: 'Encadena 7 días con racha de hábitos.' },
+    { id: 'a10', name: 'Maestro', icon: '🎓', desc: 'Alcanza el nivel 10.' },
+  ];
+
+  // Eventos aleatorios al terminar el día (se filtran por condición).
+  const EVENTS = [
+    { id: 'e_avería', w: 3, txt: 'Se te ha roto el portátil y has tenido que repararlo.',
+      when: s => s.items.portatil, eff: { money: -180 }, kind: 'bad' },
+    { id: 'e_multa', w: 2, txt: 'Una multa inesperada en el buzón.', eff: { money: -90 }, kind: 'bad' },
+    { id: 'e_regalo', w: 2, txt: 'Un familiar te envía dinero "para tus cosas".', eff: { money: 200 }, kind: 'good' },
+    { id: 'e_gripe', w: 3, txt: 'Amaneces con fiebre: hoy rendirás menos.',
+      when: s => s.stress > 55, eff: { sick: 1, energy: -20 }, kind: 'bad' },
+    { id: 'e_insomnio', w: 3, txt: 'El estrés no te dejó dormir bien.',
+      when: s => s.stress > 65, eff: { energy: -18, mood: -8 }, kind: 'bad' },
+    { id: 'e_cliente', w: 4, txt: 'Un cliente satisfecho te recomienda a otros.',
+      when: s => s.bizs.length > 0, eff: { rep: 5, money: 120 }, kind: 'good' },
+    { id: 'e_impuestos', w: 3, txt: 'Trimestre de impuestos: hay que pagar.',
+      when: s => s.bizs.length > 0 && s.day % 30 === 0, eff: { moneyPct: -0.08 }, kind: 'bad' },
+    { id: 'e_oportunidad', w: 3, txt: 'Te llega una oportunidad por tu red de contactos.',
+      when: s => s.net >= 5, eff: { money: 260, rep: 3 }, kind: 'good' },
+    { id: 'e_reconoce', w: 2, txt: 'Un medio local menciona lo que estás construyendo.',
+      when: s => s.rep >= 30, eff: { rep: 6, net: 2 }, kind: 'good' },
+    { id: 'e_animo', w: 3, txt: 'Un amigo te llama justo cuando lo necesitabas.',
+      when: s => s.mood < 45, eff: { mood: 14, stress: -10 }, kind: 'good' },
+    { id: 'e_subida', w: 2, txt: 'Sube el alquiler del barrio.', eff: { rentUp: 3 }, kind: 'warn' },
+    { id: 'e_idea', w: 3, txt: 'Te despiertas con una idea clara para tu proyecto.',
+      eff: { g: { creatividad: 18 } }, kind: 'good' },
+    { id: 'e_competencia', w: 3, txt: 'Abre un competidor cerca. Toca espabilar.',
+      when: s => s.bizs.length > 0, eff: { rep: -4, bizPenalty: 1 }, kind: 'warn' },
+    { id: 'e_nada', w: 10, txt: 'Un día tranquilo, sin sobresaltos.', eff: {}, kind: 'neutral' },
+  ];
+
+  /* ================================================================
+     6. GENERACIÓN DEL MUNDO
+
+     Mundo de 108 × 84 casillas (32 px cada una) con distritos fijos,
+     carreteras que los conectan y decoración procedural determinista.
+     ================================================================ */
+
+  const TILE = 32;
+  const MAP_W = 108, MAP_H = 84;
+
+  const T = { GRASS: 0, ROAD: 1, PLAZA: 2, WATER: 3, SAND: 4, FOREST: 5, FIELD: 6, DECK: 7, BUILD: 8, DOOR: 9 };
+
+  const TILE_COLOR = {
+    0: '#2f6b3d', 1: '#3f4551', 2: '#6b7280', 3: '#1d4e6b', 4: '#c2a878',
+    5: '#245732', 6: '#77803c', 7: '#7a5a3a', 8: '#2b3242', 9: '#8a6a45',
+  };
+
+  // Carreteras (bandas de 3 casillas) que estructuran la ciudad.
+  const H_ROADS = [18, 32, 48, 64];
+  const V_ROADS = [8, 26, 44, 62, 80];
+
+  function worldGen(seed) {
+    const rnd = mulberry32(seed >>> 0);
+    const n = MAP_W * MAP_H;
+    const tiles = new Uint8Array(n);
+    const solid = new Uint8Array(n);
+    const shade = new Float32Array(n);
+    const idx = (x, y) => y * MAP_W + x;
+    const inMap = (x, y) => x >= 0 && y >= 0 && x < MAP_W && y < MAP_H;
+    const set = (x, y, t) => { if (inMap(x, y)) tiles[idx(x, y)] = t; };
+    const get = (x, y) => (inMap(x, y) ? tiles[idx(x, y)] : T.WATER);
+
+    // --- base: hierba con variación ---
+    for (let i = 0; i < n; i++) { tiles[i] = T.GRASS; shade[i] = rnd(); }
+
+    // --- bosque al oeste y alrededor del parque ---
+    const rect = (x0, y0, x1, y1, t) => {
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, t);
+    };
+    rect(0, 0, 6, MAP_H - 1, T.FOREST);
+    rect(66, 4, 79, 16, T.FOREST);          // Parque Sol
+    rect(96, 60, MAP_W - 1, 74, T.FOREST);  // bosque sureste
+    rect(88, 66, 95, 74, T.FIELD);          // huertos
+
+    // --- lago al este con playa alrededor ---
+    for (let y = 22; y <= 45; y++) {
+      for (let x = 90; x < MAP_W; x++) {
+        const dx = (x - 100) / 9, dy = (y - 33.5) / 12;
+        const d = dx * dx + dy * dy + (rnd() - 0.5) * 0.06;
+        if (d < 0.82) set(x, y, T.WATER);
+        else if (d < 1.0) set(x, y, T.SAND);
+      }
+    }
+    // --- costa sur: arena y mar ---
+    for (let x = 0; x < MAP_W; x++) {
+      const wob = Math.floor(Math.sin(x * 0.21) * 1.6 + rnd() * 1.2);
+      for (let y = 74 + wob; y < MAP_H; y++) set(x, y, y >= 79 + wob ? T.WATER : T.SAND);
+    }
+    // muelle de madera sobre el agua
+    rect(38, 74, 42, 82, T.DECK);
+
+    // --- carreteras ---
+    H_ROADS.forEach(y => rect(0, y, MAP_W - 1, y + 2, T.ROAD));
+    V_ROADS.forEach(x => rect(x, 0, x + 2, 73, T.ROAD));
+    rect(38, 71, 42, 73, T.ROAD);            // bajada al muelle
+    rect(40, 64, 42, 73, T.ROAD);
+
+    // --- plaza pavimentada en el centro ---
+    rect(37, 22, 43, 31, T.PLAZA);
+    // sendero de entrada al Parque Sol (evita que el bosque lo aísle)
+    rect(64, 11, 72, 13, T.PLAZA);
+
+    // --- edificios ---
+    const buildings = [];
+    PLACES.forEach(p => {
+      if (p.kind !== 'building') return;
+      rect(p.x, p.y, p.x + p.w - 1, p.y + p.h - 1, T.BUILD);
+      for (let y = p.y; y < p.y + p.h; y++)
+        for (let x = p.x; x < p.x + p.w; x++) solid[idx(x, y)] = 1;
+      const door = { x: p.x + Math.floor(p.w / 2), y: p.y + p.h };
+      set(door.x, door.y, T.DOOR);
+      solid[idx(door.x, door.y)] = 0;
+      // sendero desde la puerta hasta la carretera más cercana
+      let ty = door.y;
+      while (ty < MAP_H - 1 && get(door.x, ty) !== T.ROAD && ty < door.y + 6) {
+        if (get(door.x, ty) !== T.DOOR) set(door.x, ty, T.PLAZA);
+        solid[idx(door.x, ty)] = 0;
+        ty++;
+      }
+      buildings.push({ id: p.id, x: p.x, y: p.y, w: p.w, h: p.h, door, color: p.color, icon: p.icon, name: p.name });
+    });
+
+    // --- puntos de interés sin edificio ---
+    const spots = PLACES.filter(p => p.kind === 'spot').map(p => ({ id: p.id, x: p.x, y: p.y, icon: p.icon, name: p.name }));
+
+    // --- sólidos por terreno ---
+    for (let i = 0; i < n; i++) if (tiles[i] === T.WATER) solid[i] = 1;
+    for (let x = 0; x < MAP_W; x++) { solid[idx(x, 0)] = 1; solid[idx(x, MAP_H - 1)] = 1; }
+    for (let y = 0; y < MAP_H; y++) { solid[idx(0, y)] = 1; solid[idx(MAP_W - 1, y)] = 1; }
+    // el muelle es transitable aunque esté sobre el agua
+    for (let y = 74; y <= 82; y++) for (let x = 38; x <= 42; x++) { if (inMap(x, y)) { tiles[idx(x, y)] = T.DECK; solid[idx(x, y)] = 0; } }
+
+    // --- decoración: nada puede tapar carreteras, puertas ni accesos ---
+    const props = [];
+    const blockedForProps = (x, y) => {
+      const t = get(x, y);
+      if (t === T.ROAD || t === T.PLAZA || t === T.DOOR || t === T.BUILD || t === T.DECK) return true;
+      if (solid[idx(x, y)]) return true;
+      // margen de seguridad alrededor de puertas y puntos de interés
+      for (const b of buildings) if (Math.abs(x - b.door.x) <= 1 && Math.abs(y - b.door.y) <= 2) return true;
+      for (const s of spots) if (Math.abs(x - s.x) <= 2 && Math.abs(y - s.y) <= 2) return true;
+      // no encerrar accesos: deja libre el borde de las carreteras
+      for (const ry of H_ROADS) if (y >= ry - 1 && y <= ry + 3) return true;
+      for (const rx of V_ROADS) if (x >= rx - 1 && x <= rx + 3) return true;
+      return false;
+    };
+    const addProp = (x, y, kind, isSolid) => {
+      props.push({ x, y, kind, r: rnd() });
+      if (isSolid) solid[idx(x, y)] = 1;
+    };
+    for (let y = 1; y < MAP_H - 1; y++) {
+      for (let x = 1; x < MAP_W - 1; x++) {
+        if (blockedForProps(x, y)) continue;
+        const t = get(x, y), r = rnd();
+        if (t === T.FOREST) {
+          if (r < 0.34) addProp(x, y, r < 0.17 ? 'pino' : 'arbol', true);
+          else if (r < 0.44) addProp(x, y, 'arbusto', false);
+          else if (r < 0.48) addProp(x, y, 'seta', false);
+        } else if (t === T.GRASS) {
+          if (r < 0.045) addProp(x, y, 'arbol', true);
+          else if (r < 0.06) addProp(x, y, 'roca', true);
+          else if (r < 0.11) addProp(x, y, 'arbusto', false);
+          else if (r < 0.2) addProp(x, y, 'flor', false);
+        } else if (t === T.SAND) {
+          if (r < 0.02) addProp(x, y, 'roca', true);
+          else if (r < 0.05) addProp(x, y, 'concha', false);
+        } else if (t === T.FIELD) {
+          if (r < 0.5) addProp(x, y, 'cultivo', false);
+        }
+      }
+    }
+    // farolas y bancos a lo largo de las carreteras (no bloquean)
+    H_ROADS.forEach(ry => { for (let x = 4; x < MAP_W - 4; x += 7) { if (!solid[idx(x, ry - 1)] && get(x, ry - 1) !== T.BUILD) props.push({ x, y: ry - 1, kind: 'farola', r: 0.5 }); } });
+    V_ROADS.forEach(rx => { for (let y = 6; y < 72; y += 9) { if (!solid[idx(rx + 3, y)] && get(rx + 3, y) !== T.BUILD) props.push({ x: rx + 3, y, kind: 'farola', r: 0.5 }); } });
+    [[38, 27], [42, 27], [38, 24], [42, 24]].forEach(([x, y]) => props.push({ x, y, kind: 'banco', r: 0.3 }));
+    props.push({ x: 40, y: 26, kind: 'fuente', r: 0 });
+    props.push({ x: 72, y: 12, kind: 'fuente', r: 0 });
+
+    // --- posición inicial: delante de tu casa ---
+    const home = buildings.find(b => b.id === 'casa');
+    const spawn = { x: (home.door.x + 0.5) * TILE, y: (home.door.y + 1.6) * TILE };
+
+    const world = { W: MAP_W, H: MAP_H, tiles, solid, shade, buildings, spots, props, spawn, seed: seed >>> 0 };
+    world.isSolid = (tx, ty) => (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) ? true : !!solid[ty * MAP_W + tx];
+    world.tileAt = (tx, ty) => (inMap(tx, ty) ? tiles[ty * MAP_W + tx] : T.WATER);
+    return world;
+  }
+
+  // Comprueba que se puede llegar a pie a todas las puertas y puntos de interés.
+  function reachability(world, from) {
+    const { W, H, solid } = world;
+    const seen = new Uint8Array(W * H);
+    const sx = Math.floor(from.x / TILE), sy = Math.floor(from.y / TILE);
+    const q = [sy * W + sx];
+    seen[sy * W + sx] = 1;
+    for (let qi = 0; qi < q.length; qi++) {
+      const c = q[qi], cx = c % W, cy = (c - cx) / W;
+      const nb = [[cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]];
+      for (const [nx, ny] of nb) {
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        const ni = ny * W + nx;
+        if (seen[ni] || solid[ni]) continue;
+        seen[ni] = 1; q.push(ni);
+      }
+    }
+    const missing = [];
+    world.buildings.forEach(b => { if (!seen[b.door.y * W + b.door.x]) missing.push(b.id); });
+    world.spots.forEach(s => { if (!seen[s.y * W + s.x]) missing.push(s.id); });
+    return { visited: q.length, missing };
+  }
+
+  /* ================================================================
+     7. ESTADO DE PARTIDA Y SIMULACIÓN
+     ================================================================ */
+
+  const WAKE_HOUR = 7;
+  const DAY_END = 24;
+  const SAVE_KEY = 'rutapropia_save_v1';
+
+  function emptyStats(v) { const o = {}; STAT_KEYS.forEach(k => { o[k] = v; }); return o; }
+
+  // Crea una partida nueva a partir de lo elegido en la creación del personaje.
+  function newGame(profile) {
+    const bg = BACKGROUNDS.find(b => b.id === profile.bg) || BACKGROUNDS[0];
+    const stats = emptyStats(START_BASE);
+    STAT_KEYS.forEach(k => { stats[k] = c100((profile.stats && profile.stats[k]) || START_BASE); });
+    Object.keys(bg.bonus).forEach(k => { if (stats[k] != null) stats[k] = c100(stats[k] + bg.bonus[k]); });
+
+    const s = {
+      v: 1,
+      name: (profile.name || 'Alex').slice(0, 22),
+      age: clamp(Number(profile.age) || 26, 16, 80),
+      bg: bg.id, perk: profile.perk || PERKS[0].id,
+      stats, statxp: emptyStats(0),
+      level: 1, xp: 0, points: 0,
+      energy: 100, stress: 20, mood: 65,
+      money: bg.money, savings: 0, debt: bg.debt || 0,
+      net: 0, rep: 5,
+      day: 1, hour: 7,
+      job: bg.id === 'empleado'
+        ? { has: true, title: 'Analista junior', salary: 105 }
+        : { has: false, title: '', salary: 92 },
+      bizs: [], items: {}, titles: 0,
+      flags: { dieta: 0, despensa: 0, sick: 0, rent: 26, lastRaise: -99, bizPenalty: 0 },
+      quests: {}, achievements: {},
+      counters: { dev: 0, planDays: 0, bizEarned: 0, actions: 0, streak: 0, bestStreak: 0,
+                  dayDev: 0, planToday: 0, workDays: 0, hadDebt: (bg.debt || 0) > 0,
+                  firstBizIncome: false },
+      log: [],
+      seed: (profile.seed != null ? profile.seed : (Date.now() & 0x7fffffff)) >>> 0,
+      rc: 0,
+      pos: null,
+    };
+    s.energy = maxEnergy(s);
+    if (s.perk === 'madrugador') s.hour = 6;
+    QUESTS.forEach(q => { s.quests[q.id] = { done: false, prog: 0 }; });
+    logLine(s, `Empieza tu historia. ${bg.icon} ${bg.name}, ${s.age} años.`, 'gold');
+    return s;
+  }
+
+  const wakeHour = s => (s.perk === 'madrugador' ? 6 : WAKE_HOUR);
+  const hasItem = (s, id) => !!(s.items && s.items[id]);
+
+  function maxEnergy(s) {
+    let m = 68 + s.stats.vigor * 0.55 + s.stats.equilibrio * 0.16;
+    if (s.bg === 'deportista') m += 15;
+    return Math.round(m);
+  }
+
+  function logLine(s, text, kind) {
+    s.log.unshift({ d: s.day, h: hhmm(s.hour), t: text, k: kind || 'neutral' });
+    if (s.log.length > 250) s.log.length = 250;
+  }
+
+  function rand(s) {
+    s.rc = (s.rc | 0) + 1;
+    return mulberry32(((s.seed ^ Math.imul(s.rc, 2654435761)) >>> 0))();
+  }
+
+  /* ------------------------- Progresión --------------------------- */
+
+  const statNeed = v => Math.round(30 + v * 2.4);
+  const levelNeed = lv => Math.round(120 + (lv - 1) * 65);
+
+  function gainStat(s, key, amount, out) {
+    if (!(key in s.stats) || !(amount > 0)) return 0;
+    let up = 0;
+    s.statxp[key] += amount;
+    while (s.stats[key] < 100 && s.statxp[key] >= statNeed(s.stats[key])) {
+      s.statxp[key] -= statNeed(s.stats[key]);
+      s.stats[key]++; up++;
+    }
+    if (s.stats[key] >= 100) { s.stats[key] = 100; s.statxp[key] = 0; }
+    if (up && out) out.push({ t: `${STAT_BY[key].icon} ${STAT_BY[key].label} sube a ${s.stats[key]}`, k: 'good' });
+    return up;
+  }
+
+  function gainXP(s, amount, out) {
+    if (!(amount > 0)) return 0;
+    let ups = 0;
+    s.xp += amount;
+    while (s.xp >= levelNeed(s.level)) {
+      s.xp -= levelNeed(s.level);
+      s.level++; s.points += 3; ups++;
+      s.mood = c100(s.mood + 5);
+      if (out) out.push({ t: `⬆️ ¡Nivel ${s.level}! +3 puntos de característica`, k: 'gold' });
+      logLine(s, `Subes al nivel ${s.level}. Tienes puntos por repartir.`, 'gold');
+    }
+    return ups;
+  }
+
+  function spendPoint(s, key) {
+    if (s.points <= 0 || !(key in s.stats) || s.stats[key] >= 100) return false;
+    s.points--; s.stats[key]++;
+    return true;
+  }
+
+  /* --------------------- Multiplicadores del perfil ---------------- */
+
+  // Rendimiento actual: energía baja, estrés alto o ánimo bajo te penalizan.
+  function effectiveness(s) {
+    const em = s.energy / Math.max(1, maxEnergy(s));
+    let e = 1;
+    if (em < 0.10) e *= 0.55; else if (em < 0.25) e *= 0.75;
+    if (s.stress > 85) e *= 0.68; else if (s.stress > 70) e *= 0.84;
+    if (s.mood < 30) e *= 0.86;
+    if (s.flags.sick) e *= 0.75;
+    e *= 1 + s.stats.equilibrio / 500;
+    return clamp(e, 0.3, 1.45);
+  }
+
+  function xpMultiplier(s, key) {
+    let m = effectiveness(s);
+    if (s.perk === 'madrugador' && s.hour < 12) m *= 1.15;
+    if (s.bg === 'autodidacta' && (key === 'intelecto' || key === 'creatividad')) m *= 1.30;
+    if (hasItem(s, 'libros') && (key === 'intelecto')) m *= 1.15;
+    if (hasItem(s, 'gimcasa') && (key === 'vigor')) m *= 1.20;
+    if (s.flags.dieta && (key === 'vigor' || key === 'equilibrio')) m *= 1.10;
+    return m;
+  }
+
+  function energyCost(s, base) {
+    if (!(base > 0)) return base || 0;
+    let c = base * (1 - s.stats.disciplina / 420);
+    if (s.perk === 'incansable') c *= 0.85;
+    if (s.flags.sick) c *= 1.25;
+    return Math.max(1, Math.round(c));
+  }
+
+  function timeCost(s, base) {
+    let h = base || 0;
+    if (hasItem(s, 'agenda') && h >= 1) h = Math.max(0.5, h - 0.25);
+    return h;
+  }
+
+  function actionCost(s, act, place) {
+    let c = act.c || 0;
+    if (s.bg === 'estudiante' && ['universidad', 'biblioteca', 'escuela'].indexOf(place && place.id) >= 0) c *= 0.75;
+    return Math.round(c);
+  }
+
+  function stressGain(s, v) {
+    if (!(v > 0)) return v || 0;
+    let g = v * (1 - s.stats.equilibrio / 300);
+    if (s.perk === 'resiliente') g *= 0.65;
+    return g;
+  }
+
+  /* --------------------------- Economía ---------------------------- */
+
+  function dailyExpenses(s) {
+    let e = s.flags.rent + 13 + s.bizs.length * 4;
+    if (s.flags.despensa > 0) e -= 5;
+    if (s.perk === 'ahorrador') e *= 0.70;
+    return Math.round(e);
+  }
+
+  function bizIncome(s, b) {
+    const t = BIZ_BY[b.type];
+    if (!t) return 0;
+    const statAvg = avg(t.stats.map(k => s.stats[k] || 0));
+    let gross = t.base
+      * (1 + (b.level - 1) * 0.45)
+      * (0.42 + statAvg / 100 * 1.15)
+      * (0.85 + s.rep / 320)
+      * (1 + b.marketing * 0.014)
+      * (1 + b.emp * 0.22)
+      * (1 + b.quality * 0.022)
+      * (1 + b.brand * 0.06);
+    if (s.bg === 'comercial') gross *= 1.15;
+    if (s.perk === 'analitico') gross *= 1.12;
+    if (hasItem(s, 'portatil')) gross *= 1.10;
+    if (s.flags.bizPenalty > 0) gross *= 0.88;
+    const costs = t.upkeep * (1 + (b.level - 1) * 0.32) + b.emp * 40;
+    return Math.round(gross - costs);
+  }
+
+  function totalBizIncome(s) { return s.bizs.reduce((a, b) => a + bizIncome(s, b), 0); }
+
+  function bizValue(s, b) {
+    const t = BIZ_BY[b.type];
+    const inc = Math.max(0, bizIncome(s, b));
+    return Math.round(t.cost * 0.45 * (1 + (b.level - 1) * 0.5) + inc * 12);
+  }
+
+  function netWorth(s) {
+    return Math.round(s.money + s.savings - s.debt + s.bizs.reduce((a, b) => a + bizValue(s, b), 0));
+  }
+
+  /* ----------------------- Ejecutar acciones ----------------------- */
+
+  const UI_SPECIALS = { depositar: 1, retirar: 1, prestamo: 1, amortizar: 1, fundar: 1, tienda: 1 };
+
+  function reqText(s, act) {
+    const r = act.req || {};
+    const parts = [];
+    if (r.stat) Object.keys(r.stat).forEach(k => parts.push(`${STAT_BY[k].label} ${r.stat[k]}`));
+    if (r.level) parts.push(`nivel ${r.level}`);
+    if (r.net) parts.push(`${r.net} contactos`);
+    if (r.rep) parts.push(`${r.rep} reputación`);
+    if (r.item) parts.push(ITEM_BY[r.item] ? ITEM_BY[r.item].name : r.item);
+    if (r.biz) parts.push('un negocio');
+    if (r.bizLevel) parts.push(`negocio nivel ${r.bizLevel}`);
+    return parts.join(' · ');
+  }
+
+  // ¿Puede el personaje hacer esta acción ahora mismo?
+  function canDo(s, place, act) {
+    const r = act.req || {};
+    if (r.stat) for (const k in r.stat) if (s.stats[k] < r.stat[k])
+      return { ok: false, why: `Necesitas ${STAT_BY[k].label} ${r.stat[k]}` };
+    if (r.level && s.level < r.level) return { ok: false, why: `Necesitas nivel ${r.level}` };
+    if (r.net && s.net < r.net) return { ok: false, why: `Necesitas ${r.net} contactos` };
+    if (r.rep && s.rep < r.rep) return { ok: false, why: `Necesitas ${r.rep} de reputación` };
+    if (r.item && !hasItem(s, r.item)) return { ok: false, why: `Necesitas: ${ITEM_BY[r.item].name}` };
+    if (r.biz && s.bizs.length === 0) return { ok: false, why: 'Necesitas tener un negocio' };
+    if (r.bizLevel && !s.bizs.some(b => b.level >= r.bizLevel))
+      return { ok: false, why: `Necesitas un negocio de nivel ${r.bizLevel}` };
+    if (act.sp === 'trabajo' || act.sp === 'trabajoMedio')
+      if (!s.job.has) return { ok: false, why: 'No tienes empleo (busca uno en la feria de empleo)' };
+    if (act.once === 'dia' && s.flags['once_' + act.id] === s.day)
+      return { ok: false, why: 'Ya lo has hecho hoy' };
+    if (act.min != null && s.hour < act.min) return { ok: false, why: `Sólo a partir de las ${act.min}:00` };
+    if (act.max != null && s.hour > act.max) return { ok: false, why: `Demasiado tarde (antes de las ${act.max}:00)` };
+
+    const h = timeCost(s, act.h || 0);
+    if (act.sp !== 'dormir' && s.hour + h > DAY_END)
+      return { ok: false, why: 'No te da tiempo hoy: vuelve a casa a dormir' };
+    const e = energyCost(s, act.e || 0);
+    if (e > 0 && s.energy < e) return { ok: false, why: 'No te queda energía suficiente' };
+    const c = actionCost(s, act, place);
+    if (c > s.money) return { ok: false, why: `Te faltan ${money(c - s.money)}` };
+    return { ok: true };
+  }
+
+  // Ejecuta la acción y devuelve los mensajes que la UI mostrará.
+  function doAction(s, place, act) {
+    const chk = canDo(s, place, act);
+    if (!chk.ok) return { ok: false, why: chk.why, out: [] };
+    if (UI_SPECIALS[act.sp]) return { ok: true, ui: act.sp, out: [] };
+
+    const out = [];
+    const h = timeCost(s, act.h || 0);
+    const e = energyCost(s, act.e || 0);
+    const c = actionCost(s, act, place);
+
+    if (c > 0) { s.money -= c; out.push({ t: `−${money(c)}`, k: 'bad' }); }
+    if (e !== 0) s.energy = clamp(s.energy - e, 0, maxEnergy(s));
+    s.hour += h;
+    s.counters.actions++;
+    if (act.once === 'dia') s.flags['once_' + act.id] = s.day;
+    if (act.id === 'planificar') s.counters.planToday = 1;
+    if (s.hour < 8) s.achievements.a1 = true;
+
+    // experiencia por característica
+    let xpSum = 0;
+    if (act.g) {
+      Object.keys(act.g).forEach(k => {
+        const amount = act.g[k] * xpMultiplier(s, k);
+        xpSum += amount;
+        gainStat(s, k, amount, out);
+      });
+      s.counters.dev++; s.counters.dayDev++;
+    }
+
+    // estado
+    if (act.st) s.stress = c100(s.stress + (act.st > 0 ? stressGain(s, act.st) : act.st));
+    if (act.mo) s.mood = c100(s.mood + act.mo);
+    if (act.net) {
+      let g = act.net * (s.perk === 'networker' ? 1.6 : 1) * (1 + s.stats.carisma / 220);
+      if (hasItem(s, 'traje')) g *= 1.12;
+      const add = Math.max(1, Math.round(g));
+      s.net += add;
+      out.push({ t: `📇 +${add} contacto${add > 1 ? 's' : ''} (${s.net})`, k: 'good' });
+    }
+    if (act.rep) { s.rep = c100(s.rep + act.rep); out.push({ t: `⭐ +${act.rep} reputación`, k: 'good' }); }
+    if (act.m) { s.money += act.m; out.push({ t: `+${money(act.m)}`, k: 'gold' }); }
+
+    // acciones con lógica propia
+    if (act.sp && SPECIAL[act.sp]) SPECIAL[act.sp](s, out, act, place);
+
+    gainXP(s, 12 + xpSum * 0.35, out);
+    if (xpSum > 0) {
+      const top = Object.keys(act.g).sort((a, b) => act.g[b] - act.g[a])[0];
+      out.unshift({ t: `${act.icon} ${act.label}`, k: 'neutral' });
+      if (top) out.push({ t: `+${Math.round(xpSum)} exp (${STAT_BY[top].label})`, k: 'neutral' });
+    } else if (!act.sp) {
+      out.unshift({ t: `${act.icon} ${act.label}`, k: 'neutral' });
+    }
+
+    checkQuests(s, out);
+    checkAchievements(s, out);
+    logLine(s, `${act.icon} ${act.label}`, 'neutral');
+    return { ok: true, out };
+  }
+
+  /* ------------------- Acciones con lógica propia ------------------- */
+
+  const SPECIAL = {
+    dormir(s, out) { endDay(s, out); },
+
+    curar(s, out) { if (s.flags.sick) { s.flags.sick = 0; out.push({ t: '🩹 Te encuentras bien otra vez', k: 'good' }); } },
+
+    dieta(s, out) { s.flags.dieta = 1; out.push({ t: '🥗 Plan nutricional activo: rindes más', k: 'good' }); },
+
+    despensa(s, out) { s.flags.despensa = 7; out.push({ t: '🧺 Despensa llena para una semana', k: 'good' }); },
+
+    trabajo(s, out) {
+      const pay = Math.round(s.job.salary * (1 + s.stats.disciplina / 160 + s.stats.finanzas / 320)
+        * (s.bg === 'empleado' ? 1.2 : 1) * effectiveness(s));
+      s.money += pay; s.counters.workDays++;
+      out.push({ t: `💼 Cobras ${money(pay)} por la jornada`, k: 'gold' });
+    },
+
+    trabajoMedio(s, out) {
+      const pay = Math.round(s.job.salary * 0.45 * (1 + s.stats.disciplina / 160) * effectiveness(s));
+      s.money += pay;
+      out.push({ t: `💼 Cobras ${money(pay)} por la media jornada`, k: 'gold' });
+    },
+
+    aumento(s, out) {
+      if (s.day - s.flags.lastRaise < 14) { out.push({ t: '⏳ Es pronto para volver a pedirlo', k: 'warn' }); return; }
+      s.flags.lastRaise = s.day;
+      const p = clamp(0.18 + s.stats.carisma / 260 + s.stats.disciplina / 300 + s.counters.workDays / 90, 0.1, 0.85);
+      if (rand(s) < p) {
+        const before = s.job.salary;
+        s.job.salary = Math.round(s.job.salary * 1.14);
+        out.push({ t: `📈 ¡Aumento! ${money(before)} → ${money(s.job.salary)} por jornada`, k: 'gold' });
+        logLine(s, `Consigues un aumento: ${money(s.job.salary)} por jornada.`, 'gold');
+      } else {
+        s.mood = c100(s.mood - 6);
+        out.push({ t: '🙅 "Este trimestre no es posible". Vuelve a intentarlo más adelante', k: 'bad' });
+      }
+    },
+
+    ascenso(s, out) {
+      const p = clamp(0.12 + s.stats.intelecto / 300 + s.stats.liderazgo / 280 + s.rep / 400, 0.08, 0.8);
+      if (rand(s) < p) {
+        s.job.salary = Math.round(s.job.salary * 1.35);
+        s.job.title = ['Analista', 'Responsable de equipo', 'Manager', 'Director'][Math.min(3, s.titles + 1)];
+        s.titles++;
+        out.push({ t: `🪜 ¡Nuevo puesto: ${s.job.title}! ${money(s.job.salary)} por jornada`, k: 'gold' });
+        logLine(s, `Asciendes a ${s.job.title}.`, 'gold');
+      } else {
+        s.stress = c100(s.stress + 6);
+        out.push({ t: '📉 No has pasado el proceso. Toca prepararse mejor', k: 'bad' });
+      }
+    },
+
+    titulo(s, out) { s.titles++; s.job.salary = Math.round(s.job.salary * 1.08); out.push({ t: '📜 Titulación conseguida: tu perfil vale más', k: 'gold' }); },
+
+    jornal(s, out) {
+      const pay = Math.round((38 + s.stats.vigor * 0.5 + s.stats.carisma * 0.35) * effectiveness(s));
+      s.money += pay;
+      out.push({ t: `🧺 Te pagan ${money(pay)} por la mañana`, k: 'gold' });
+    },
+
+    darClase(s, out) {
+      const pay = Math.round((45 + s.stats.intelecto * 1.1 + s.rep * 0.8) * effectiveness(s));
+      s.money += pay;
+      out.push({ t: `🧑‍🏫 Te pagan ${money(pay)} por la clase`, k: 'gold' });
+    },
+
+    venderObra(s, out) {
+      const base = 30 + s.stats.creatividad * 1.6 + s.rep * 1.2;
+      const pay = Math.round(base * (0.6 + rand(s) * 0.9));
+      s.money += pay; s.rep = c100(s.rep + 2);
+      out.push({ t: `🖼️ Vendes tu obra por ${money(pay)}`, k: 'gold' });
+    },
+
+    pescar(s, out) {
+      if (rand(s) < 0.45) { const p = 15 + Math.round(rand(s) * 40); s.money += p; out.push({ t: `🐟 Vendes lo pescado: +${money(p)}`, k: 'gold' }); }
+      else out.push({ t: '🎣 Hoy no picaban. La calma también cuenta', k: 'neutral' });
+    },
+
+    rumbo(s, out) {
+      gainXP(s, 40, out);
+      out.push({ t: '🧭 Sales con las ideas más claras (+40 exp)', k: 'good' });
+    },
+
+    trabajoNegocio(s, out) {
+      if (!s.bizs.length) return;
+      const b = s.bizs[0];
+      const gain = Math.round((25 + s.stats.disciplina * 0.8 + s.stats.carisma * 0.5) * effectiveness(s));
+      s.money += gain; s.counters.bizEarned += gain;
+      b.marketing = Math.min(45, b.marketing + 2);
+      out.push({ t: `⚙️ Tu negocio factura ${money(gain)} extra hoy`, k: 'gold' });
+    },
+
+    producto(s, out) {
+      if (!s.bizs.length) return;
+      const b = s.bizs[0];
+      const q = 1 + (rand(s) < 0.35 + s.stats.creatividad / 300 ? 1 : 0);
+      b.quality = Math.min(20, b.quality + q);
+      out.push({ t: `🛠️ Producto mejorado (calidad ${b.quality}/20)`, k: 'good' });
+    },
+
+    marca(s, out) {
+      if (!s.bizs.length) return;
+      const b = s.bizs[0];
+      b.brand = Math.min(6, b.brand + 1);
+      out.push({ t: `🏷️ Tu marca se nota (marca ${b.brand}/6)`, k: 'good' });
+    },
+
+    proveedores(s, out) {
+      if (!s.bizs.length) return;
+      const b = s.bizs[0];
+      if (rand(s) < clamp(0.35 + s.stats.carisma / 200 + s.stats.finanzas / 260, 0.2, 0.9)) {
+        b.margin = (b.margin || 0) + 1; b.quality = Math.min(20, b.quality + 1);
+        out.push({ t: '📦 Consigues mejores condiciones: más margen', k: 'good' });
+      } else out.push({ t: '🤷 No hay acuerdo esta vez', k: 'warn' });
+    },
+
+    pitch(s, out) {
+      const p = clamp(0.12 + s.stats.carisma / 240 + s.rep / 260 + s.net / 90
+        + (s.bg === 'heredero' ? 0.12 : 0), 0.08, 0.88);
+      if (rand(s) < p) {
+        const amount = Math.round((600 + s.rep * 45 + s.stats.finanzas * 22) * (0.7 + rand(s) * 0.8));
+        s.money += amount; s.rep = c100(s.rep + 8); s.net += 2;
+        out.push({ t: `🎙️ ¡Levantas ${money(amount)} de financiación!`, k: 'gold' });
+        logLine(s, `Consigues ${money(amount)} de inversión.`, 'gold');
+      } else {
+        s.rep = c100(s.rep - 2); s.mood = c100(s.mood - 5);
+        out.push({ t: '🎙️ No convences al panel. Te llevas apuntes y un no', k: 'bad' });
+      }
+    },
+
+    stand(s, out) {
+      if (!s.bizs.length) return;
+      const b = s.bizs[0];
+      const sales = Math.round((90 + s.stats.carisma * 2.4 + s.rep * 2.2) * (0.6 + rand(s) * 0.9));
+      s.money += sales; s.counters.bizEarned += sales;
+      b.marketing = Math.min(45, b.marketing + 10);
+      out.push({ t: `🎟️ Vendes ${money(sales)} en el stand y ganas visibilidad`, k: 'gold' });
+    },
+
+    concurso(s, out) {
+      const b = s.bizs.slice().sort((x, y) => y.level - x.level)[0];
+      const p = clamp(0.10 + b.level * 0.06 + s.stats.carisma / 300 + s.rep / 300, 0.05, 0.75);
+      if (rand(s) < p) {
+        const prize = 1500 + b.level * 800;
+        s.money += prize; s.rep = c100(s.rep + 12); s.net += 3;
+        out.push({ t: `🏆 ¡Ganas el concurso! +${money(prize)}`, k: 'gold' });
+        logLine(s, `Ganas el concurso de startups (+${money(prize)}).`, 'gold');
+      } else {
+        s.rep = c100(s.rep + 2);
+        out.push({ t: '🥈 No ganas, pero te ven. +2 reputación', k: 'warn' });
+      }
+    },
+
+    feriaEmpleo(s, out) {
+      const quality = 70 + s.stats.intelecto * 1.1 + s.stats.carisma * 0.9 + s.titles * 18 + s.rep * 0.5;
+      const offer = Math.round(quality * (0.75 + rand(s) * 0.5));
+      if (!s.job.has) {
+        s.job.has = true; s.job.salary = offer; s.job.title = 'Empleado';
+        out.push({ t: `🧳 ¡Te contratan! ${money(offer)} por jornada`, k: 'gold' });
+        logLine(s, `Consigues empleo (${money(offer)} por jornada).`, 'gold');
+      } else if (offer > s.job.salary) {
+        s.job.salary = offer;
+        out.push({ t: `🧳 Cambias de empresa: ahora cobras ${money(offer)} por jornada`, k: 'gold' });
+      } else {
+        out.push({ t: '🧳 Nada mejor que lo que ya tienes. Buena señal', k: 'neutral' });
+      }
+    },
+  };
+
+  /* -------------------- Banco, negocios y tienda -------------------- */
+
+  function bankDeposit(s, amount) {
+    const a = Math.floor(clamp(Number(amount) || 0, 0, s.money));
+    if (a <= 0) return { ok: false, why: 'Cantidad no válida' };
+    s.money -= a; s.savings += a;
+    logLine(s, `Ingresas ${money(a)} en el ahorro.`, 'neutral');
+    return { ok: true, out: [{ t: `📥 Ingresas ${money(a)}. Ahorro: ${money(s.savings)}`, k: 'good' }] };
+  }
+
+  function bankWithdraw(s, amount) {
+    const a = Math.floor(clamp(Number(amount) || 0, 0, s.savings));
+    if (a <= 0) return { ok: false, why: 'Cantidad no válida' };
+    s.savings -= a; s.money += a;
+    return { ok: true, out: [{ t: `📤 Retiras ${money(a)}. Ahorro: ${money(s.savings)}`, k: 'neutral' }] };
+  }
+
+  function loanLimit(s) {
+    return Math.round(600 + s.stats.finanzas * 60 + s.rep * 40 + (s.job.has ? s.job.salary * 12 : 0)
+      + s.bizs.reduce((a, b) => a + bizValue(s, b) * 0.4, 0) + (s.bg === 'heredero' ? 3000 : 0) - s.debt);
+  }
+
+  function bankLoan(s, amount) {
+    const lim = loanLimit(s);
+    const a = Math.floor(Number(amount) || 0);
+    if (a <= 0) return { ok: false, why: 'Cantidad no válida' };
+    if (a > lim) return { ok: false, why: `El banco te concede como máximo ${money(Math.max(0, lim))}` };
+    s.money += a; s.debt += a; s.counters.hadDebt = true;
+    logLine(s, `Pides un préstamo de ${money(a)}.`, 'warn');
+    return { ok: true, out: [{ t: `🏧 Recibes ${money(a)}. Deuda total: ${money(s.debt)}`, k: 'warn' }] };
+  }
+
+  function bankRepay(s, amount) {
+    const a = Math.floor(clamp(Number(amount) || 0, 0, Math.min(s.money, s.debt)));
+    if (a <= 0) return { ok: false, why: 'Cantidad no válida' };
+    s.money -= a; s.debt = Math.max(0, s.debt - a);
+    const out = [{ t: `✂️ Amortizas ${money(a)}. Deuda: ${money(s.debt)}`, k: 'good' }];
+    if (s.debt === 0 && s.counters.hadDebt) { s.achievements.a5 = true; out.push({ t: '🏅 Logro: Sin deudas', k: 'gold' }); }
+    return { ok: true, out };
+  }
+
+  function canFound(s, typeId) {
+    const t = BIZ_BY[typeId];
+    if (!t) return { ok: false, why: 'Modelo desconocido' };
+    for (const k in (t.req || {})) if (s.stats[k] < t.req[k])
+      return { ok: false, why: `Necesitas ${STAT_BY[k].label} ${t.req[k]}` };
+    if (s.money < t.cost) return { ok: false, why: `Necesitas ${money(t.cost)}` };
+    if (s.bizs.length >= 4) return { ok: false, why: 'Ya llevas 4 negocios: consolida antes de abrir otro' };
+    return { ok: true };
+  }
+
+  function foundBiz(s, typeId, name) {
+    const chk = canFound(s, typeId);
+    if (!chk.ok) return { ok: false, why: chk.why };
+    const t = BIZ_BY[typeId];
+    s.money -= t.cost;
+    const b = { id: 'b' + (s.bizs.length + 1) + '_' + s.day, type: t.id,
+      name: (name || t.name).slice(0, 26), level: 1, emp: 0, marketing: 4,
+      quality: 0, brand: 0, margin: 0, earned: 0, born: s.day };
+    s.bizs.push(b);
+    s.rep = c100(s.rep + 4);
+    logLine(s, `Registras tu negocio: ${b.name}.`, 'gold');
+    const out = [{ t: `📋 ${t.icon} ${b.name} registrado. −${money(t.cost)}`, k: 'gold' }];
+    checkQuests(s, out); checkAchievements(s, out);
+    return { ok: true, out };
+  }
+
+  const BIZ_UPGRADE = b => Math.round(BIZ_BY[b.type].cost * (0.55 + (b.level - 1) * 0.55));
+  const BIZ_MARKETING = b => Math.round(90 + b.level * 70);
+  const BIZ_HIRE = b => Math.round(280 + b.emp * 180);
+
+  function bizAction(s, bizId, what) {
+    const b = s.bizs.find(x => x.id === bizId);
+    if (!b) return { ok: false, why: 'Negocio no encontrado' };
+    const out = [];
+    if (what === 'mejorar') {
+      const cost = BIZ_UPGRADE(b);
+      if (s.money < cost) return { ok: false, why: `Necesitas ${money(cost)}` };
+      if (b.level >= 6) return { ok: false, why: 'Ya está al máximo nivel' };
+      s.money -= cost; b.level++;
+      s.rep = c100(s.rep + 3);
+      out.push({ t: `📈 ${b.name} sube a nivel ${b.level} (−${money(cost)})`, k: 'gold' });
+      logLine(s, `${b.name} alcanza el nivel ${b.level}.`, 'gold');
+    } else if (what === 'marketing') {
+      const cost = BIZ_MARKETING(b);
+      if (s.money < cost) return { ok: false, why: `Necesitas ${money(cost)}` };
+      s.money -= cost;
+      b.marketing = Math.min(45, b.marketing + Math.round(8 + s.stats.creatividad / 12));
+      out.push({ t: `📣 Campaña lanzada (marketing ${b.marketing}/45)`, k: 'good' });
+    } else if (what === 'contratar') {
+      const cost = BIZ_HIRE(b);
+      if (s.money < cost) return { ok: false, why: `Necesitas ${money(cost)}` };
+      if (s.stats.liderazgo < 18 + b.emp * 10)
+        return { ok: false, why: `Necesitas Liderazgo ${18 + b.emp * 10} para dirigir a otra persona` };
+      if (b.emp >= 8) return { ok: false, why: 'El equipo ya está completo' };
+      s.money -= cost; b.emp++;
+      out.push({ t: `🧑‍🔧 Contratas a alguien (${b.emp} en plantilla). Sueldo: 40 €/día`, k: 'good' });
+    } else if (what === 'despedir') {
+      if (b.emp <= 0) return { ok: false, why: 'No tienes plantilla' };
+      b.emp--; s.mood = c100(s.mood - 4);
+      out.push({ t: `👋 Reduces plantilla (${b.emp})`, k: 'warn' });
+    } else if (what === 'vender') {
+      const v = bizValue(s, b);
+      s.money += v;
+      s.bizs = s.bizs.filter(x => x.id !== b.id);
+      out.push({ t: `🤝 Vendes ${b.name} por ${money(v)}`, k: 'gold' });
+      logLine(s, `Vendes ${b.name} por ${money(v)}.`, 'gold');
+    } else return { ok: false, why: 'Acción desconocida' };
+    checkQuests(s, out); checkAchievements(s, out);
+    return { ok: true, out };
+  }
+
+  function buyItem(s, itemId) {
+    const it = ITEM_BY[itemId];
+    if (!it) return { ok: false, why: 'Objeto desconocido' };
+    if (hasItem(s, itemId)) return { ok: false, why: 'Ya lo tienes' };
+    if (s.money < it.cost) return { ok: false, why: `Necesitas ${money(it.cost)}` };
+    s.money -= it.cost; s.items[itemId] = true;
+    logLine(s, `Compras: ${it.name}.`, 'neutral');
+    return { ok: true, out: [{ t: `${it.icon} ${it.name} comprado (−${money(it.cost)})`, k: 'good' }] };
+  }
+
+  /* ---------------------- Cierre del día ---------------------------- */
+
+  // Si la caja queda en negativo, el banco lo cubre… con recargo.
+  function coverOverdraft(s, out) {
+    if (s.money >= 0) return;
+    const gap = Math.ceil(-s.money);
+    s.debt += Math.round(gap * 1.1);
+    s.money = 0;
+    s.counters.hadDebt = true;
+    s.stress = c100(s.stress + 10);
+    out.push({ t: `🚨 Números rojos: el banco cubre ${money(gap)} y lo suma a tu deuda`, k: 'bad' });
+  }
+
+  function endDay(s, out) {
+    const wake = wakeHour(s);
+    const slept = clamp((wake + 24) - s.hour, 3, 12);
+
+    // 1. dinero: negocios, gastos, intereses
+    let bizNet = 0;
+    s.bizs.forEach(b => {
+      const inc = bizIncome(s, b);
+      bizNet += inc; b.earned += inc;
+      if (inc > 0) s.counters.bizEarned += inc;
+    });
+    if (s.bizs.length) {
+      s.money += bizNet;
+      out.push({ t: `${bizNet >= 0 ? '💹' : '📉'} Negocios: ${bizNet >= 0 ? '+' : ''}${money(bizNet)}`, k: bizNet >= 0 ? 'gold' : 'bad' });
+      if (bizNet > 0) s.counters.firstBizIncome = true;
+    }
+    const exp = dailyExpenses(s);
+    s.money -= exp;
+    out.push({ t: `🧾 Gastos del día: −${money(exp)}`, k: 'neutral' });
+
+    if (s.savings > 0) {
+      const interest = Math.round(s.savings * 0.0025);
+      if (interest > 0) { s.savings += interest; out.push({ t: `🏦 Tu ahorro genera ${money(interest)}`, k: 'good' }); }
+    }
+    if (s.debt > 0) {
+      const interest = Math.round(s.debt * 0.01);
+      s.debt += interest;
+      out.push({ t: `💳 Intereses de la deuda: +${money(interest)}`, k: 'bad' });
+    }
+    coverOverdraft(s, out);
+
+    // 2. descanso
+    const quality = clamp(0.5 + slept * 0.045 + s.stats.equilibrio / 420 - s.stress / 320
+      + (hasItem(s, 'colchon') ? 0.2 : 0), 0.35, 1);
+    s.energy = Math.round(maxEnergy(s) * quality);
+    if (hasItem(s, 'cafetera')) s.energy = Math.min(maxEnergy(s), s.energy + 8);
+    s.stress = c100(s.stress - (10 + slept * 1.1 + s.stats.equilibrio * 0.12));
+    s.mood = c100(s.mood + (slept >= 7 ? 6 : 1) - (s.stress > 70 ? 4 : 0));
+
+    // 3. rachas y hábitos
+    if (s.counters.dayDev >= 2) {
+      s.counters.streak++;
+      s.counters.bestStreak = Math.max(s.counters.bestStreak, s.counters.streak);
+      if (s.counters.streak % 3 === 0) {
+        gainXP(s, 30 + s.counters.streak * 6, out);
+        out.push({ t: `🔥 Racha de ${s.counters.streak} días: experiencia extra`, k: 'gold' });
+      }
+    } else if (s.counters.streak > 0) {
+      out.push({ t: `💤 Se rompe tu racha de ${s.counters.streak} días`, k: 'warn' });
+      s.counters.streak = 0;
+    }
+    if (s.counters.planToday && s.counters.dayDev >= 1) s.counters.planDays++;
+
+    // 4. paso del día: la red y la reputación se mantienen o se enfrían
+    if (s.net > 0 && rand(s) < 0.35) s.net = Math.max(0, s.net - 1);
+    if (s.rep > 0) s.rep = c100(s.rep - 0.4);
+    s.day++; s.hour = wake;
+    s.counters.dayDev = 0; s.counters.planToday = 0;
+    if (s.flags.despensa > 0) s.flags.despensa--;
+    if (s.flags.bizPenalty > 0) s.flags.bizPenalty--;
+    if (s.flags.sick && rand(s) < 0.5) s.flags.sick = 0;
+
+    // 5. evento del día (también puede dejarte en números rojos)
+    const ev = rollEvent(s);
+    if (ev) applyEvent(s, ev, out);
+    coverOverdraft(s, out);
+
+    checkQuests(s, out);
+    checkAchievements(s, out);
+    logLine(s, `Empieza el día ${s.day}.`, 'neutral');
+    out.unshift({ t: `🌅 Día ${s.day} · has dormido ${Math.round(slept)} h`, k: 'neutral' });
+    return out;
+  }
+
+  function rollEvent(s) {
+    const pool = EVENTS.filter(e => !e.when || e.when(s));
+    const total = pool.reduce((a, e) => a + e.w, 0);
+    let r = rand(s) * total;
+    for (const e of pool) { r -= e.w; if (r <= 0) return e; }
+    return pool[pool.length - 1];
+  }
+
+  function applyEvent(s, ev, out) {
+    const f = ev.eff || {};
+    if (f.money) s.money += f.money;
+    if (f.moneyPct) s.money = Math.round(s.money * (1 + f.moneyPct));
+    if (f.energy) s.energy = clamp(s.energy + f.energy, 0, maxEnergy(s));
+    if (f.stress) s.stress = c100(s.stress + f.stress);
+    if (f.mood) s.mood = c100(s.mood + f.mood);
+    if (f.rep) s.rep = c100(s.rep + f.rep);
+    if (f.net) s.net += f.net;
+    if (f.sick) s.flags.sick = 1;
+    if (f.rentUp) s.flags.rent += f.rentUp;
+    if (f.bizPenalty) s.flags.bizPenalty = 5;
+    if (f.g) Object.keys(f.g).forEach(k => gainStat(s, k, f.g[k], out));
+    out.push({ t: `📰 ${ev.txt}`, k: ev.kind === 'good' ? 'good' : ev.kind === 'bad' ? 'bad' : ev.kind === 'warn' ? 'warn' : 'neutral' });
+    logLine(s, ev.txt, ev.kind === 'neutral' ? 'neutral' : ev.kind);
+  }
+
+  /* --------------------- Misiones y logros -------------------------- */
+
+  function checkQuests(s, out) {
+    QUESTS.forEach(q => {
+      const st = s.quests[q.id] || (s.quests[q.id] = { done: false, prog: 0 });
+      if (st.done) return;
+      const p = q.check(s);
+      st.prog = clamp(p.cur / (p.max || 1), 0, 1);
+      if (p.cur >= p.max) {
+        st.done = true;
+        const r = q.reward || {};
+        if (r.money) s.money += r.money;
+        if (r.rep) s.rep = c100(s.rep + r.rep);
+        if (r.g) Object.keys(r.g).forEach(k => gainStat(s, k, r.g[k], out));
+        if (r.xp) gainXP(s, r.xp, out);
+        if (out) out.push({ t: `🎯 Misión completada: ${q.name}${r.money ? ` (+${money(r.money)})` : ''}`, k: 'gold' });
+        logLine(s, `Misión completada: ${q.name}.`, 'gold');
+      }
+    });
+  }
+
+  function checkAchievements(s, out) {
+    const give = (id) => {
+      if (s.achievements[id]) return;
+      s.achievements[id] = true;
+      const a = ACHIEVEMENTS.find(x => x.id === id);
+      if (a && out) out.push({ t: `🏅 Logro: ${a.name}`, k: 'gold' });
+      if (a) logLine(s, `Logro desbloqueado: ${a.name}.`, 'gold');
+    };
+    if (s.stats.vigor >= 60) give('a2');
+    if (s.stats.equilibrio >= 60) give('a3');
+    if (s.counters.firstBizIncome) give('a4');
+    if (s.money + s.savings >= 10000) give('a6');
+    if (s.rep >= 60) give('a7');
+    if (s.bizs.length >= 3) give('a8');
+    if (s.counters.bestStreak >= 7) give('a9');
+    if (s.level >= 10) give('a10');
+    if (s.debt === 0 && s.counters.hadDebt) give('a5');
+  }
+
+  // Hablar con un NPC: consejo siempre, regalo la primera vez.
+  function talkTo(s, npc) {
+    const out = [];
+    const key = 'npc_' + npc.id;
+    const line = npc.lines[Math.floor(rand(s) * npc.lines.length)] || npc.lines[0];
+    out.push({ t: `💬 ${npc.name}: "${line}"`, k: 'neutral' });
+    if (!s.flags[key]) {
+      s.flags[key] = 1;
+      const g = npc.gift || {};
+      if (g.g) Object.keys(g.g).forEach(k => gainStat(s, k, g.g[k], out));
+      if (g.net) { s.net += g.net; out.push({ t: `📇 +${g.net} contacto`, k: 'good' }); }
+      if (g.rep) { s.rep = c100(s.rep + g.rep); out.push({ t: `⭐ +${g.rep} reputación`, k: 'good' }); }
+      if (g.st) s.stress = c100(s.stress + g.st);
+      if (g.text) out.push({ t: g.text, k: 'good' });
+      gainXP(s, 35, out);
+      s.mood = c100(s.mood + 4);
+    }
+    checkQuests(s, out); checkAchievements(s, out);
+    return out;
+  }
+
+  /* ================================================================
+     8. AVATAR: SE GENERA A PARTIR DE LAS CARACTERÍSTICAS
+     ================================================================ */
+
+  // Rasgos visuales derivados del perfil (0..1). Es lo que hace que dos
+  // personajes con características distintas se vean distintos.
+  function avatarTraits(st) {
+    const S = k => c100(st[k]) / 100;
+    const overall = avg(STAT_KEYS.map(k => c100(st[k]))) / 100;
+    const dominant = STATS.slice().sort((a, b) => c100(st[b.key]) - c100(st[a.key]))[0];
+    return {
+      bulk:    clamp(S('vigor') * 0.74 + S('disciplina') * 0.26, 0, 1),
+      posture: clamp(S('equilibrio') * 0.55 + S('disciplina') * 0.45, 0, 1),
+      stance:  clamp((S('carisma') + S('liderazgo')) / 2, 0, 1),
+      mind:    clamp((S('intelecto') + S('creatividad')) / 2, 0, 1),
+      core:    clamp(S('finanzas') * 0.45 + overall * 0.55, 0, 1),
+      overall, accent: dominant.color, dominant,
+    };
+  }
+
+  function limb(x1, y1, x2, y2, w, fill, extra) {
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 0.001;
+    const A = Math.atan2(-dx, dy) * 180 / Math.PI;
+    return `<rect x="${fmt(-w / 2)}" y="0" width="${fmt(w)}" height="${fmt(len)}" rx="${fmt(w / 2)}" `
+      + `fill="${fill}" ${extra || ''} transform="translate(${fmt(x1)} ${fmt(y1)}) rotate(${fmt(A)})"/>`;
+  }
+  const ell = (cx, cy, rx, ry, fill, extra) =>
+    `<ellipse cx="${fmt(cx)}" cy="${fmt(cy)}" rx="${fmt(rx)}" ry="${fmt(ry)}" fill="${fill}" ${extra || ''}/>`;
+
+  // Cada avatar necesita identificadores propios para sus degradados: si dos
+  // SVG comparten los ids, el navegador resuelve la referencia contra el
+  // primero del documento (que puede estar oculto) y la figura no se pinta.
+  let avatarUid = 0;
+
+  function avatarSVG(st) {
+    const W = 320, H = 440, cx = 160;
+    const t = avatarTraits(st);
+    const accent = t.accent;
+    const U = 'av' + (++avatarUid) + '_';
+
+    const shoulderHalf = 36 + t.bulk * 42;
+    const waistHalf = 27 + t.bulk * 24;
+    const hipHalf = 33 + t.bulk * 15;
+    const limbW = 13 + t.bulk * 15;
+    const legW = 18 + t.bulk * 15;
+    const neckW = 14 + t.bulk * 9;
+
+    const rHX = 24 + t.bulk * 4, rHY = 30 + t.bulk * 4;
+    const slump = 1 - t.posture;
+    const headDX = slump * 11, droop = slump * 9;
+    const hy0 = 92, hx0 = cx + headDX;
+    const neckTop = hy0 + rHY * 0.72;
+    const shoulderY = neckTop + 12 + droop;
+    const waistY = shoulderY + 72;
+    const hipY = shoulderY + 112;
+    const legBottom = hipY + 162;
+    const chestY = shoulderY + (waistY - shoulderY) * 0.5;
+
+    const legGap = hipHalf * 0.5 + t.stance * 11;
+    const xL = cx - legGap, xR = cx + legGap;
+    const shX = shoulderHalf - 6;
+    const armOut = t.stance * 12;
+    const armTopY = shoulderY + 6, armBotY = hipY + 2;
+    const wristL = [cx - shX - 6 - armOut, armBotY], wristR = [cx + shX + 6 + armOut, armBotY];
+
+    const figTop = hy0 - rHY - 16, figBot = legBottom + 6;
+    const targetTop = 14, targetBot = 408;
+    const scale = (targetBot - targetTop) / (figBot - figTop);
+
+    const glowI = 0.22 + t.overall * 0.6;
+    const auraI = 0.10 + t.overall * 0.42;
+
+    const defs = `<defs>
+      <radialGradient id="${U}aAura" cx="50%" cy="44%" r="60%">
+        <stop offset="0%" stop-color="${accent}" stop-opacity="${fmt(auraI)}"/>
+        <stop offset="55%" stop-color="${accent}" stop-opacity="${fmt(auraI * 0.4)}"/>
+        <stop offset="100%" stop-color="${accent}" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="${U}aBody" x1="0" y1="0" x2="0.45" y2="1">
+        <stop offset="0%" stop-color="#262c38"/><stop offset="45%" stop-color="#11151c"/>
+        <stop offset="100%" stop-color="#05070a"/>
+      </linearGradient>
+      <radialGradient id="${U}aCore" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="35%" stop-color="${mix(accent, '#ffffff', 0.45)}"/>
+        <stop offset="100%" stop-color="${accent}"/>
+      </radialGradient>
+      <radialGradient id="${U}aHalo" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="${accent}" stop-opacity="${fmt(0.12 + t.mind * 0.5)}"/>
+        <stop offset="100%" stop-color="${accent}" stop-opacity="0"/>
+      </radialGradient>
+    </defs>`;
+
+    const buildFigure = (inf, fill, extra) => {
+      const sH = shoulderHalf + inf, wH = waistHalf + inf, hH = hipHalf + inf;
+      const lw = limbW + inf * 2, lgw = legW + inf * 2, nw = neckW + inf * 2;
+      const rx = rHX + inf, ry = rHY + inf;
+      const torso = `<path d="M ${fmt(cx - sH)} ${fmt(shoulderY)}`
+        + ` Q ${fmt(cx)} ${fmt(shoulderY - 15)} ${fmt(cx + sH)} ${fmt(shoulderY)}`
+        + ` Q ${fmt(cx + wH + (sH - wH) * 0.25)} ${fmt((shoulderY + waistY) / 2)} ${fmt(cx + wH)} ${fmt(waistY)}`
+        + ` Q ${fmt(cx + (wH + hH) / 2 + 4)} ${fmt((waistY + hipY) / 2)} ${fmt(cx + hH)} ${fmt(hipY + 6)}`
+        + ` Q ${fmt(cx)} ${fmt(hipY + 21)} ${fmt(cx - hH)} ${fmt(hipY + 6)}`
+        + ` Q ${fmt(cx - (wH + hH) / 2 - 4)} ${fmt((waistY + hipY) / 2)} ${fmt(cx - wH)} ${fmt(waistY)}`
+        + ` Q ${fmt(cx - wH - (sH - wH) * 0.25)} ${fmt((shoulderY + waistY) / 2)} ${fmt(cx - sH)} ${fmt(shoulderY)} Z" fill="${fill}" ${extra || ''}/>`;
+      return limb(xL, hipY - 6, xL, legBottom, lgw, fill, extra)
+        + limb(xR, hipY - 6, xR, legBottom, lgw, fill, extra)
+        + ell(xL, legBottom + 1, lgw * 0.6, 8 + inf, fill, extra)
+        + ell(xR, legBottom + 1, lgw * 0.6, 8 + inf, fill, extra)
+        + limb(cx - shX, armTopY, wristL[0], wristL[1], lw, fill, extra)
+        + limb(cx + shX, armTopY, wristR[0], wristR[1], lw, fill, extra)
+        + ell(wristL[0], wristL[1] + 2, lw * 0.6, lw * 0.6, fill, extra)
+        + ell(wristR[0], wristR[1] + 2, lw * 0.6, lw * 0.6, fill, extra)
+        + torso
+        + `<rect x="${fmt(cx - nw / 2)}" y="${fmt(neckTop)}" width="${fmt(nw)}" height="${fmt(shoulderY - neckTop + 8)}" rx="${fmt(nw / 2)}" fill="${fill}" ${extra || ''}/>`
+        + ell(hx0, hy0, rx, ry, fill, extra);
+    };
+
+    const aura = `<ellipse cx="${cx}" cy="${fmt(chestY)}" rx="146" ry="210" fill="url(#${U}aAura)"/>`;
+    const groundShadow = ell(cx, targetBot + 2, 84, 11, 'rgba(0,0,0,.45)');
+    const halo = ell(hx0, hy0, rHX + 16, rHY + 16, `url(#${U}aHalo)`);
+    const glow = buildFigure(7, accent, `opacity="${fmt(glowI * 0.35)}"`)
+      + buildFigure(3, accent, `opacity="${fmt(glowI)}"`);
+    const body = buildFigure(0, `url(#${U}aBody)`, '');
+    const coreR = 6 + t.core * 9;
+    const core = ell(cx, chestY, coreR + 6, coreR + 6, accent, `opacity="${fmt(0.22 + t.core * 0.4)}"`)
+      + ell(cx, chestY, coreR, coreR, `url(#${U}aCore)`);
+
+    const figure = halo + glow + body + core;
+    const scaled = `<g transform="translate(${cx} ${fmt(targetBot)}) scale(${fmt(scale)}) translate(${fmt(-cx)} ${fmt(-figBot)})">${figure}</g>`;
+    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Avatar generado a partir de tus características">`
+      + defs + aura + groundShadow + scaled + '</svg>';
+  }
+
+  function radarSVG(st) {
+    const size = 320, cx = size / 2, cy = size / 2, R = 110, N = STATS.length;
+    const ang = i => (-Math.PI / 2) + (i * 2 * Math.PI / N);
+    const pt = (i, r) => [cx + Math.cos(ang(i)) * r, cy + Math.sin(ang(i)) * r];
+    let g = '';
+    [0.25, 0.5, 0.75, 1].forEach(f => {
+      const p = STATS.map((_, i) => pt(i, R * f).map(fmt).join(',')).join(' ');
+      g += `<polygon points="${p}" fill="none" stroke="#28344a" stroke-width="1"/>`;
+    });
+    STATS.forEach((s, i) => {
+      const [x, y] = pt(i, R);
+      g += `<line x1="${cx}" y1="${cy}" x2="${fmt(x)}" y2="${fmt(y)}" stroke="#28344a" stroke-width="1"/>`;
+      const [lx, ly] = pt(i, R + 22);
+      g += `<text x="${fmt(lx)}" y="${fmt(ly)}" fill="${s.color}" font-size="11" font-weight="700" `
+        + `text-anchor="middle" dominant-baseline="middle">${s.icon}</text>`;
+      const [vx, vy] = pt(i, R + 38);
+      g += `<text x="${fmt(vx)}" y="${fmt(vy)}" fill="#93a1b5" font-size="10.5" `
+        + `text-anchor="middle" dominant-baseline="middle">${c100(st[s.key])}</text>`;
+    });
+    const poly = STATS.map((s, i) => pt(i, R * (c100(st[s.key]) / 100)).map(fmt).join(',')).join(' ');
+    const dom = avatarTraits(st).accent;
+    g += `<polygon points="${poly}" fill="${rgba(dom, 0.22)}" stroke="${dom}" stroke-width="2" stroke-linejoin="round"/>`;
+    STATS.forEach((s, i) => {
+      const [x, y] = pt(i, R * (c100(st[s.key]) / 100));
+      g += `<circle cx="${fmt(x)}" cy="${fmt(y)}" r="3.2" fill="${s.color}"/>`;
+    });
+    return `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Radar de características">${g}</svg>`;
+  }
+
+  /* ================================================================
+     9. RENDER DEL MUNDO (canvas 2D)
+     ================================================================ */
+
+  const G = {
+    s: null, world: null,
+    player: { x: 0, y: 0, dir: 'down', moving: false, anim: 0, speed: 168 },
+    cam: { x: 0, y: 0 }, zoom: 1,
+    keys: {}, touch: {},
+    canvas: null, ctx: null, last: 0, time: 0,
+    near: null, modalOpen: false, npcs: [],
+  };
+
+  function initNpcs(world) {
+    return NPCS.map(n => {
+      const p = { def: n, x: (n.x + 0.5) * TILE, y: (n.y + 0.5) * TILE, hx: n.x, hy: n.y,
+        t: Math.random() * 6, dir: 'down', vx: 0, vy: 0 };
+      // asegura que empiezan en una casilla transitable
+      let tries = 0;
+      while (world.isSolid(Math.floor(p.x / TILE), Math.floor(p.y / TILE)) && tries < 60) {
+        p.x += TILE; if (p.x > (world.W - 2) * TILE) { p.x = TILE * 2; p.y += TILE; }
+        tries++;
+      }
+      return p;
+    });
+  }
+
+  function dayTint(hour) {
+    // Devuelve [color, alpha] para el velo de luz según la hora.
+    const h = ((hour % 24) + 24) % 24;
+    if (h < 5)  return ['#0a1030', 0.62];
+    if (h < 7)  return ['#2a2450', 0.42];
+    if (h < 9)  return ['#ffb057', 0.13];
+    if (h < 17) return ['#ffffff', 0.0];
+    if (h < 19) return ['#ff8a4c', 0.16];
+    if (h < 21) return ['#2b2f66', 0.30];
+    return ['#0a1030', 0.52];
+  }
+
+  function drawTile(ctx, t, x, y, sh, time) {
+    let col = TILE_COLOR[t] || '#2f6b3d';
+    if (t === T.WATER) {
+      const w = Math.sin((x * 0.5 + y * 0.31 + time * 0.9)) * 0.5 + 0.5;
+      col = mix('#173f5c', '#2a6f96', w * 0.55 + sh * 0.2);
+    } else {
+      col = mix(col, sh > 0.5 ? '#ffffff' : '#000000', Math.abs(sh - 0.5) * 0.14);
+    }
+    ctx.fillStyle = col;
+    ctx.fillRect(x * TILE, y * TILE, TILE + 1, TILE + 1);
+
+    if (t === T.ROAD) {
+      ctx.fillStyle = 'rgba(255,255,255,.05)';
+      ctx.fillRect(x * TILE, y * TILE, TILE + 1, 2);
+    } else if (t === T.GRASS && sh > 0.86) {
+      ctx.fillStyle = 'rgba(255,255,255,.06)';
+      ctx.fillRect(x * TILE + 8, y * TILE + 14, 6, 2);
+      ctx.fillRect(x * TILE + 20, y * TILE + 22, 5, 2);
+    } else if (t === T.SAND && sh > 0.8) {
+      ctx.fillStyle = 'rgba(255,255,255,.08)';
+      ctx.fillRect(x * TILE + 10, y * TILE + 18, 4, 2);
+    } else if (t === T.DECK) {
+      ctx.strokeStyle = 'rgba(0,0,0,.22)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x * TILE, y * TILE + 10.5); ctx.lineTo(x * TILE + TILE, y * TILE + 10.5);
+      ctx.moveTo(x * TILE, y * TILE + 22.5); ctx.lineTo(x * TILE + TILE, y * TILE + 22.5); ctx.stroke();
+    } else if (t === T.PLAZA) {
+      ctx.strokeStyle = 'rgba(0,0,0,.16)'; ctx.lineWidth = 1;
+      ctx.strokeRect(x * TILE + 0.5, y * TILE + 0.5, TILE, TILE);
+    } else if (t === T.FIELD) {
+      ctx.fillStyle = 'rgba(0,0,0,.12)';
+      for (let i = 0; i < 3; i++) ctx.fillRect(x * TILE + 3 + i * 10, y * TILE + 4, 5, TILE - 8);
+    }
+  }
+
+  function drawProp(ctx, p) {
+    const x = p.x * TILE + TILE / 2, y = p.y * TILE + TILE / 2;
+    switch (p.kind) {
+      case 'arbol': {
+        ctx.fillStyle = '#4a3527'; ctx.fillRect(x - 3, y + 2, 6, 12);
+        const r = 11 + p.r * 4;
+        ctx.fillStyle = '#1f5c2e'; ctx.beginPath(); ctx.arc(x, y - 2, r, 0, 7); ctx.fill();
+        ctx.fillStyle = '#2c7a3d'; ctx.beginPath(); ctx.arc(x - 3, y - 6, r * 0.66, 0, 7); ctx.fill();
+        break; }
+      case 'pino': {
+        ctx.fillStyle = '#4a3527'; ctx.fillRect(x - 2.5, y + 4, 5, 10);
+        ctx.fillStyle = '#1b5130';
+        for (let i = 0; i < 3; i++) {
+          const s = 13 - i * 3, ty = y + 4 - i * 8;
+          ctx.beginPath(); ctx.moveTo(x, ty - 12); ctx.lineTo(x + s, ty); ctx.lineTo(x - s, ty); ctx.closePath(); ctx.fill();
+        }
+        break; }
+      case 'arbusto':
+        ctx.fillStyle = '#27673a'; ctx.beginPath(); ctx.arc(x, y + 4, 7 + p.r * 3, 0, 7); ctx.fill();
+        ctx.fillStyle = '#31804a'; ctx.beginPath(); ctx.arc(x - 3, y + 2, 4.5, 0, 7); ctx.fill();
+        break;
+      case 'roca':
+        ctx.fillStyle = '#6b7280'; ctx.beginPath(); ctx.ellipse(x, y + 6, 10, 7, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = '#8b939e'; ctx.beginPath(); ctx.ellipse(x - 2, y + 3, 5, 3.4, 0, 0, 7); ctx.fill();
+        break;
+      case 'flor':
+        ctx.fillStyle = ['#f9a8d4', '#fde68a', '#c4b5fd', '#fca5a5'][Math.floor(p.r * 4) % 4];
+        ctx.beginPath(); ctx.arc(x + (p.r - 0.5) * 10, y + 6, 2.6, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.arc(x - 6 + p.r * 6, y + 12, 2.2, 0, 7); ctx.fill();
+        break;
+      case 'seta':
+        ctx.fillStyle = '#e5e7eb'; ctx.fillRect(x - 1.5, y + 4, 3, 6);
+        ctx.fillStyle = '#dc2626'; ctx.beginPath(); ctx.arc(x, y + 4, 5, Math.PI, 0); ctx.fill();
+        break;
+      case 'concha':
+        ctx.fillStyle = '#fde8d0'; ctx.beginPath(); ctx.arc(x, y + 6, 3.4, Math.PI, 0); ctx.fill();
+        break;
+      case 'cultivo':
+        ctx.fillStyle = '#4d7c0f';
+        for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(x - 8 + i * 8, y + 8, 3.2, 0, 7); ctx.fill(); }
+        break;
+      case 'farola':
+        ctx.fillStyle = '#39404f'; ctx.fillRect(x - 2, y - 14, 4, 28);
+        ctx.fillStyle = G.s && (G.s.hour < 8 || G.s.hour > 19) ? '#ffe9a8' : '#5b6474';
+        ctx.beginPath(); ctx.arc(x, y - 16, 5, 0, 7); ctx.fill();
+        if (G.s && (G.s.hour < 8 || G.s.hour > 19)) {
+          ctx.fillStyle = 'rgba(255,220,140,.13)';
+          ctx.beginPath(); ctx.arc(x, y - 12, 40, 0, 7); ctx.fill();
+        }
+        break;
+      case 'banco':
+        ctx.fillStyle = '#7a5a3a'; ctx.fillRect(x - 12, y, 24, 6); ctx.fillRect(x - 12, y - 9, 24, 4);
+        ctx.fillStyle = '#4b3a26'; ctx.fillRect(x - 10, y + 6, 3, 7); ctx.fillRect(x + 7, y + 6, 3, 7);
+        break;
+      case 'fuente': {
+        ctx.fillStyle = '#8b93a1'; ctx.beginPath(); ctx.arc(x, y, 19, 0, 7); ctx.fill();
+        ctx.fillStyle = '#2a6f96'; ctx.beginPath(); ctx.arc(x, y, 14, 0, 7); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,.5)';
+        const w = Math.sin(G.time * 2) * 2;
+        ctx.beginPath(); ctx.arc(x + w, y - 4, 4, 0, 7); ctx.fill();
+        ctx.fillStyle = '#b9c1cc'; ctx.fillRect(x - 2, y - 12, 4, 10);
+        break; }
+    }
+  }
+
+  function drawBuilding(ctx, b) {
+    const px = b.x * TILE, py = b.y * TILE, pw = b.w * TILE, ph = b.h * TILE;
+    const roofH = Math.min(46, ph * 0.34);
+    // sombra
+    ctx.fillStyle = 'rgba(0,0,0,.3)';
+    ctx.fillRect(px + 6, py + ph - 4, pw, 12);
+    // cuerpo
+    const grad = ctx.createLinearGradient(px, py, px, py + ph);
+    grad.addColorStop(0, mix(b.color, '#ffffff', 0.14));
+    grad.addColorStop(1, mix(b.color, '#000000', 0.45));
+    ctx.fillStyle = grad;
+    ctx.fillRect(px, py + roofH, pw, ph - roofH);
+    // tejado
+    ctx.fillStyle = mix(b.color, '#000000', 0.6);
+    ctx.fillRect(px - 5, py + roofH - 12, pw + 10, 14);
+    ctx.fillStyle = mix(b.color, '#000000', 0.3);
+    ctx.fillRect(px, py, pw, roofH - 8);
+    // ventanas
+    const lit = G.s && (G.s.hour < 8 || G.s.hour > 18);
+    const cols = Math.max(1, Math.floor(pw / 46)), rows = Math.max(1, Math.floor((ph - roofH) / 52));
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const wx = px + 14 + c * (pw - 28) / Math.max(1, cols) , wy = py + roofH + 16 + r * 50;
+        if (wy + 24 > py + ph - 14) continue;
+        const on = lit && ((r * 3 + c * 7 + b.x) % 3 !== 0);
+        ctx.fillStyle = on ? 'rgba(255,224,150,.85)' : 'rgba(12,18,28,.75)';
+        ctx.fillRect(wx, wy, Math.max(14, (pw - 28) / Math.max(1, cols) - 12), 22);
+        ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1;
+        ctx.strokeRect(wx + .5, wy + .5, Math.max(14, (pw - 28) / Math.max(1, cols) - 12), 22);
+      }
+    }
+    // puerta
+    const dx = b.door.x * TILE, dy = py + ph;
+    ctx.fillStyle = '#20160e';
+    ctx.fillRect(dx + 3, dy - 34, TILE - 6, 34);
+    ctx.fillStyle = mix(b.color, '#000000', 0.72);
+    ctx.fillRect(dx + 1, dy - 38, TILE - 2, 5);
+    ctx.fillStyle = '#e8c07a';
+    ctx.beginPath(); ctx.arc(dx + TILE - 10, dy - 17, 2, 0, 7); ctx.fill();
+    // cartel con icono y nombre
+    ctx.font = '22px ' + '-apple-system, Segoe UI Emoji, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(b.icon, px + pw / 2, py + roofH / 2 - 2);
+    const label = b.name;
+    ctx.font = '600 13px -apple-system, Segoe UI, sans-serif';
+    const tw = ctx.measureText(label).width;
+    ctx.fillStyle = 'rgba(10,14,20,.72)';
+    ctx.fillRect(px + pw / 2 - tw / 2 - 7, py - 26, tw + 14, 20);
+    ctx.fillStyle = '#e8eef6';
+    ctx.fillText(label, px + pw / 2, py - 15);
+  }
+
+  // Silueta del jugador dibujada a partir de sus características.
+  function drawAvatarSprite(ctx, x, y, st, dir, anim, moving) {
+    const t = avatarTraits(st);
+    const bob = moving ? Math.sin(anim * 9) * 1.6 : Math.sin(G.time * 1.6) * 0.6;
+    const bulk = t.bulk;
+    const bodyW = 13 + bulk * 8, bodyH = 20 + bulk * 3;
+    const headR = 7 + bulk * 1.2;
+    const lean = (1 - t.posture) * 2.4;
+    const legSwing = moving ? Math.sin(anim * 9) * 4 : 0;
+    const cy = y + bob;
+
+    ctx.save();
+    // sombra
+    ctx.fillStyle = 'rgba(0,0,0,.38)';
+    ctx.beginPath(); ctx.ellipse(x, y + 3, bodyW * 0.62, 4.6, 0, 0, 7); ctx.fill();
+    // aura de condición
+    const aura = ctx.createRadialGradient(x, cy - 16, 2, x, cy - 16, 34 + t.overall * 16);
+    aura.addColorStop(0, rgba(t.accent, 0.20 + t.overall * 0.20));
+    aura.addColorStop(1, rgba(t.accent, 0));
+    ctx.fillStyle = aura;
+    ctx.beginPath(); ctx.arc(x, cy - 16, 34 + t.overall * 16, 0, 7); ctx.fill();
+    // piernas
+    ctx.strokeStyle = '#0a0d13'; ctx.lineCap = 'round';
+    ctx.lineWidth = 5 + bulk * 2.4;
+    ctx.beginPath();
+    ctx.moveTo(x - 3.6, cy - 12); ctx.lineTo(x - 3.6 + legSwing, cy - 1);
+    ctx.moveTo(x + 3.6, cy - 12); ctx.lineTo(x + 3.6 - legSwing, cy - 1);
+    ctx.stroke();
+    // brazos (más abiertos con Carisma/Liderazgo)
+    const armOut = 1.6 + t.stance * 3.4;
+    ctx.lineWidth = 4 + bulk * 2;
+    ctx.beginPath();
+    ctx.moveTo(x - bodyW / 2 + 1, cy - bodyH - 2);
+    ctx.lineTo(x - bodyW / 2 - armOut - legSwing * 0.4, cy - 12);
+    ctx.moveTo(x + bodyW / 2 - 1, cy - bodyH - 2);
+    ctx.lineTo(x + bodyW / 2 + armOut + legSwing * 0.4, cy - 12);
+    ctx.stroke();
+    // torso
+    const g = ctx.createLinearGradient(x - bodyW / 2, cy - bodyH, x + bodyW / 2, cy);
+    g.addColorStop(0, '#232a36'); g.addColorStop(1, '#080b10');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(x - bodyW / 2 + lean * 0.3, cy - bodyH - 4, bodyW, bodyH + 4, 6); }
+    else ctx.rect(x - bodyW / 2, cy - bodyH - 4, bodyW, bodyH + 4);
+    ctx.fill();
+    // contorno luminoso
+    ctx.strokeStyle = rgba(t.accent, 0.35 + t.overall * 0.4); ctx.lineWidth = 1.4; ctx.stroke();
+    // núcleo de energía
+    ctx.fillStyle = rgba(t.accent, 0.85);
+    ctx.beginPath(); ctx.arc(x + lean * 0.3, cy - bodyH * 0.62, 2 + t.core * 2.6, 0, 7); ctx.fill();
+    // cabeza
+    ctx.fillStyle = '#10141c';
+    ctx.beginPath(); ctx.arc(x + lean, cy - bodyH - 4 - headR, headR, 0, 7); ctx.fill();
+    ctx.strokeStyle = rgba(t.accent, 0.4 + t.overall * 0.35); ctx.lineWidth = 1.2; ctx.stroke();
+    // halo mental
+    if (t.mind > 0.12) {
+      ctx.strokeStyle = rgba(t.accent, t.mind * 0.55);
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.ellipse(x + lean, cy - bodyH - 6 - headR * 1.7, headR * 1.25, headR * 0.42, 0, 0, 7); ctx.stroke();
+    }
+    // dirección de la mirada
+    ctx.fillStyle = rgba(t.accent, 0.75);
+    const dxx = dir === 'left' ? -headR * 0.55 : dir === 'right' ? headR * 0.55 : 0;
+    const dyy = dir === 'up' ? -headR * 0.4 : headR * 0.25;
+    ctx.beginPath(); ctx.arc(x + lean + dxx, cy - bodyH - 4 - headR + dyy, 1.7, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawNpc(ctx, p) {
+    const x = p.x, y = p.y;
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.beginPath(); ctx.ellipse(x, y + 2, 8, 3.6, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = mix(p.def.color, '#000000', 0.35);
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x - 7, y - 22, 14, 20, 5); else ctx.rect(x - 7, y - 22, 14, 20);
+    ctx.fill();
+    ctx.fillStyle = mix(p.def.color, '#000000', 0.05);
+    ctx.beginPath(); ctx.arc(x, y - 28, 6.4, 0, 7); ctx.fill();
+    ctx.font = '15px -apple-system, Segoe UI Emoji, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(p.def.icon, x, y - 40);
+    ctx.restore();
+  }
+
+  function drawSpot(ctx, sp) {
+    const x = (sp.x + 0.5) * TILE, y = (sp.y + 0.5) * TILE;
+    ctx.save();
+    const pulse = 0.5 + Math.sin(G.time * 2) * 0.16;
+    ctx.strokeStyle = rgba('#34d399', 0.5 * pulse);
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(x, y, 26 + pulse * 5, 0, 7); ctx.stroke();
+    ctx.font = '24px -apple-system, Segoe UI Emoji, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(sp.icon, x, y - 26);
+    ctx.font = '600 13px -apple-system, Segoe UI, sans-serif';
+    const tw = ctx.measureText(sp.name).width;
+    ctx.fillStyle = 'rgba(10,14,20,.72)';
+    ctx.fillRect(x - tw / 2 - 7, y - 60, tw + 14, 20);
+    ctx.fillStyle = '#e8eef6';
+    ctx.fillText(sp.name, x, y - 50);
+    ctx.restore();
+  }
+
+  function render() {
+    const ctx = G.ctx, cv = G.canvas;
+    if (!ctx) return;
+    const w = cv.width / G.dpr, h = cv.height / G.dpr;
+    const world = G.world, p = G.player;
+
+    // cámara centrada en el jugador, limitada al mapa
+    G.cam.x = clamp(p.x - w / 2, 0, Math.max(0, world.W * TILE - w));
+    G.cam.y = clamp(p.y - h / 2, 0, Math.max(0, world.H * TILE - h));
+
+    ctx.setTransform(G.dpr, 0, 0, G.dpr, 0, 0);
+    ctx.fillStyle = '#0a1014';
+    ctx.fillRect(0, 0, w, h);
+    ctx.save();
+    ctx.translate(-Math.round(G.cam.x), -Math.round(G.cam.y));
+
+    const x0 = Math.max(0, Math.floor(G.cam.x / TILE) - 1), x1 = Math.min(world.W - 1, Math.ceil((G.cam.x + w) / TILE));
+    const y0 = Math.max(0, Math.floor(G.cam.y / TILE) - 1), y1 = Math.min(world.H - 1, Math.ceil((G.cam.y + h) / TILE));
+
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        const i = y * world.W + x;
+        const t = world.tiles[i];
+        if (t === T.BUILD) { ctx.fillStyle = '#233043'; ctx.fillRect(x * TILE, y * TILE, TILE + 1, TILE + 1); continue; }
+        drawTile(ctx, t, x, y, world.shade[i], G.time);
+      }
+    }
+
+    // props detrás del jugador
+    const visProps = world.props.filter(pr => pr.x >= x0 - 1 && pr.x <= x1 + 1 && pr.y >= y0 - 1 && pr.y <= y1 + 2);
+    visProps.filter(pr => pr.y * TILE < p.y).forEach(pr => drawProp(ctx, pr));
+
+    world.spots.forEach(sp => {
+      if (sp.x < x0 - 3 || sp.x > x1 + 3 || sp.y < y0 - 3 || sp.y > y1 + 3) return;
+      drawSpot(ctx, sp);
+    });
+
+    world.buildings.forEach(b => {
+      if (b.x + b.w < x0 - 1 || b.x > x1 + 1 || b.y + b.h < y0 - 2 || b.y > y1 + 1) return;
+      drawBuilding(ctx, b);
+    });
+
+    G.npcs.forEach(n => {
+      if (n.x < G.cam.x - 60 || n.x > G.cam.x + w + 60 || n.y < G.cam.y - 60 || n.y > G.cam.y + h + 60) return;
+      drawNpc(ctx, n);
+    });
+
+    drawAvatarSprite(ctx, p.x, p.y, G.s.stats, p.dir, p.anim, p.moving);
+
+    visProps.filter(pr => pr.y * TILE >= p.y).forEach(pr => drawProp(ctx, pr));
+
+    ctx.restore();
+
+    // velo de luz según la hora
+    const [tint, alpha] = dayTint(G.s.hour);
+    if (alpha > 0) {
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = rgba(tint, alpha);
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    // viñeta
+    const vg = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.45, w / 2, h / 2, Math.max(w, h) * 0.78);
+    vg.addColorStop(0, 'rgba(0,0,0,0)');
+    vg.addColorStop(1, 'rgba(0,0,0,.42)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  function drawMinimap(canvas) {
+    const world = G.world, ctx = canvas.getContext('2d');
+    const scale = 4;
+    canvas.width = world.W * scale; canvas.height = world.H * scale;
+    for (let y = 0; y < world.H; y++) {
+      for (let x = 0; x < world.W; x++) {
+        const t = world.tiles[y * world.W + x];
+        ctx.fillStyle = t === T.BUILD ? '#8ea3c4' : (TILE_COLOR[t] || '#2f6b3d');
+        ctx.fillRect(x * scale, y * scale, scale, scale);
+      }
+    }
+    world.buildings.forEach(b => {
+      ctx.fillStyle = b.color;
+      ctx.fillRect(b.x * scale, b.y * scale, b.w * scale, b.h * scale);
+      ctx.font = (scale * 3) + 'px -apple-system, Segoe UI Emoji, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(b.icon, (b.x + b.w / 2) * scale, (b.y + b.h / 2) * scale);
+    });
+    world.spots.forEach(sp => {
+      ctx.font = (scale * 3) + 'px -apple-system, Segoe UI Emoji, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(sp.icon, (sp.x + 0.5) * scale, (sp.y + 0.5) * scale);
+    });
+    // jugador
+    const px = G.player.x / TILE * scale, py = G.player.y / TILE * scale;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(px, py, scale * 1.5, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#5b8cff'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(px, py, scale * 3, 0, 7); ctx.stroke();
+  }
+
+  /* ================================================================
+     10. MOVIMIENTO, INTERACCIÓN Y BUCLE PRINCIPAL
+     ================================================================ */
+
+  const HALF = 9; // media anchura de la caja de colisión del jugador
+
+  function blocked(world, x, y) {
+    const pts = [[x - HALF, y - HALF], [x + HALF, y - HALF], [x - HALF, y - 1], [x + HALF, y - 1]];
+    for (const [px, py] of pts) if (world.isSolid(Math.floor(px / TILE), Math.floor(py / TILE))) return true;
+    return false;
+  }
+
+  function movePlayer(dt) {
+    const p = G.player, w = G.world;
+    let dx = 0, dy = 0;
+    if (G.keys.left) dx -= 1;
+    if (G.keys.right) dx += 1;
+    if (G.keys.up) dy -= 1;
+    if (G.keys.down) dy += 1;
+    if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
+
+    let sp = p.speed;
+    if (hasItem(G.s, 'bici')) sp *= 1.45;
+    if (G.s.energy < maxEnergy(G.s) * 0.2) sp *= 0.78;
+    if (G.s.flags.sick) sp *= 0.85;
+
+    p.moving = !!(dx || dy);
+    if (p.moving) {
+      p.anim += dt;
+      if (Math.abs(dx) > Math.abs(dy)) p.dir = dx > 0 ? 'right' : 'left';
+      else if (dy) p.dir = dy > 0 ? 'down' : 'up';
+      const nx = p.x + dx * sp * dt;
+      if (!blocked(w, nx, p.y)) p.x = nx;
+      const ny = p.y + dy * sp * dt;
+      if (!blocked(w, p.x, ny)) p.y = ny;
+      p.x = clamp(p.x, TILE, (w.W - 1) * TILE);
+      p.y = clamp(p.y, TILE, (w.H - 1) * TILE);
+    }
+  }
+
+  function moveNpcs(dt) {
+    G.npcs.forEach(n => {
+      n.t -= dt;
+      if (n.t <= 0) {
+        n.t = 1.2 + Math.random() * 2.6;
+        const a = Math.random() * Math.PI * 2;
+        n.vx = Math.cos(a) * 26; n.vy = Math.sin(a) * 26;
+        if (Math.random() < 0.3) { n.vx = 0; n.vy = 0; }
+      }
+      const hx = (n.hx + 0.5) * TILE, hy = (n.hy + 0.5) * TILE;
+      const d = Math.hypot(n.x - hx, n.y - hy);
+      if (d > n.def.range * TILE) {           // vuelve a su zona
+        n.vx = (hx - n.x) / d * 26; n.vy = (hy - n.y) / d * 26;
+      }
+      const nx = n.x + n.vx * dt, ny = n.y + n.vy * dt;
+      if (!G.world.isSolid(Math.floor(nx / TILE), Math.floor(n.y / TILE))) n.x = nx; else n.vx = -n.vx;
+      if (!G.world.isSolid(Math.floor(n.x / TILE), Math.floor(ny / TILE))) n.y = ny; else n.vy = -n.vy;
+    });
+  }
+
+  // Devuelve el objetivo interactuable más cercano (edificio, punto o NPC).
+  function findNear() {
+    const p = G.player, w = G.world;
+    let best = null, bestD = Infinity;
+    w.buildings.forEach(b => {
+      const cx = (b.door.x + 0.5) * TILE, cy = (b.door.y + 0.6) * TILE;
+      const d = Math.hypot(p.x - cx, p.y - cy);
+      if (d < TILE * 1.4 && d < bestD) { bestD = d; best = { kind: 'place', place: PLACE_BY[b.id], label: PLACE_BY[b.id].hint }; }
+    });
+    w.spots.forEach(sp => {
+      const cx = (sp.x + 0.5) * TILE, cy = (sp.y + 0.5) * TILE;
+      const d = Math.hypot(p.x - cx, p.y - cy);
+      if (d < TILE * 2.2 && d < bestD) { bestD = d; best = { kind: 'place', place: PLACE_BY[sp.id], label: PLACE_BY[sp.id].hint }; }
+    });
+    G.npcs.forEach(n => {
+      const d = Math.hypot(p.x - n.x, p.y - n.y);
+      if (d < 46 && d < bestD) { bestD = d; best = { kind: 'npc', npc: n, label: `Hablar con ${n.def.name}` }; }
+    });
+    return best;
+  }
+
+  function loop(ts) {
+    if (!G.running) return;
+    const dt = Math.min(0.05, (ts - G.last) / 1000 || 0);
+    G.last = ts; G.time += dt;
+    if (!G.modalOpen) { movePlayer(dt); moveNpcs(dt); }
+    G.near = G.modalOpen ? null : findNear();
+    updatePrompt();
+    G.hudAcc = (G.hudAcc || 0) + dt;
+    if (G.hudAcc > 0.2) { G.hudAcc = 0; updateHUD(); }
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  /* ================================================================
+     11. INTERFAZ: CREACIÓN DEL PERSONAJE
+     ================================================================ */
+
+  const $ = id => document.getElementById(id);
+  const el = (tag, cls, html) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  };
+
+  const NAMES = ['Alex', 'Nora', 'Iván', 'Lucía', 'Bruno', 'Marta', 'Leo', 'Vera', 'Hugo', 'Sol', 'Dani', 'Irene'];
+
+  const draft = {
+    name: 'Alex', age: 26, bg: 'estudiante', perk: 'madrugador',
+    stats: emptyStats(START_BASE), seed: (Date.now() & 0x7fffffff) >>> 0,
+  };
+
+  const draftSpent = () => STAT_KEYS.reduce((a, k) => a + (draft.stats[k] - START_BASE), 0);
+  const draftLeft = () => START_POOL - draftSpent();
+
+  // Vista previa: características + bonus del trasfondo (así el avatar reacciona a todo).
+  function previewStats() {
+    const bg = BACKGROUNDS.find(b => b.id === draft.bg) || BACKGROUNDS[0];
+    const out = {};
+    STAT_KEYS.forEach(k => { out[k] = c100(draft.stats[k] + (bg.bonus[k] || 0)); });
+    return out;
+  }
+
+  function buildCreator() {
+    // --- características ---
+    const rows = $('statRows');
+    rows.innerHTML = '';
+    STATS.forEach(st => {
+      const row = el('div', 'stat-row');
+      row.innerHTML =
+        `<div class="nm"><em>${st.icon}</em>${st.label}</div>
+         <div class="bar"><i style="background:${st.color}"></i></div>
+         <div class="vv"></div>
+         <div class="pm"><button data-d="-1" aria-label="Bajar ${st.label}">−</button><button data-d="1" aria-label="Subir ${st.label}">+</button></div>`;
+      const desc = el('div', 'stat-desc', st.desc);
+      row.querySelectorAll('button').forEach(b => {
+        b.addEventListener('click', () => {
+          const d = Number(b.dataset.d);
+          const v = draft.stats[st.key] + d;
+          if (d > 0 && (draftLeft() <= 0 || v > START_MAX)) return;
+          if (d < 0 && v < START_BASE) return;
+          draft.stats[st.key] = v;
+          syncCreator();
+        });
+      });
+      row.dataset.key = st.key;
+      rows.appendChild(row);
+      rows.appendChild(desc);
+    });
+
+    // --- trasfondos ---
+    const bgGrid = $('bgGrid');
+    bgGrid.innerHTML = '';
+    BACKGROUNDS.forEach(b => {
+      const bonus = Object.keys(b.bonus).map(k => `${b.bonus[k] > 0 ? '+' : ''}${b.bonus[k]} ${STAT_BY[k].label}`).join(' · ');
+      const btn = el('button', 'opt',
+        `<div class="t">${b.icon} ${b.name}</div>
+         <div class="d">${esc(b.desc)}</div>
+         <div class="b">${esc(bonus)} · ${money(b.money)}${b.debt ? ' · deuda ' + money(b.debt) : ''}</div>
+         <div class="d">${esc(b.perkText)}</div>`);
+      btn.dataset.id = b.id;
+      btn.addEventListener('click', () => { draft.bg = b.id; syncCreator(); });
+      bgGrid.appendChild(btn);
+    });
+
+    // --- rasgos ---
+    const pGrid = $('perkGrid');
+    pGrid.innerHTML = '';
+    PERKS.forEach(p => {
+      const btn = el('button', 'opt',
+        `<div class="t">${p.icon} ${p.name}</div>
+         <div class="d">${esc(p.desc)}</div>
+         <div class="b">${esc(p.bonusText)}</div>`);
+      btn.dataset.id = p.id;
+      btn.addEventListener('click', () => { draft.perk = p.id; syncCreator(); });
+      pGrid.appendChild(btn);
+    });
+
+    $('inName').addEventListener('input', e => { draft.name = e.target.value; });
+    $('inAge').addEventListener('input', e => { draft.age = clamp(Number(e.target.value) || 26, 16, 80); syncCreator(); });
+
+    $('btnRandomChar').addEventListener('click', () => {
+      draft.name = NAMES[Math.floor(Math.random() * NAMES.length)];
+      draft.age = 18 + Math.floor(Math.random() * 30);
+      draft.bg = BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)].id;
+      draft.perk = PERKS[Math.floor(Math.random() * PERKS.length)].id;
+      STAT_KEYS.forEach(k => { draft.stats[k] = START_BASE; });
+      let left = START_POOL;
+      while (left > 0) {
+        const k = STAT_KEYS[Math.floor(Math.random() * STAT_KEYS.length)];
+        if (draft.stats[k] >= START_MAX) continue;
+        const add = Math.min(left, 1 + Math.floor(Math.random() * 5), START_MAX - draft.stats[k]);
+        draft.stats[k] += add; left -= add;
+      }
+      $('inName').value = draft.name; $('inAge').value = draft.age;
+      syncCreator();
+    });
+
+    $('btnResetChar').addEventListener('click', () => {
+      STAT_KEYS.forEach(k => { draft.stats[k] = START_BASE; });
+      syncCreator();
+    });
+
+    $('btnStart').addEventListener('click', () => {
+      const name = ($('inName').value || '').trim();
+      if (!name) { $('createWarn').textContent = 'Ponle un nombre a tu personaje.'; return; }
+      draft.name = name;
+      const s = newGame({ name: draft.name, age: draft.age, bg: draft.bg, perk: draft.perk,
+        stats: draft.stats, seed: draft.seed });
+      s.points += Math.max(0, draftLeft());
+      startGame(s, null);
+    });
+
+    $('btnLoadSave').addEventListener('click', () => {
+      const loaded = loadGame();
+      if (!loaded) { $('createWarn').textContent = 'No hay ninguna partida guardada en este navegador.'; return; }
+      startGame(loaded.s, loaded.pos);
+    });
+
+    syncCreator();
+  }
+
+  function syncCreator() {
+    const left = draftLeft();
+    $('poolLeft').textContent = left;
+    $('poolLeft').className = 'n' + (left === 0 ? ' zero' : '');
+    document.querySelectorAll('#statRows .stat-row').forEach(row => {
+      const k = row.dataset.key, v = draft.stats[k];
+      row.querySelector('.bar > i').style.width = v + '%';
+      row.querySelector('.vv').textContent = v;
+      const [minus, plus] = row.querySelectorAll('.pm button');
+      minus.disabled = v <= START_BASE;
+      plus.disabled = left <= 0 || v >= START_MAX;
+    });
+    document.querySelectorAll('#bgGrid .opt').forEach(b => b.classList.toggle('sel', b.dataset.id === draft.bg));
+    document.querySelectorAll('#perkGrid .opt').forEach(b => b.classList.toggle('sel', b.dataset.id === draft.perk));
+
+    const st = previewStats();
+    $('createAvatar').innerHTML = avatarSVG(st);
+    const t = avatarTraits(st);
+    const bg = BACKGROUNDS.find(b => b.id === draft.bg), pk = PERKS.find(p => p.id === draft.perk);
+    $('createTags').innerHTML =
+      `<span class="pill">${bg.icon} ${esc(bg.name)}</span>`
+      + `<span class="pill">${pk.icon} ${esc(pk.name)}</span>`
+      + `<span class="pill" style="color:${t.accent};border-color:${rgba(t.accent, .5)}">${t.dominant.icon} ${t.dominant.label} dominante</span>`
+      + `<span class="pill">Media ${Math.round(t.overall * 100)}</span>`;
+    $('createWarn').textContent = left > 0
+      ? `Te quedan ${left} puntos: si empiezas ahora los conservarás para gastarlos en el juego.` : '';
+  }
+
+  /* ================================================================
+     12. INTERFAZ DEL JUEGO: HUD, AVISOS Y MODALES
+     ================================================================ */
+
+  function toast(text, kind) {
+    const box = $('toasts');
+    if (!box) return;
+    const t = el('div', 'toast ' + (kind || 'neutral'), text);
+    box.appendChild(t);
+    while (box.children.length > 6) box.removeChild(box.firstChild);
+    setTimeout(() => {
+      t.style.transition = 'opacity .4s, transform .4s';
+      t.style.opacity = '0'; t.style.transform = 'translateX(14px)';
+      setTimeout(() => t.remove(), 420);
+    }, 4200 + Math.random() * 600);
+  }
+  const showOut = out => (out || []).forEach(o => toast(o.t, o.k));
+
+  const METERS = [
+    { key: 'energy', label: '⚡ Energía', color: '#4ade80', max: s => maxEnergy(s) },
+    { key: 'stress', label: '🌡️ Estrés',  color: '#ff6b6b', max: () => 100, invert: true },
+    { key: 'mood',   label: '🙂 Ánimo',   color: '#ffb057', max: () => 100 },
+    { key: 'rep',    label: '⭐ Reputación', color: '#5b8cff', max: () => 100 },
+  ];
+
+  function buildMeters() {
+    const box = $('hudMeters');
+    box.innerHTML = '';
+    G.hudRefs = null;
+    METERS.forEach(m => {
+      const n = el('div', 'meter',
+        `<div class="lbl"><span>${m.label}</span><b data-v="${m.key}">0</b></div>
+         <div class="bar"><i data-b="${m.key}" style="background:${m.color}"></i></div>`);
+      box.appendChild(n);
+    });
+    const extra = el('div', 'meter',
+      `<div class="lbl"><span>📇 Contactos</span><b data-v="net">0</b></div>
+       <div class="lbl"><span>🔥 Racha</span><b data-v="streak">0</b></div>
+       <div class="lbl"><span>💹 Ingresos/día</span><b data-v="inc">0</b></div>`);
+    box.appendChild(extra);
+  }
+
+  // Referencias del HUD cacheadas: se consultan una vez, no en cada fotograma.
+  function hudRefs() {
+    if (G.hudRefs) return G.hudRefs;
+    const r = { bars: {}, vals: {} };
+    ['hudDay', 'hudClock', 'hudClockIcon', 'hudMoney', 'hudLevel', 'hudDebtChip', 'hudDebt',
+     'hudPointsChip', 'hudPoints', 'hudPlace'].forEach(id => { r[id] = $(id); });
+    document.querySelectorAll('[data-b]').forEach(n => { r.bars[n.dataset.b] = n; });
+    document.querySelectorAll('[data-v]').forEach(n => { r.vals[n.dataset.v] = n; });
+    G.hudRefs = r;
+    return r;
+  }
+
+  function updateHUD() {
+    const s = G.s;
+    if (!s || !$('hudDay')) return;
+    const R = hudRefs();
+    R.hudDay.textContent = s.day;
+    R.hudClock.textContent = hhmm(s.hour);
+    R.hudClockIcon.textContent = s.hour < 7 ? '🌙' : s.hour < 12 ? '🌅' : s.hour < 18 ? '🌤️' : s.hour < 21 ? '🌇' : '🌙';
+    R.hudMoney.textContent = money(s.money);
+    R.hudLevel.textContent = s.level;
+    R.hudDebtChip.style.display = s.debt > 0 ? '' : 'none';
+    R.hudDebt.textContent = money(s.debt);
+    R.hudPointsChip.style.display = s.points > 0 ? '' : 'none';
+    R.hudPoints.textContent = s.points;
+
+    METERS.forEach(m => {
+      const max = m.max(s), v = clamp(s[m.key], 0, max);
+      const b = R.bars[m.key];
+      const t = R.vals[m.key];
+      if (b) {
+        b.style.width = (v / max * 100) + '%';
+        b.style.background = m.invert
+          ? (v > 70 ? '#ff6b6b' : v > 45 ? '#ffb057' : '#4ade80')
+          : (m.key === 'energy' ? (v / max < 0.25 ? '#ff6b6b' : m.color) : m.color);
+      }
+      if (t) t.textContent = Math.round(v) + (m.key === 'energy' ? '/' + max : '');
+    });
+    const setV = (k, val) => { const n = R.vals[k]; if (n) n.textContent = val; };
+    setV('net', s.net);
+    setV('streak', s.counters.streak + ' d');
+    setV('inc', money(totalBizIncome(s)));
+
+    const near = G.near;
+    R.hudPlace.textContent = near && near.kind === 'place'
+      ? `${near.place.icon} ${near.place.name}` : districtName(G.player);
+  }
+
+  function districtName(p) {
+    const ty = p.y / TILE;
+    if (ty < 20) return '🌳 Distrito Norte';
+    if (ty < 35) return '⛲ Centro';
+    if (ty < 51) return '🏦 Distrito Financiero';
+    if (ty < 70) return '🛒 Distrito Sur';
+    return '⚓ Costa';
+  }
+
+  function updatePrompt() {
+    const p = G.promptEl || (G.promptEl = $('prompt'));
+    if (!p) return;
+    const label = G.near && !G.modalOpen ? G.near.label : '';
+    if (label) {
+      p.classList.add('on');
+      if (G.promptLabel !== label) {
+        (G.promptTextEl || (G.promptTextEl = $('promptText'))).textContent = label;
+        G.promptLabel = label;
+      }
+    } else { p.classList.remove('on'); G.promptLabel = ''; }
+  }
+
+  /* ------------------------- Modal genérico ------------------------- */
+
+  function openModal(opts) {
+    const back = $('modalBack');
+    $('mIcon').textContent = opts.icon || '📋';
+    $('mTitle').textContent = opts.title || '';
+    $('mSub').textContent = opts.sub || '';
+    $('mBody').innerHTML = '';
+    const tabsBox = $('mTabs');
+    tabsBox.innerHTML = ''; tabsBox.style.display = 'none';
+    if (opts.tabs && opts.tabs.length) {
+      tabsBox.style.display = 'flex';
+      opts.tabs.forEach((t, i) => {
+        const b = el('button', 'tab' + (i === 0 ? ' on' : ''), t.label);
+        b.addEventListener('click', () => {
+          tabsBox.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+          b.classList.add('on');
+          $('mBody').innerHTML = '';
+          $('mBody').appendChild(t.render());
+        });
+        tabsBox.appendChild(b);
+      });
+      $('mBody').appendChild(opts.tabs[0].render());
+    } else if (opts.render) {
+      $('mBody').appendChild(opts.render());
+    }
+    $('modal').classList.toggle('narrow', !!opts.narrow);
+    back.classList.add('on');
+    G.modalOpen = true;
+    G.keys = {};
+    updateHUD();
+  }
+
+  function closeModal() {
+    $('modalBack').classList.remove('on');
+    G.modalOpen = false;
+    updateHUD();
+  }
+
+  const refreshModal = fn => { $('mBody').innerHTML = ''; $('mBody').appendChild(fn()); };
+
+  /* ------------------------- Lugares y acciones ---------------------- */
+
+  function costPills(s, place, act) {
+    const bits = [];
+    const h = timeCost(s, act.h || 0);
+    if (h) bits.push(`<span class="pill time">⏱ ${h} h</span>`);
+    const e = energyCost(s, act.e || 0);
+    if (e > 0) bits.push(`<span class="pill en">⚡ ${e}</span>`);
+    else if (e < 0) bits.push(`<span class="pill en">⚡ +${-e}</span>`);
+    const c = actionCost(s, act, place);
+    if (c) bits.push(`<span class="pill cost">💶 ${money(c)}</span>`);
+    if (act.g) Object.keys(act.g).forEach(k =>
+      bits.push(`<span class="pill xp" style="color:${STAT_BY[k].color}">${STAT_BY[k].icon} +${act.g[k]}</span>`));
+    if (act.net) bits.push('<span class="pill">📇 contactos</span>');
+    if (act.rep) bits.push(`<span class="pill">⭐ +${act.rep}</span>`);
+    if (act.st) bits.push(`<span class="pill">${act.st > 0 ? '🌡️ +' : '🌡️ '}${Math.round(act.st)}</span>`);
+    if (act.sp === 'trabajo' || act.sp === 'trabajoMedio' || act.sp === 'jornal' || act.sp === 'darClase')
+      bits.push('<span class="pill money">💰 cobras</span>');
+    const rq = act.reqText || reqText(s, act);
+    if (rq) bits.push(`<span class="pill req">🔒 ${esc(rq)}</span>`);
+    return bits.join('');
+  }
+
+  function placeBody(place) {
+    const s = G.s;
+    const wrap = el('div');
+    if (place.about) wrap.appendChild(el('p', 'stat-desc', esc(place.about)));
+    const list = el('div', 'act-list');
+    place.actions.forEach(act => {
+      const chk = canDo(s, place, act);
+      const row = el('div', 'act' + (chk.ok ? '' : ' locked'));
+      row.innerHTML =
+        `<div>
+           <div class="t">${act.icon} ${esc(act.label)}</div>
+           <div class="d">${esc(act.desc || '')}</div>
+           <div class="costs">${costPills(s, place, act)}</div>
+           ${chk.ok ? '' : `<div class="d" style="color:var(--warn);margin-top:6px">⚠️ ${esc(chk.why)}</div>`}
+         </div>`;
+      const btn = el('button', 'btn' + (chk.ok ? ' primary' : ''), chk.ok ? 'Hacer' : 'No disponible');
+      btn.disabled = !chk.ok;
+      btn.addEventListener('click', () => runAction(place, act));
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+    return wrap;
+  }
+
+  function openPlace(place) {
+    openModal({
+      icon: place.icon, title: place.name,
+      sub: `Día ${G.s.day} · ${hhmm(G.s.hour)} · ⚡ ${Math.round(G.s.energy)}/${maxEnergy(G.s)} · ${money(G.s.money)}`,
+      render: () => placeBody(place),
+    });
+    G.currentPlace = place;
+  }
+
+  function runAction(place, act) {
+    const s = G.s;
+    const res = doAction(s, place, act);
+    if (!res.ok) { toast('⚠️ ' + res.why, 'warn'); return; }
+    if (res.ui) { openSpecialUI(res.ui, place, act); return; }
+    showOut(res.out);
+    save();
+    if (act.sp === 'dormir') { closeModal(); return; }
+    $('mSub').textContent = `Día ${s.day} · ${hhmm(s.hour)} · ⚡ ${Math.round(s.energy)}/${maxEnergy(s)} · ${money(s.money)}`;
+    refreshModal(() => placeBody(place));
+    updateHUD();
+  }
+
+  /* --------------------- Interfaces especiales ---------------------- */
+
+  function amountForm(title, hint, maxVal, onOk, quick) {
+    const wrap = el('div');
+    wrap.appendChild(el('p', 'stat-desc', hint));
+    const f = el('div', 'field',
+      `<label for="amtIn">${esc(title)}</label>
+       <input class="input" id="amtIn" type="number" min="1" step="10" value="${Math.max(0, Math.min(maxVal, 100))}" />`);
+    wrap.appendChild(f);
+    const row = el('div', 'menu-row', '');
+    row.style.justifyContent = 'flex-start';
+    (quick || [0.25, 0.5, 1]).forEach(q => {
+      const b = el('button', 'btn sm', q === 1 ? 'Todo' : Math.round(q * 100) + ' %');
+      b.addEventListener('click', () => { $('amtIn').value = Math.floor(maxVal * q); });
+      row.appendChild(b);
+    });
+    wrap.appendChild(row);
+    const ok = el('button', 'btn primary wide', 'Confirmar');
+    ok.style.marginTop = '14px';
+    ok.addEventListener('click', () => {
+      const res = onOk(Number($('amtIn').value));
+      if (!res.ok) { toast('⚠️ ' + res.why, 'warn'); return; }
+      showOut(res.out); save(); updateHUD(); closeModal();
+    });
+    wrap.appendChild(ok);
+    const back = el('button', 'btn ghost wide', '← Volver');
+    back.style.marginTop = '8px';
+    back.addEventListener('click', () => openPlace(G.currentPlace));
+    wrap.appendChild(back);
+    return wrap;
+  }
+
+  function openSpecialUI(kind, place, act) {
+    const s = G.s;
+    if (kind === 'depositar') {
+      openModal({ icon: '📥', title: 'Ingresar en el ahorro', narrow: true,
+        sub: `Caja: ${money(s.money)} · Ahorro: ${money(s.savings)}`,
+        render: () => amountForm('Cantidad a ingresar', 'Tu ahorro renta un 0,25 % diario y no se gasta en el día a día.',
+          s.money, v => bankDeposit(s, v)) });
+    } else if (kind === 'retirar') {
+      openModal({ icon: '📤', title: 'Retirar del ahorro', narrow: true,
+        sub: `Ahorro: ${money(s.savings)}`,
+        render: () => amountForm('Cantidad a retirar', 'Vuelve a tu caja para poder gastarlo.', s.savings, v => bankWithdraw(s, v)) });
+    } else if (kind === 'prestamo') {
+      const lim = Math.max(0, loanLimit(s));
+      openModal({ icon: '🏧', title: 'Pedir un préstamo', narrow: true,
+        sub: `Máximo hoy: ${money(lim)} · Deuda actual: ${money(s.debt)}`,
+        render: () => amountForm('Cantidad a pedir',
+          'Interés del 1 % diario sobre la deuda. Pide sólo lo que vayas a invertir.', lim, v => bankLoan(s, v)) });
+    } else if (kind === 'amortizar') {
+      openModal({ icon: '✂️', title: 'Amortizar deuda', narrow: true,
+        sub: `Deuda: ${money(s.debt)} · Caja: ${money(s.money)}`,
+        render: () => amountForm('Cantidad a amortizar', 'Cada euro que devuelves deja de generar intereses.',
+          Math.min(s.money, s.debt), v => bankRepay(s, v)) });
+    } else if (kind === 'tienda') {
+      openModal({ icon: '🛍️', title: 'Bazar Suministros', sub: `Caja: ${money(s.money)}`, render: shopBody });
+    } else if (kind === 'fundar') {
+      openModal({ icon: '📋', title: 'Registrar un negocio', sub: `Caja: ${money(s.money)}`, render: foundBody });
+    }
+  }
+
+  function shopBody() {
+    const s = G.s;
+    const wrap = el('div');
+    wrap.appendChild(el('p', 'stat-desc', 'Compras únicas que cambian cómo juegas el resto de la partida.'));
+    const grid = el('div', 'shop-grid');
+    ITEMS.forEach(it => {
+      const owned = hasItem(s, it.id);
+      const card = el('div', 'item' + (owned ? ' owned' : ''));
+      card.innerHTML = `<div class="t">${it.icon} ${esc(it.name)}</div><div class="d">${esc(it.desc)}</div>`;
+      const btn = el('button', 'btn' + (owned ? '' : ' primary') + ' wide', owned ? '✓ En tu poder' : money(it.cost));
+      btn.disabled = owned || s.money < it.cost;
+      btn.addEventListener('click', () => {
+        const r = buyItem(s, it.id);
+        if (!r.ok) { toast('⚠️ ' + r.why, 'warn'); return; }
+        showOut(r.out); save(); updateHUD();
+        $('mSub').textContent = `Caja: ${money(s.money)}`;
+        refreshModal(shopBody);
+      });
+      card.appendChild(btn);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+    const back = el('button', 'btn ghost wide', '← Volver al bazar');
+    back.style.marginTop = '14px';
+    back.addEventListener('click', () => openPlace(PLACE_BY.bazar));
+    wrap.appendChild(back);
+    return wrap;
+  }
+
+  function foundBody() {
+    const s = G.s;
+    const wrap = el('div');
+    wrap.appendChild(el('p', 'stat-desc',
+      'Elige el modelo de negocio. Cada uno depende de características distintas: el tuyo rendirá según lo que hayas desarrollado.'));
+    BIZ_TYPES.forEach(t => {
+      const chk = canFound(s, t.id);
+      const card = el('div', 'biz');
+      const statTxt = t.stats.map(k => `${STAT_BY[k].icon} ${STAT_BY[k].label} ${s.stats[k]}`).join(' · ');
+      const reqTxt = Object.keys(t.req || {}).map(k => `${STAT_BY[k].label} ${t.req[k]}`).join(' · ');
+      card.innerHTML =
+        `<div class="top"><div class="nm">${t.icon} ${esc(t.name)}</div>
+           <span class="lv">${money(t.cost)}</span></div>
+         <div class="d" style="font-size:12.5px;color:var(--muted);margin-top:6px">${esc(t.desc)}</div>
+         <div class="stats">
+           <div>Ingreso base<b>${money(t.base)}/día</b></div>
+           <div>Costes fijos<b>${money(t.upkeep)}/día</b></div>
+           <div>Depende de<b style="font-size:11.5px">${esc(statTxt)}</b></div>
+         </div>
+         ${reqTxt ? `<div class="tag-row"><span class="pill req">🔒 ${esc(reqTxt)}</span></div>` : ''}`;
+      const acts = el('div', 'acts');
+      const btn = el('button', 'btn' + (chk.ok ? ' primary' : ''), chk.ok ? 'Registrar este negocio' : chk.why);
+      btn.disabled = !chk.ok;
+      btn.addEventListener('click', () => {
+        const name = prompt('Nombre para tu negocio:', t.name) || t.name;
+        const r = foundBiz(s, t.id, name);
+        if (!r.ok) { toast('⚠️ ' + r.why, 'warn'); return; }
+        showOut(r.out); save(); updateHUD(); closeModal();
+      });
+      acts.appendChild(btn);
+      card.appendChild(acts);
+      wrap.appendChild(card);
+    });
+    const back = el('button', 'btn ghost wide', '← Volver');
+    back.style.marginTop = '10px';
+    back.addEventListener('click', () => openPlace(PLACE_BY.incubadora));
+    wrap.appendChild(back);
+    return wrap;
+  }
+
+  function openNpc(npc) {
+    const out = talkTo(G.s, npc.def);
+    save();
+    openModal({
+      icon: npc.def.icon, title: npc.def.name, sub: npc.def.role, narrow: true,
+      render: () => {
+        const w = el('div');
+        out.forEach(o => {
+          const p = el('p', 'dialog-txt', esc(o.t));
+          if (o.k === 'good' || o.k === 'gold') p.style.color = 'var(--good)';
+          w.appendChild(p);
+        });
+        const b = el('button', 'btn primary wide', 'Seguir tu camino');
+        b.style.marginTop = '14px';
+        b.addEventListener('click', closeModal);
+        w.appendChild(b);
+        return w;
+      },
+    });
+  }
+
+  /* ------------------------- Panel de perfil ------------------------- */
+
+  function profileBody() {
+    const s = G.s;
+    const wrap = el('div');
+    const grid = el('div', 'profile-grid');
+
+    const left = el('div');
+    const stage = el('div', 'avatar-stage', avatarSVG(s.stats));
+    left.appendChild(stage);
+    const bg = BACKGROUNDS.find(b => b.id === s.bg), pk = PERKS.find(p => p.id === s.perk);
+    const t = avatarTraits(s.stats);
+    left.appendChild(el('div', 'tag-row',
+      `<span class="pill">${bg.icon} ${esc(bg.name)}</span>
+       <span class="pill">${pk.icon} ${esc(pk.name)}</span>
+       <span class="pill" style="color:${t.accent};border-color:${rgba(t.accent, .5)}">${t.dominant.icon} ${t.dominant.label}</span>
+       ${s.job.has ? `<span class="pill">💼 ${esc(s.job.title)} · ${money(s.job.salary)}/jornada</span>` : '<span class="pill">🔍 Sin empleo</span>'}`));
+    left.appendChild(el('p', 'stat-desc', esc(pk.desc + ' ' + pk.bonusText + '.')));
+
+    const right = el('div');
+    right.appendChild(el('div', 'kv-grid',
+      `<div class="kv"><div class="k">Nivel</div><div class="v">${s.level}</div></div>
+       <div class="kv"><div class="k">Experiencia</div><div class="v">${Math.round(s.xp)}/${levelNeed(s.level)}</div></div>
+       <div class="kv"><div class="k">Patrimonio</div><div class="v" style="color:var(--gold)">${money(netWorth(s))}</div></div>
+       <div class="kv"><div class="k">Ahorro</div><div class="v">${money(s.savings)}</div></div>
+       <div class="kv"><div class="k">Deuda</div><div class="v" style="color:${s.debt > 0 ? 'var(--danger)' : 'var(--muted-2)'}">${money(s.debt)}</div></div>
+       <div class="kv"><div class="k">Gastos/día</div><div class="v">${money(dailyExpenses(s))}</div></div>
+       <div class="kv"><div class="k">Contactos</div><div class="v">${s.net}</div></div>
+       <div class="kv"><div class="k">Mejor racha</div><div class="v">${s.counters.bestStreak} d</div></div>`));
+
+    if (s.points > 0) {
+      right.appendChild(el('div', 'banner ok',
+        `Tienes <b>${s.points}</b> punto${s.points > 1 ? 's' : ''} de característica sin repartir. Úsalos abajo.`));
+    }
+
+    const rows = el('div');
+    STATS.forEach(st => {
+      const row = el('div', 'stat-row');
+      const need = statNeed(s.stats[st.key]);
+      const prog = Math.round(clamp(s.statxp[st.key] / need, 0, 1) * 100);
+      row.innerHTML =
+        `<div class="nm"><em>${st.icon}</em>${st.label}</div>
+         <div class="bar" title="${prog} % hacia el siguiente punto">
+           <i style="background:${st.color};width:${s.stats[st.key]}%"></i></div>
+         <div class="vv">${s.stats[st.key]}</div>`;
+      const pm = el('div', 'pm');
+      const plus = el('button', '', '+');
+      plus.disabled = s.points <= 0 || s.stats[st.key] >= 100;
+      plus.title = 'Gastar 1 punto';
+      plus.addEventListener('click', () => {
+        if (spendPoint(s, st.key)) { save(); checkAchievements(s, []); refreshModal(profileBody); updateHUD(); }
+      });
+      pm.appendChild(plus);
+      row.appendChild(pm);
+      rows.appendChild(row);
+    });
+    right.appendChild(rows);
+
+    right.appendChild(el('div', 'sect-title', '<span>Perfil de características</span><span class="ln"></span>'));
+    right.appendChild(el('div', 'radar-wrap', radarSVG(s.stats)));
+
+    grid.appendChild(left); grid.appendChild(right);
+    wrap.appendChild(grid);
+
+    wrap.appendChild(el('div', 'sect-title', '<span>Equipo</span><span class="ln"></span>'));
+    const owned = ITEMS.filter(i => hasItem(s, i.id));
+    wrap.appendChild(owned.length
+      ? el('div', 'tag-row', owned.map(i => `<span class="pill">${i.icon} ${esc(i.name)}</span>`).join(''))
+      : el('div', 'empty', 'Todavía no tienes equipo. Pásate por el Bazar del Distrito Sur.'));
+
+    wrap.appendChild(el('div', 'sect-title', '<span>Logros</span><span class="ln"></span>'));
+    const ach = el('div', 'shop-grid');
+    ACHIEVEMENTS.forEach(a => {
+      const got = !!s.achievements[a.id];
+      const c = el('div', 'item' + (got ? ' owned' : ''));
+      c.innerHTML = `<div class="t">${got ? a.icon : '🔒'} ${esc(a.name)}</div><div class="d">${esc(a.desc)}</div>`;
+      c.style.opacity = got ? '1' : '.55';
+      ach.appendChild(c);
+    });
+    wrap.appendChild(ach);
+    return wrap;
+  }
+
+  /* ------------------------ Panel de negocios ------------------------ */
+
+  function bizBody() {
+    const s = G.s;
+    const wrap = el('div');
+    wrap.appendChild(el('div', 'kv-grid',
+      `<div class="kv"><div class="k">Negocios</div><div class="v">${s.bizs.length}</div></div>
+       <div class="kv"><div class="k">Ingreso neto/día</div><div class="v" style="color:${totalBizIncome(s) >= 0 ? 'var(--good)' : 'var(--danger)'}">${money(totalBizIncome(s))}</div></div>
+       <div class="kv"><div class="k">Gastos personales</div><div class="v">${money(dailyExpenses(s))}</div></div>
+       <div class="kv"><div class="k">Reputación</div><div class="v">${Math.round(s.rep)}</div></div>`));
+
+    if (!s.bizs.length) {
+      wrap.appendChild(el('div', 'empty',
+        'Todavía no tienes ningún negocio. Ve a la <b>Incubadora Impulso</b> (Distrito Financiero) para registrar el primero.'));
+      return wrap;
+    }
+
+    s.bizs.forEach(b => {
+      const t = BIZ_BY[b.type];
+      const inc = bizIncome(s, b);
+      const card = el('div', 'biz');
+      card.innerHTML =
+        `<div class="top">
+           <div class="nm">${t.icon} ${esc(b.name)}</div>
+           <span class="lv">Nivel ${b.level}/6</span>
+           <span class="lv">${esc(t.name)}</span>
+         </div>
+         <div class="stats">
+           <div>Ingreso neto<b style="color:${inc >= 0 ? 'var(--good)' : 'var(--danger)'}">${money(inc)}/día</b></div>
+           <div>Equipo<b>${b.emp} persona${b.emp === 1 ? '' : 's'}</b></div>
+           <div>Marketing<b>${b.marketing}/45</b></div>
+           <div>Calidad<b>${b.quality}/20</b></div>
+           <div>Marca<b>${b.brand}/6</b></div>
+           <div>Acumulado<b>${money(b.earned)}</b></div>
+           <div>Valor de venta<b>${money(bizValue(s, b))}</b></div>
+           <div>Depende de<b style="font-size:11.5px">${t.stats.map(k => STAT_BY[k].icon + ' ' + s.stats[k]).join(' · ')}</b></div>
+         </div>`;
+      const acts = el('div', 'acts');
+      const mk = (label, what, cost) => {
+        const btn = el('button', 'btn sm', label + (cost != null ? ` · ${money(cost)}` : ''));
+        btn.addEventListener('click', () => {
+          const r = bizAction(s, b.id, what);
+          if (!r.ok) { toast('⚠️ ' + r.why, 'warn'); return; }
+          showOut(r.out); save(); updateHUD(); refreshModal(bizBody);
+        });
+        return btn;
+      };
+      acts.appendChild(mk('📈 Subir de nivel', 'mejorar', BIZ_UPGRADE(b)));
+      acts.appendChild(mk('📣 Campaña de marketing', 'marketing', BIZ_MARKETING(b)));
+      acts.appendChild(mk('🧑‍🔧 Contratar', 'contratar', BIZ_HIRE(b)));
+      if (b.emp > 0) acts.appendChild(mk('👋 Reducir plantilla', 'despedir'));
+      const sell = mk('🤝 Vender el negocio', 'vender');
+      sell.className = 'btn sm ghost';
+      acts.appendChild(sell);
+      card.appendChild(acts);
+      card.appendChild(el('p', 'stat-desc',
+        'Sube de nivel para multiplicar el ingreso base, contrata para escalar y mejora producto y marca desde el coworking y el estudio creativo.'));
+      wrap.appendChild(card);
+    });
+    return wrap;
+  }
+
+  /* ------------------------ Panel de misiones ------------------------ */
+
+  function questsBody() {
+    const s = G.s;
+    const wrap = el('div');
+    let done = 0;
+    QUESTS.forEach(q => {
+      const st = s.quests[q.id] || { done: false, prog: 0 };
+      const p = q.check(s);
+      const pct = st.done ? 100 : Math.round(clamp(p.cur / (p.max || 1), 0, 1) * 100);
+      if (st.done) done++;
+      const rw = [];
+      if (q.reward.money) rw.push(money(q.reward.money));
+      if (q.reward.xp) rw.push(q.reward.xp + ' exp');
+      if (q.reward.rep) rw.push('+' + q.reward.rep + ' ⭐');
+      if (q.reward.g) Object.keys(q.reward.g).forEach(k => rw.push(`${STAT_BY[k].icon} +${q.reward.g[k]} exp`));
+      const n = el('div', 'quest' + (st.done ? ' done' : ''));
+      n.innerHTML =
+        `<div class="mk">${st.done ? '✅' : q.icon}</div>
+         <div>
+           <div class="t">${esc(q.name)}</div>
+           <div class="d">${esc(q.desc)}</div>
+           <div class="prog"><i style="width:${pct}%"></i></div>
+         </div>
+         <div class="rw">${esc(rw.join(' · '))}</div>`;
+      wrap.appendChild(n);
+    });
+    wrap.insertBefore(el('div', 'banner' + (done === QUESTS.length ? ' ok' : ''),
+      `Progreso de la historia: <b>${done}/${QUESTS.length}</b> misiones. `
+      + (done === QUESTS.length ? '¡Has completado el recorrido! Sigue construyendo tu patrimonio.'
+        : 'Las misiones se completan solas en cuanto cumples la condición.')), wrap.firstChild);
+    return wrap;
+  }
+
+  /* -------------------------- Mapa y diario -------------------------- */
+
+  function mapBody() {
+    const wrap = el('div');
+    const holder = el('div', 'minimap-wrap');
+    const cv = document.createElement('canvas');
+    cv.style.width = '100%';
+    holder.appendChild(cv);
+    wrap.appendChild(holder);
+    setTimeout(() => drawMinimap(cv), 0);
+    wrap.appendChild(el('div', 'legend',
+      `<div><i style="background:#8b6f47"></i>Norte: casa, gimnasio, centro zen, salud, parque</div>
+       <div><i style="background:#5b8cff"></i>Centro: biblioteca, café, universidad, club social, plaza</div>
+       <div><i style="background:#fbbf24"></i>Financiero: banco, oficina, coworking, incubadora</div>
+       <div><i style="background:#f59e0b"></i>Sur: mercado, bazar, escuela, estudio, ferias</div>
+       <div><i style="background:#38bdf8"></i>Costa: muelle</div>`));
+    wrap.appendChild(el('p', 'stat-desc',
+      'Muévete con WASD o las flechas y pulsa E delante de una puerta o de un punto brillante.'));
+    return wrap;
+  }
+
+  function logBody() {
+    const s = G.s;
+    const wrap = el('div');
+    const list = el('div', 'log-list');
+    if (!s.log.length) list.appendChild(el('div', 'empty', 'Todavía no hay nada anotado.'));
+    s.log.forEach(l => {
+      list.appendChild(el('div', 'log-line ' + (l.k || 'neutral'),
+        `<span class="d">D${l.d} ${l.h}</span>${esc(l.t)}`));
+    });
+    wrap.appendChild(list);
+    return wrap;
+  }
+
+  const PANELS = {
+    profile: () => openModal({ icon: '👤', title: G.s.name, sub: `${G.s.age} años · nivel ${G.s.level} · día ${G.s.day}`, render: profileBody }),
+    biz:     () => openModal({ icon: '💼', title: 'Tus negocios', sub: 'Construye ingresos que no dependan de tus horas', render: bizBody }),
+    quests:  () => openModal({ icon: '🎯', title: 'Misiones', sub: 'Tu recorrido de desarrollo personal y empresarial', render: questsBody }),
+    map:     () => openModal({ icon: '🗺️', title: 'Mapa de la ciudad', sub: 'Cinco distritos, veinte lugares', render: mapBody }),
+    log:     () => openModal({ icon: '📜', title: 'Diario', sub: 'Todo lo que te ha pasado', render: logBody }),
+  };
+
+  /* ================================================================
+     13. ENTRADA, GUARDADO E INICIO
+     ================================================================ */
+
+  const KEYMAP = {
+    ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+    w: 'up', s: 'down', a: 'left', d: 'right',
+    W: 'up', S: 'down', A: 'left', D: 'right',
+  };
+
+  function interact() {
+    if (G.modalOpen || !G.near) return;
+    if (G.near.kind === 'place') openPlace(G.near.place);
+    else if (G.near.kind === 'npc') openNpc(G.near.npc);
+  }
+
+  function bindInput() {
+    document.addEventListener('keydown', e => {
+      const k = e.key;
+      if (KEYMAP[k]) { G.keys[KEYMAP[k]] = true; if (!G.modalOpen) e.preventDefault(); return; }
+      if (k === 'Escape') { if (G.modalOpen) closeModal(); return; }
+      if (G.modalOpen) return;
+      const low = k.toLowerCase();
+      if (low === 'e' || k === 'Enter' || k === ' ') { e.preventDefault(); interact(); }
+      else if (low === 'p') PANELS.profile();
+      else if (low === 'n') PANELS.biz();
+      else if (low === 'q') PANELS.quests();
+      else if (low === 'm') PANELS.map();
+      else if (low === 'l') PANELS.log();
+    });
+    document.addEventListener('keyup', e => { if (KEYMAP[e.key]) G.keys[KEYMAP[e.key]] = false; });
+    window.addEventListener('blur', () => { G.keys = {}; });
+
+    $('mClose').addEventListener('click', closeModal);
+    $('modalBack').addEventListener('click', e => { if (e.target === $('modalBack')) closeModal(); });
+    document.querySelectorAll('[data-open]').forEach(b =>
+      b.addEventListener('click', () => PANELS[b.dataset.open] && PANELS[b.dataset.open]()));
+    $('btnSaveGame').addEventListener('click', () => { save(); toast('💾 Partida guardada', 'good'); });
+
+    // controles táctiles
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
+    if (isTouch) {
+      $('touchpad').classList.add('on');
+      $('touchE').classList.add('on');
+      $('keyhelp').style.display = 'none';
+      document.querySelectorAll('.dpad button[data-dir]').forEach(b => {
+        const dir = b.dataset.dir;
+        const on = e => { e.preventDefault(); G.keys[dir] = true; };
+        const off = e => { e.preventDefault(); G.keys[dir] = false; };
+        b.addEventListener('touchstart', on, { passive: false });
+        b.addEventListener('touchend', off, { passive: false });
+        b.addEventListener('touchcancel', off, { passive: false });
+        b.addEventListener('mousedown', on); b.addEventListener('mouseup', off);
+        b.addEventListener('mouseleave', off);
+      });
+      $('touchE').addEventListener('click', interact);
+    }
+
+    // clic o toque en el mundo: caminar hacia ese punto no, pero sí interactuar si estás cerca
+    G.canvas.addEventListener('click', () => interact());
+    window.addEventListener('resize', resizeCanvas);
+  }
+
+  function resizeCanvas() {
+    const cv = G.canvas;
+    if (!cv) return;
+    G.dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.floor(window.innerWidth * G.dpr);
+    cv.height = Math.floor(window.innerHeight * G.dpr);
+    cv.style.width = window.innerWidth + 'px';
+    cv.style.height = window.innerHeight + 'px';
+  }
+
+  /* ------------------------- Guardar / cargar ------------------------ */
+
+  function save() {
+    if (!G.s) return false;
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({ s: G.s, pos: { x: G.player.x, y: G.player.y } }));
+      return true;
+    } catch (_) { return false; }
+  }
+
+  function loadGame() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      if (!data || !data.s || !data.s.stats) return null;
+      const base = newGame({ name: data.s.name, age: data.s.age, bg: data.s.bg, perk: data.s.perk, seed: data.s.seed });
+      const s = Object.assign(base, data.s);
+      s.stats = Object.assign(emptyStats(START_BASE), data.s.stats);
+      s.statxp = Object.assign(emptyStats(0), data.s.statxp || {});
+      s.counters = Object.assign(base.counters, data.s.counters || {});
+      s.flags = Object.assign(base.flags, data.s.flags || {});
+      s.quests = Object.assign(base.quests, data.s.quests || {});
+      s.log = Array.isArray(data.s.log) ? data.s.log : [];
+      s.bizs = Array.isArray(data.s.bizs) ? data.s.bizs : [];
+      return { s, pos: data.pos };
+    } catch (_) { return null; }
+  }
+
+  /* ---------------------------- Arranque ----------------------------- */
+
+  function startGame(s, pos) {
+    G.s = s;
+    G.world = worldGen(s.seed);
+    G.npcs = initNpcs(G.world);
+    G.player.x = pos && pos.x != null ? pos.x : G.world.spawn.x;
+    G.player.y = pos && pos.y != null ? pos.y : G.world.spawn.y;
+    if (blocked(G.world, G.player.x, G.player.y)) { G.player.x = G.world.spawn.x; G.player.y = G.world.spawn.y; }
+
+    $('screenCreate').classList.remove('on');
+    $('screenGame').classList.add('on');
+    G.canvas = $('world');
+    G.ctx = G.canvas.getContext('2d');
+    resizeCanvas();
+    buildMeters();
+    bindInput();
+    updateHUD();
+    save();
+
+    toast(`👋 Bienvenido, ${esc(s.name)}. Pulsa E delante de una puerta.`, 'good');
+    toast('🎯 Empieza por casa: planifica el día.', 'neutral');
+
+    G.running = true;
+    G.last = performance.now();
+    requestAnimationFrame(loop);
+  }
+
+  function init() {
+    buildCreator();
+    if (loadGame()) {
+      $('btnLoadSave').classList.add('good');
+      $('btnLoadSave').innerHTML = '<span>📂</span> Continuar partida guardada';
+    }
+  }
+
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  }
+
+  /* ================================================================
+     14. EXPORTACIÓN PARA PRUEBAS EN NODE
+     ================================================================ */
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+      // datos
+      STATS, STAT_KEYS, BACKGROUNDS, PERKS, ITEMS, BIZ_TYPES, PLACES, PLACE_BY,
+      QUESTS, ACHIEVEMENTS, EVENTS, NPCS, TILE, MAP_W, MAP_H, T,
+      START_BASE, START_POOL, START_MAX,
+      // mundo
+      worldGen, reachability,
+      // simulación
+      newGame, canDo, doAction, endDay, rollEvent, applyEvent, talkTo,
+      maxEnergy, effectiveness, dailyExpenses, bizIncome, totalBizIncome, bizValue, netWorth,
+      gainStat, gainXP, spendPoint, statNeed, levelNeed,
+      bankDeposit, bankWithdraw, bankLoan, bankRepay, loanLimit,
+      canFound, foundBiz, bizAction, buyItem, checkQuests, checkAchievements,
+      // render puro
+      avatarSVG, radarSVG, avatarTraits,
+      // utilidades
+      clamp, c100, mulberry32, hhmm, money,
+    };
+  }
+})();
+</script>
+</body>
+</html>
