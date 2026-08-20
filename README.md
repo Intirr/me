@@ -1,59 +1,94 @@
-# 🎮 Ruta Propia · RPG 2D de mundo abierto sobre desarrollo personal y negocios
+# 🎮 Ruta Propia · El mundo del propósito
 
-Un RPG de **mundo abierto en 2D** donde lo primero y más importante que haces es
-**definir las características de tu avatar**. A partir de ahí sales a una ciudad
-viva a hacer lo mismo que en la vida real: **entrenar, aprender, conocer gente,
-trabajar, emprender y escalar** — y ver cómo tu personaje cambia con ello.
+Un RPG de **mundo abierto 2D en pixel art** sobre lo que cuesta construir una vida
+propia. Rellenas un currículum, te evalúan, **te rechazan** — siempre — y a partir
+de ahí sales a una ciudad a decidir, una y otra vez, entre **encajar** y **ser fiel
+a ti mismo**.
 
-> El avatar **no se dibuja a mano**: se genera con tus características. Su
-> complexión, su postura, la apertura de sus brazos, el halo mental y el núcleo
-> de energía del pecho salen directamente de lo que has desarrollado.
+> «Romper la mente para cambiar la vida».
+> Cada acción del juego se puede hacer de dos maneras. Ninguna es gratis.
 
-![Mapa del mundo](docs/mapa.png)
+![El mundo](docs/mundo.png)
 
-| Empiezas así | Con el tiempo | 
-|---|---|
-| ![Avatar inicial](docs/avatar-inicial.png) | ![Avatar desarrollado](docs/avatar-desarrollado.png) |
+## ⚖️ Los dos ejes
 
-## ▶️ Jugar
+Todo el juego se mueve entre dos fuerzas que casi nunca tiran hacia el mismo lado:
 
-Abre **`juego.html`** en cualquier navegador moderno. No hay nada que instalar
-ni que compilar: estructura, estilos y lógica están dentro del mismo archivo.
+| | Eje | Sube cuando… | Baja cuando… |
+|---|---|---|---|
+| 🔥 | **Autenticidad** | decides según tus valores, aprendes lo que te importa, creas algo tuyo | cedes a la presión del grupo o ignoras lo que piensas |
+| 👥 | **Aprobación social** | encajas, complaces, dices lo que quieren oír | pones límites o tomas un camino que nadie entiende |
 
-```bash
-# opcional: servirlo en local
-python3 -m http.server 8000   # y visita http://localhost:8000/juego.html
-```
+Es *paz interior y sentido de dirección* contra *estatus y cómo te ven*. La partida
+consiste en negociar entre las dos sin romperte.
 
-**Controles:** `W A S D` o flechas para moverte · `E` para interactuar delante de
-una puerta o de un punto brillante · `P` perfil · `N` negocios · `Q` misiones ·
-`M` mapa · `L` diario · `Esc` cerrar. En móvil aparecen un mando y un botón **E**.
+## 🌗 Los tres estados
 
-## 🧬 1. Creas tu personaje con características
+De la combinación de ambos ejes sale un estado que cambia **la interfaz, el color
+del mundo y lo que puedes hacer**:
 
-Repartes **60 puntos** entre ocho características (base 10, máximo 35 al empezar).
-Lo que no gastes te lo llevas al juego.
-
-| | Característica | Para qué sirve |
+| Estado | Condición | Qué pasa |
 |---|---|---|
-| 💪 | **Vigor** | Energía máxima, aguante y recuperación |
-| 🧠 | **Intelecto** | Aprendizaje, análisis y estrategia |
-| 🎯 | **Disciplina** | Gastas menos energía y mantienes rachas |
-| 🗣️ | **Carisma** | Ventas, negociación y contactos |
-| 🎨 | **Creatividad** | Ideas, producto y diferenciación |
-| 💰 | **Finanzas** | Márgenes, inversión y control del dinero |
-| 🤝 | **Liderazgo** | Equipo, delegación y alianzas |
-| 🧘 | **Equilibrio** | Estrés, ánimo y sostenibilidad |
+| 🕳️ **Ostracismo incomprendido** | aprobación < 20 | Parte de la gente deja de hablarte. Pero si además tienes la autenticidad alta se enciende el **enfoque láser**: aprendes un 35 % más rápido. |
+| 🎭 **La máscara social** | aprobación > 80 y autenticidad < 30 | Validación fácil, y el mundo entero **se apaga**: paleta gris, menos energía máxima, el estrés sube un 40 % más y **se bloquean las opciones creativas**. |
+| 🌟 **Liderazgo genuino** | ambos > 70 | Impactas de verdad. La gente te busca, tus proyectos rinden un 18 % más y aguantas más. Es el estado más difícil de sostener. |
 
-Además eliges **trasfondo** (Estudiante, Empleado, Autodidacta, Comercial,
-Deportista, Heredero — cambian dinero, deuda y bonus iniciales) y un **rasgo
-distintivo** (Madrugador, Networker, Ahorrador, Resiliente, Analítico,
-Incansable). Todo se refleja en el avatar en tiempo real mientras lo configuras.
+| Con la máscara puesta | En liderazgo genuino |
+|---|---|
+| ![Máscara social](docs/estado-mascara.png) | ![Liderazgo genuino](docs/estado-liderazgo.png) |
 
-## 🌍 2. Sales a un mundo abierto
+## 📄 1. El currículum y el rechazo inevitable
 
-Una ciudad de **108 × 84 casillas** con cinco distritos y **20 lugares**, cada
-uno con sus propias acciones (más de 70 en total):
+La partida empieza rellenando un formulario. La decisión clave es la **edad**: define
+tu etapa de vida, contra qué te vas a estrellar y quién te va a rechazar.
+
+| Etapa | Edad | El choque | Quién te evalúa |
+|---|---|---|---|
+| 🎒 **El despertar** | 14-17 | Pertenecer al grupo o descubrir quién eres | El orientador escolar, en la feria de proyectos |
+| 🧾 **El choque con la realidad** | 18-23 | Ingresos ya, o construir algo propio | Selección de personal de una cadena de tiendas |
+| 🚀 **La construcción** | 24-39 | Tu visión o lo que el mercado premia | Un socio de un fondo, en el comité de inversión |
+| 🌱 **Nunca es tarde** | 40+ | "Ya es tarde" contra empezar otra vez | Un comité de contratación que te ve mayor |
+
+Cada etapa tiene **su propia entrevista** con cuatro preguntas y tres respuestas cada
+una. Responder con la verdad, decir lo que quieren oír o quedarte en medio cambia los
+dos ejes… pero **el resultado siempre es un rechazo**. Ése es el detonante: nadie te
+va a dar permiso.
+
+![La entrevista](docs/entrevista.png)
+
+También declaras tu **objetivo profesional** (la primera decisión real del juego), tu
+**experiencia previa**, un **rasgo distintivo** y repartes **60 puntos** entre ocho
+habilidades. El avatar se genera con todo eso: complexión, postura, apertura de brazos,
+halo mental y núcleo de energía salen de lo que has declarado.
+
+![El currículum](docs/cv.png)
+
+## 🔀 2. Cada acción, dos maneras de hacerla
+
+67 de las 80 acciones del juego plantean un dilema. La vía auténtica suele enseñar más
+y costar aprobación; la complaciente paga antes y te vacía por dentro.
+
+![Un dilema](docs/dilema.png)
+
+Unos ejemplos reales del juego:
+
+| Acción | 🔥 A tu manera | 👥 Como se espera |
+|---|---|---|
+| Entrenar | Tu progresión, sin público | Series para el espejo |
+| Trabajar | Hacer el trabajo bien | Hacer lo que luce ante el jefe (**+20 % de sueldo**) |
+| Pitch a inversores | Contar el proyecto que tienes | Contar el proyecto que quieren financiar |
+| Hablar en público | Contar también lo que salió mal | Contar sólo la parte que brilla |
+| Mejorar el producto | Arreglar lo que sabes que está mal | Añadir lo que piden los que gritan |
+
+Las trece acciones sin dilema tampoco son neutras: dormir y el banco no juzgan a nadie,
+pero **el muelle** (nadar, pescar, ver el atardecer, pensar en tu rumbo) sube la
+autenticidad y baja la aprobación siempre. Es el sitio del mapa donde nadie entiende
+qué haces ahí.
+
+## 🌍 3. El mundo
+
+Una ciudad de **108 × 84 casillas** en pixel art generado por código, con cinco distritos
+y **20 lugares**:
 
 - **🌳 Norte** — tu apartamento, Gimnasio Titán, Centro Zen, Centro de Salud, Parque Sol
 - **⛲ Centro** — Biblioteca Central, Café Aroma, Universidad, Club Social, Plaza Mayor
@@ -61,86 +96,101 @@ uno con sus propias acciones (más de 70 en total):
 - **🛒 Sur** — Mercado Central, Bazar Suministros, Escuela de Oficios, Estudio Creativo, Centro de Ferias
 - **⚓ Costa** — Muelle del Sur
 
-Por la ciudad pasean **seis personajes** (una comerciante, un entrenador, una
-inversora, un librero, una artista y un médico) que dan consejo y, la primera
-vez que hablas con ellos, algo más.
+![Mapa del mundo](docs/mapa.png)
 
-## ⚙️ 3. Los sistemas del juego
+Por la ciudad pasean **seis personajes** y no todos te tratan igual: la inversora deja
+de atenderte si caes en el ostracismo, y el librero y la artista se enfrían contigo si
+te pones la máscara.
 
-- **Tiempo y energía** — el día va de las 7:00 a las 24:00; cada acción cuesta
-  horas, energía y a veces dinero. Dormir cierra el día.
-- **Estado** — energía, estrés, ánimo y reputación afectan a cuánto rindes:
-  quemado y sin dormir aprendes y facturas menos.
-- **Progresión** — cada acción da experiencia a características concretas; al
-  subir de nivel recibes 3 puntos para repartir donde quieras.
-- **Dinero** — nómina, trabajos por horas, gastos diarios, ahorro con interés,
-  préstamos con un 1 % diario y descubierto que se convierte en deuda.
-- **Negocios** — registra hasta 4 (puesto de mercado, tienda online, agencia,
-  cafetería, startup). Cada modelo rinde según **características distintas**:
-  suben de nivel, contratan, hacen marketing, mejoran producto y marca, y se
-  pueden vender.
-- **Misiones** — diez pasos encadenados desde "haz 3 acciones de desarrollo"
-  hasta **libertad financiera** (que tus ingresos pasivos superen tus gastos).
-- **Logros, hábitos y rachas** — dos acciones de desarrollo al día mantienen la
-  racha y dan experiencia extra.
-- **Objetos** — ocho compras únicas (portátil, traje, bici, colchón, cafetera,
-  agenda, biblioteca, gimnasio en casa) que cambian cómo juegas.
-- **Eventos** — cada día pasa algo: un cliente que te recomienda, una avería,
-  impuestos, una gripe si acumulas estrés, una idea al despertar…
-- **Guardado automático** en el navegador (`localStorage`), con botón 💾 y
-  opción de continuar la partida al abrir el juego.
+## ⚙️ 4. Los sistemas
+
+- **Tiempo y energía** — el día va de las 7:00 a las 24:00; cada acción cuesta horas,
+  energía y a veces dinero. Dormir cierra el día.
+- **Estado** — energía, estrés y ánimo afectan al rendimiento; la autenticidad también
+  (vivir sin rumbo propio te resta hasta un 12 %).
+- **Progresión** — ocho características (Vigor, Intelecto, Disciplina, Carisma,
+  Creatividad, Finanzas, Liderazgo, Equilibrio), experiencia por acción y 3 puntos a
+  repartir por nivel.
+- **Dinero** — nómina, trabajos por horas, gastos diarios, ahorro con interés, préstamos
+  al 1 % diario y descubierto que se convierte en deuda.
+- **Negocios** — cinco modelos (puesto de mercado, tienda online, agencia, cafetería,
+  startup) que dependen de características distintas y **rinden según tu estado**:
+  vender humo con la máscara puesta paga menos que aportar valor real.
+- **Misiones** — diez pasos desde "sobrevive al rechazo" hasta el liderazgo genuino.
+- **Objetos con doble lectura** — el traje sube la aprobación y baja la autenticidad;
+  la biblioteca personal hace lo contrario.
+- **Eventos, hábitos, rachas y logros**, y guardado automático en el navegador.
+
+## 🏁 5. Los finales
+
+La partida termina cuando un estado se sostiene en el tiempo:
+
+- 🌟 **Liderazgo genuino** — 5 días con ambos ejes por encima de 70. El final bueno.
+- 🎭 **La máscara se quedó pegada** — 12 días complaciendo con la autenticidad por los suelos.
+- 🕳️ **El desierto** — 12 días aislado *y* sin rumbo propio.
+
+Estar en el ostracismo con la cabeza clara **no es un final**: es un sitio incómodo
+donde se puede vivir y crear. Al llegar a un final puedes leer el epílogo y elegir entre
+empezar otra vida o seguir jugando.
+
+## ▶️ Jugar
+
+Abre **`juego.html`** en cualquier navegador moderno. No hay nada que instalar.
+
+```bash
+python3 -m http.server 8000   # y visita http://localhost:8000/juego.html
+```
+
+**Controles:** `W A S D` o flechas para moverte · `E` para interactuar · `P` perfil ·
+`N` negocios · `Q` misiones · `M` mapa · `L` diario · `Esc` cerrar. En móvil aparecen
+un mando y un botón **E**.
 
 ## 🧪 Desarrollo
 
-La app no tiene dependencias en tiempo de ejecución. Las pruebas corren en Node
-y **leen el código directamente del `<script>` embebido**, así que validan
-exactamente lo que se ejecuta en el navegador.
+La app no tiene dependencias en tiempo de ejecución. Las pruebas corren en Node y **leen
+el código directamente del `<script>` embebido**, así que validan exactamente lo que se
+ejecuta en el navegador.
 
 ```bash
 npm install          # sólo para pruebas y previsualización
-npm test             # lógica pura: mundo, simulación, economía, avatar (~645.000 comprobaciones)
-npm run test:dom     # integración real con jsdom: crear personaje, jugar, abrir paneles
+npm test             # lógica pura (~299.000 comprobaciones)
+npm run test:dom     # integración real con jsdom: currículum → entrevista → mundo
 npm run test:all     # todo
-npm run preview:game # regenera docs/mapa.png y los avatares de ejemplo
+npm run preview:game # regenera docs/mapa.png y los avatares
+node shots.js        # regenera las capturas del README (necesita playwright-core)
 ```
 
-`npm test` incluye, entre otras cosas:
+`npm test` comprueba, entre otras cosas:
 
-- **40 semillas de mundo** comprobando por inundación que se puede llegar
-  caminando a **todas** las puertas y puntos de interés (nada queda encerrado).
-- **12 partidas completas de 120 días** (todas las combinaciones de trasfondo y
-  rasgo) verificando en cada acción que ninguna magnitud se sale de rango,
-  que la caja nunca queda en negativo y que ningún valor se vuelve `NaN`.
-- **200 perfiles aleatorios** de avatar y radar sin coordenadas inválidas.
-- Reglas de acción (energía, dinero, horario, requisitos, una vez al día),
-  banco, negocios, misiones sin recompensa duplicada y **determinismo por
-  semilla**.
+- Que **las dos vías de cada acción tiran de verdad en direcciones opuestas**: la
+  auténtica siempre da más autenticidad y cuesta aprobación, y la social al revés.
+- Que **la entrevista acaba en rechazo se responda como se responda**, en las cuatro
+  etapas y con las tres columnas de respuestas.
+- Los umbrales de los **tres estados**, que la máscara bloquea lo creativo y baja el
+  techo de energía, y que el enfoque láser sólo se enciende con autenticidad alta.
+- Los **cuatro finales**, incluido que el ostracismo con rumbo propio *no* termina la partida.
+- **12 partidas completas de 120 días** con dos formas de jugar (fiel a uno mismo y
+  complaciente), verificando en cada acción que ninguna magnitud se sale de rango y
+  que jugar de una manera u otra lleva a sitios distintos.
+- **40 semillas de mundo** comprobando por inundación que se llega a pie a todos los
+  lugares, 200 avatares sin coordenadas inválidas y determinismo por semilla.
 
 ## 📁 Estructura
 
 ```
-juego.html         EL JUEGO: mundo abierto + creación de personaje (HTML + CSS + JS)
+juego.html         EL JUEGO: currículum, entrevista y mundo abierto (HTML + CSS + JS)
 index.html         Diseñador de Personajes con diagnóstico de vida (herramienta aparte)
 load-game.js       Extrae la lógica del juego desde juego.html para Node
-test-game.js       Pruebas de mundo, simulación, economía y avatar
-test-game-dom.js   Integración con jsdom: crear personaje, entrar, actuar, guardar
+test-game.js       Pruebas de ejes, estados, dilemas, mundo, economía y finales
+test-game-dom.js   Integración con jsdom: rellenar el CV, ser rechazado, jugar y guardar
 preview-game.js    Genera docs/mapa.png y los avatares de ejemplo
-load-app.js        Ídem para el diseñador (index.html)
-test-render.js     Pruebas del diseñador
-test-dom.js        Integración del diseñador con jsdom
-preview.js         PNGs de muestra del diseñador
-gen-hero.js        Genera docs/captura.png
+shots.js           Regenera las capturas del README abriendo el juego de verdad
+load-app.js · test-render.js · test-dom.js · preview.js · gen-hero.js   (del diseñador)
 ```
-
-## 🧭 El diseñador de personajes
-
-`index.html` sigue disponible como herramienta independiente: describes un perfil
-real (habilidades, personalidad y hábitos) y obtiene un **diagnóstico** de seis
-dimensiones con fortalezas, carencias y un plan de mejora.
 
 ## ⚠️ Aviso
 
-Es un **juego** y una herramienta de reflexión, no un diagnóstico médico,
-psicológico ni asesoramiento financiero. Las cifras de negocio son una
-simplificación pensada para jugar. Si algo de tu vida real (sueño, estrés,
-ánimo, dinero) te preocupa, habla con un profesional.
+Es un **juego** y una herramienta de reflexión, no un diagnóstico psicológico ni
+asesoramiento financiero. Las cifras de negocio son una simplificación pensada para
+jugar. Si algo de tu vida real (ánimo, estrés, dinero, sensación de no encajar) te
+preocupa, habla con un profesional.

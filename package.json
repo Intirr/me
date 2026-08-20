@@ -1,7 +1,7 @@
 {
   "name": "ruta-propia",
   "version": "2.0.0",
-  "description": "RPG 2D de mundo abierto sobre desarrollo personal y negocios: defines las características de tu avatar y las desarrollas jugando. Incluye el diseñador de personajes con diagnóstico de vida.",
+  "description": "RPG 2D de mundo abierto en pixel art sobre el conflicto entre encajar y ser fiel a uno mismo: currículum, entrevista con rechazo inevitable, dos ejes en conflicto y un dilema en cada acción.",
   "private": true,
   "scripts": {
     "test": "node test-render.js && node test-game.js",
@@ -9,7 +9,8 @@
     "test:all": "npm test && npm run test:dom",
     "preview": "node preview.js",
     "preview:game": "node preview-game.js",
-    "hero": "node gen-hero.js"
+    "hero": "node gen-hero.js",
+    "shots": "node shots.js"
   },
   "comment": "Tanto el juego (juego.html) como el diseñador (index.html) son archivos únicos con HTML + CSS + JS embebidos y NO necesitan dependencias: se abren directamente en el navegador. Las dependencias de abajo sólo se usan para las pruebas y las previsualizaciones en Node.",
   "devDependencies": {

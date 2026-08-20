@@ -53,51 +53,83 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
   await wait(60);   // deja que se dispare DOMContentLoaded
-  console.log('1) Pantalla de creación');
-  check($('screenCreate').classList.contains('on'), 'la pantalla de creación se muestra al abrir');
+  console.log('1) El currículum');
+  check($('screenCreate').classList.contains('on'), 'la pantalla del currículum se muestra al abrir');
   const rows = doc.querySelectorAll('#statRows .stat-row');
-  check(rows.length === 8, `se listan las 8 características (${rows.length})`);
-  check(doc.querySelectorAll('#bgGrid .opt').length === 6, 'se listan los 6 trasfondos');
+  check(rows.length === 8, `se listan las 8 habilidades (${rows.length})`);
+  check(doc.querySelectorAll('#objGrid .opt').length >= 3, 'se puede declarar un objetivo profesional');
+  check(doc.querySelectorAll('#bgGrid .opt').length === 6, 'se listan las 6 experiencias previas');
   check(doc.querySelectorAll('#perkGrid .opt').length === 6, 'se listan los 6 rasgos');
   check($('createAvatar').innerHTML.indexOf('<svg') === 0, 'el avatar se dibuja desde el principio');
 
-  console.log('2) Repartir características actualiza avatar y puntos');
+  console.log('2) La edad decide la etapa de vida');
+  const etapaCon = edad => {
+    $('inAge').value = String(edad);
+    $('inAge').dispatchEvent(new window.Event('input', { bubbles: true }));
+    return $('etapaBox').textContent;
+  };
+  check(/despertar/i.test(etapaCon(15)), 'a los 15 años estás en El despertar');
+  check(/realidad/i.test(etapaCon(20)), 'a los 20 en El choque con la realidad');
+  check(/construcci/i.test(etapaCon(30)), 'a los 30 en La construcción');
+  check(/tarde/i.test(etapaCon(50)), 'a los 50 en Nunca es tarde');
+
+  console.log('3) Repartir habilidades actualiza avatar y puntos');
   const before = $('createAvatar').innerHTML;
   const plus = rows[0].querySelectorAll('.pm button')[1];
   for (let i = 0; i < 10; i++) click(plus);
   check($('poolLeft').textContent === '50', `los puntos bajan al repartir (${$('poolLeft').textContent})`);
-  check($('createAvatar').innerHTML !== before, 'el avatar cambia con las características');
-  check(rows[0].querySelector('.vv').textContent === '20', 'la característica sube a 20');
-  const minus = rows[0].querySelectorAll('.pm button')[0];
-  click(minus);
+  check($('createAvatar').innerHTML !== before, 'el avatar cambia con las habilidades');
+  click(rows[0].querySelectorAll('.pm button')[0]);
   check($('poolLeft').textContent === '51', 'restar devuelve el punto');
 
-  console.log('3) Trasfondo, rasgo y aleatorio');
-  const bgBtn = doc.querySelectorAll('#bgGrid .opt')[3];
-  click(bgBtn);
-  check(bgBtn.classList.contains('sel'), 'el trasfondo elegido queda marcado');
-  const perkBtn = doc.querySelectorAll('#perkGrid .opt')[2];
-  click(perkBtn);
-  check(perkBtn.classList.contains('sel'), 'el rasgo elegido queda marcado');
+  const objBtn = doc.querySelectorAll('#objGrid .opt')[2];
+  click(objBtn);
+  check(objBtn.classList.contains('sel'), 'el objetivo elegido queda marcado');
   click($('btnRandomChar'));
-  check($('poolLeft').textContent === '0', 'el personaje aleatorio reparte todos los puntos');
-  check(errors.length === 0, 'sin errores durante la creación: ' + errors.join(' | '));
+  check($('poolLeft').textContent === '0', 'rellenar al azar reparte todos los puntos');
+  check(errors.length === 0, 'sin errores en el currículum: ' + errors.join(' | '));
 
-  console.log('4) Empezar la aventura');
+  console.log('4) La entrevista de evaluación');
   $('inName').value = 'Prueba';
   $('inName').dispatchEvent(new window.Event('input', { bubbles: true }));
+  $('inAge').value = '30';
+  $('inAge').dispatchEvent(new window.Event('input', { bubbles: true }));
   click($('btnStart'));
-  check($('screenGame').classList.contains('on'), 'se entra al mundo');
-  check(!$('screenCreate').classList.contains('on'), 'la creación se oculta');
-  check($('hudDay').textContent === '1', 'el HUD marca el día 1');
-  check($('hudMeters').children.length >= 4, 'las barras de estado se construyen');
-  check(doc.querySelectorAll('.toast').length > 0, 'se muestran avisos de bienvenida');
+  check($('screenEntrevista').classList.contains('on'), 'enviar la candidatura abre la entrevista');
+  check(!$('screenCreate').classList.contains('on'), 'el currículum se oculta');
+  check($('entName').textContent.length > 0, 'hay alguien al otro lado de la mesa');
+  check(/entrevist|comit|selecci|feria|junta/i.test($('entRole').textContent), 'se indica el escenario');
 
-  console.log('5) El bucle de render corre sin errores');
+  // sentarse y responder a todo
+  click($('entBody').querySelector('button'));
+  let preguntas = 0, guard = 0;
+  while (guard++ < 20) {
+    const opts = $('entBody').querySelectorAll('.ent-opt');
+    if (opts.length) { preguntas++; click(opts[Math.min(1, opts.length - 1)]); }
+    const cont = $('entBody').querySelector('button.btn');
+    if (cont && !$('entBody').querySelector('.ent-sello')) { click(cont); continue; }
+    if ($('entBody').querySelector('.ent-sello')) break;
+  }
+  check(preguntas >= 4, `la entrevista hace al menos 4 preguntas (${preguntas})`);
+  check(!!$('entBody').querySelector('.ent-sello'), 'termina siempre con el sello de rechazo');
+  check(/rechaz/i.test($('entBody').textContent), 'el rechazo se dice con todas las letras');
+  check(/Autenticidad/i.test($('entBody').textContent), 'se muestran los dos ejes al salir');
+  check(errors.length === 0, 'sin errores en la entrevista: ' + errors.join(' | '));
+
+  console.log('5) Salir al mundo');
+  click([...$('entBody').querySelectorAll('button')].pop());
+  check($('screenGame').classList.contains('on'), 'se entra al mundo');
+  check(!$('screenEntrevista').classList.contains('on'), 'la entrevista se cierra');
+  check($('hudDay').textContent === '1', 'el HUD marca el día 1');
+  check(doc.querySelector('[data-v="autenticidad"]') !== null, 'el HUD muestra la autenticidad');
+  check(doc.querySelector('[data-v="social"]') !== null, 'el HUD muestra la aprobación social');
+  check(doc.querySelector('[data-v="estadoNom"]').textContent.length > 0, 'el HUD nombra el estado actual');
+
+  console.log('6) El bucle de render corre sin errores');
   await wait(320);
   check(errors.length === 0, 'sin errores en el bucle: ' + errors.join(' | '));
 
-  console.log('6) Entrar en un lugar y actuar');
+  console.log('7) Entrar en un lugar y elegir cómo hacerlo');
   key('e');
   check($('modalBack').classList.contains('on'), 'pulsar E delante de la puerta abre el lugar');
   check($('mTitle').textContent === 'Tu apartamento', `apareces junto a tu casa (salió "${$('mTitle').textContent}")`);
@@ -105,12 +137,19 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   check(acciones.length >= 3, 'la casa ofrece varias acciones');
   const planificar = acciones.find(a => a.textContent.includes('Planificar el día'));
   check(!!planificar, 'se puede planificar el día');
+  check(planificar.querySelectorAll('.way').length === 2, 'la acción ofrece las dos vías');
+  check(/tu manera|de verdad|importa/i.test(planificar.querySelector('.way.auth').textContent), 'una vía es la tuya');
+  check(planificar.querySelector('.way.soc') !== null, 'la otra es la que se espera');
+
+  const authAntes = Number(doc.querySelector('[data-v="autenticidad"]').textContent);
   const horaAntes = $('hudClock').textContent;
-  click(planificar.querySelector('button'));
+  click(planificar.querySelector('.way.auth button'));
   check($('hudClock').textContent !== horaAntes, `la acción hace avanzar el reloj (${horaAntes} → ${$('hudClock').textContent})`);
+  check(Number(doc.querySelector('[data-v="autenticidad"]').textContent) > authAntes,
+    'elegir tu vía sube la autenticidad en el HUD');
   check(doc.querySelectorAll('.toast').length > 0, 'la acción informa de su resultado');
   const repetir = [...doc.querySelectorAll('#mBody .act')].find(a => a.textContent.includes('Planificar el día'));
-  check(repetir.querySelector('button').disabled, 'planificar queda bloqueado el resto del día');
+  check([...repetir.querySelectorAll('button')].every(b => b.disabled), 'planificar queda bloqueado el resto del día');
 
   const diaAntes = Number($('hudDay').textContent);
   const dormir = [...doc.querySelectorAll('#mBody .act')].find(a => a.textContent.includes('Dormir'));
@@ -119,7 +158,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   check(!$('modalBack').classList.contains('on'), 'al dormir se cierra el panel');
   check(errors.length === 0, 'sin errores al actuar: ' + errors.join(' | '));
 
-  console.log('7) Movimiento del jugador');
+  console.log('8) Movimiento del jugador');
   const posBefore = $('hudPlace').textContent;
   doc.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'd', bubbles: true }));
   await wait(260);
@@ -127,7 +166,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   check(errors.length === 0, 'moverse no rompe nada');
   check(typeof posBefore === 'string' && posBefore.length > 0, 'el HUD indica dónde estás');
 
-  console.log('8) Paneles del juego');
+  console.log('9) Paneles del juego');
   const panels = [['p', 'Prueba'], ['n', 'Tus negocios'], ['q', 'Misiones'], ['m', 'Mapa de la ciudad'], ['l', 'Diario']];
   for (const [k, title] of panels) {
     key(k);
@@ -137,27 +176,32 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     key('Escape');
     check(!$('modalBack').classList.contains('on'), `Escape cierra ${title}`);
   }
+  key('p');
+  check(/Autenticidad/i.test($('mBody').textContent), 'el perfil muestra los dos ejes');
+  check(doc.querySelectorAll('#mBody .stat-row .pm button').length === 8, 'el perfil permite subir las 8 características');
+  key('Escape');
   for (const b of doc.querySelectorAll('[data-open]')) {
     click(b);
     check($('modalBack').classList.contains('on'), `el botón ${b.dataset.open} abre su panel`);
     click($('mClose'));
   }
 
-  console.log('9) Repartir puntos de nivel desde el perfil');
-  key('p');
-  const plusButtons = doc.querySelectorAll('#mBody .stat-row .pm button');
-  check(plusButtons.length === 8, 'el perfil permite subir las 8 características');
-  key('Escape');
+  console.log('10) La pantalla de final está montada');
+  check(!!$('screenFinal'), 'existe la pantalla de final');
+  check(!$('screenFinal').classList.contains('on'), 'no aparece mientras la partida sigue');
+  check(!!$('finRestart') && !!$('finContinue'), 'ofrece empezar otra vida o seguir jugando');
 
-  console.log('10) Guardado');
+  console.log('11) Guardado');
   click($('btnSaveGame'));
-  const saved = window.localStorage.getItem('rutapropia_save_v1');
+  const saved = window.localStorage.getItem('rutapropia_save_v2');
   check(!!saved, 'la partida se guarda en localStorage');
   const data = JSON.parse(saved || '{}');
   check(data.s && data.s.name === 'Prueba', 'el guardado conserva el personaje');
+  check(data.s && typeof data.s.autenticidad === 'number', 'el guardado conserva la autenticidad');
+  check(data.s && data.s.entrevista && data.s.entrevista.hecha, 'el guardado recuerda la entrevista');
   check(data.pos && typeof data.pos.x === 'number', 'el guardado conserva la posición');
 
-  console.log('11) Sin errores al final');
+  console.log('12) Sin errores al final');
   await wait(200);
   check(errors.length === 0, 'ningún error registrado: ' + errors.join(' | '));
 
