@@ -97,6 +97,11 @@ y costar aprobación; la complaciente paga antes y te vacía por dentro.
 
 ![Un dilema](docs/dilema.png)
 
+Las pastillas de cada vía muestran **lo que va a pasar de verdad**, no el valor bruto
+del dato: ya llevan aplicados el ritmo lento, el estado en que estás, lo que llevas
+repetido hoy y lo que te queda de tope diario. Si repites la misma acción, ves bajar
+el número antes de pulsar.
+
 Unos ejemplos reales del juego:
 
 | Acción | 🔥 A tu manera | 👥 Como se espera |
@@ -218,6 +223,10 @@ node shots.js        # regenera las capturas del README (necesita playwright-cor
   marcadas como 💚 sanas —y sólo ésas— suman también aprobación.
 - Que **el ritmo es lento**: una acción mueve menos de 3 puntos, ningún día mueve un eje
   más de 8, y llegar a 70 de autenticidad exige varios días de decisiones distintas.
+- Que **lo que la interfaz promete es lo que ocurre**: para cada acción y cada vía del
+  catálogo, la previsión que se enseña en pantalla coincide exactamente con lo que aplica
+  el motor, incluso al repetir la acción o con el tope del día agotado. Y que ninguna
+  fuente —misiones, eventos, el desenlace de un pitch— puede saltarse ese tope.
 - Que **la coherencia paga**: con la misma semilla, quien se mantiene fiel acaba con más
   aprobación que quien no.
 - Que **la ciudad no es una cuadrícula**: en 25 semillas los edificios ocupan al menos 14

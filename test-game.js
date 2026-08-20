@@ -514,6 +514,98 @@ console.log('10b) Ritmo lento, coherencia y aprobación sana');
 })();
 
 /* ------------------------------------------------------------------ */
+console.log('10b-bis) Lo que la interfaz promete es lo que ocurre');
+(() => {
+  // La interfaz enseña ejesPrevistos(); el motor aplica exactamente eso.
+  // Se prueba acción por acción y vía por vía, incluso repitiendo la misma
+  // acción y con el tope del día agotado.
+  const limpio = (semilla) => {
+    const s = M.newGame({ name: 'P', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', seed: semilla });
+    s.money = 999999;
+    Object.keys(s.quests).forEach(q => { s.quests[q].done = true; });   // sin recompensas de por medio
+    M.STAT_KEYS.forEach(k => { s.stats[k] = 60; });                     // sin requisitos que estorben
+    s.net = 20; s.job.has = true;
+    return s;
+  };
+
+  let comprobadas = 0;
+  M.PLACES.forEach(p => p.actions.forEach(act => {
+    // las acciones con desenlace propio (un pitch, un concurso) mueven además
+    // los ejes por su resultado, que la interfaz no promete de antemano
+    if (act.sp) return;
+    const vias = act.w ? ['a', 's'] : [null];
+    vias.forEach(wid => {
+      const s = limpio(700 + comprobadas);
+      s.energy = M.maxEnergy(s); s.hour = 9;
+      if (!M.canDo(s, p, act, wid).ok) return;
+      const prev = M.ejesPrevistos(s, act, wid);
+      const a0 = s.autenticidad, s0 = s.social;
+      const r = M.doAction(s, p, act, wid);
+      if (!r.ok) return;
+      comprobadas++;
+      const ra = s.autenticidad - a0, rs = s.social - s0;
+      check(Math.abs(ra - prev.auth) < 1e-9,
+        `${p.id}/${act.id}/${wid || '-'}: la autenticidad prometida (${prev.auth.toFixed(2)}) es la real (${ra.toFixed(2)})`);
+      check(Math.abs(rs - prev.soc) < 1e-9,
+        `${p.id}/${act.id}/${wid || '-'}: la aprobación prometida (${prev.soc.toFixed(2)}) es la real (${rs.toFixed(2)})`);
+    });
+  }));
+  check(comprobadas > 60, `se ha comprobado casi todo el catálogo (${comprobadas} combinaciones)`);
+
+  // repetir la misma acción: la previsión baja y sigue cuadrando
+  const s = limpio(999);
+  const gym = M.PLACE_BY.gimnasio, fuerza = gym.actions[0];
+  let anterior = Infinity;
+  for (let i = 0; i < 6; i++) {
+    s.energy = M.maxEnergy(s); s.hour = 9;
+    const prev = M.ejesPrevistos(s, fuerza.id ? fuerza : fuerza, 'a');
+    const a0 = s.autenticidad;
+    M.doAction(s, gym, fuerza, 'a');
+    check(Math.abs((s.autenticidad - a0) - prev.auth) < 1e-9, `repetición ${i + 1}: previsión y realidad coinciden`);
+    check(prev.auth <= anterior + 1e-9, `repetición ${i + 1}: la previsión baja al repetir (${prev.auth.toFixed(2)})`);
+    anterior = prev.auth;
+  }
+
+  // con el tope agotado, la previsión avisa y el movimiento es cero
+  const t = limpio(1001);
+  t.counters.movAuth = M.TOPE_DIA; t.counters.movSoc = M.TOPE_DIA;
+  const prevTope = M.ejesPrevistos(t, fuerza, 'a');
+  check(prevTope.auth === 0 && prevTope.topeAuth === true, 'con el tope agotado la previsión lo dice');
+  const a1 = t.autenticidad;
+  t.energy = M.maxEnergy(t); t.hour = 9;
+  M.doAction(t, gym, fuerza, 'a');
+  check(t.autenticidad === a1, 'y el eje no se mueve');
+
+  // ninguna fuente puede saltarse el tope del día: ni misiones, ni eventos,
+  // ni el desenlace de un pitch o un concurso
+  for (let semilla = 0; semilla < 12; semilla++) {
+    const j = M.newGame({ name: 'T', age: 30, bg: 'comercial', perk: 'networker', objetivo: 'estable', seed: 300 + semilla });
+    j.money = 999999; M.STAT_KEYS.forEach(k => { j.stats[k] = 55; });
+    M.foundBiz(j, 'puesto', 'Puesto');
+    const antes = { a: j.autenticidad, s: j.social };
+    let guard = 0;
+    while (j.hour < 22 && guard++ < 60) {
+      let hizo = false;
+      for (const p of M.PLACES) {
+        for (const act of p.actions) {
+          if (act.sp === 'dormir') continue;
+          j.energy = M.maxEnergy(j);
+          const wid = act.w ? (guard % 2 ? 'a' : 's') : null;
+          if (!M.canDo(j, p, act, wid).ok) continue;
+          const r = M.doAction(j, p, act, wid);
+          if (r.ok && !r.ui) hizo = true;
+        }
+      }
+      if (!hizo) break;
+    }
+    check(Math.abs(j.autenticidad - antes.a) <= M.TOPE_DIA + 0.01,
+      `semilla ${semilla}: la autenticidad no supera el tope diario (${(j.autenticidad - antes.a).toFixed(1)})`);
+    check(Math.abs(j.social - antes.s) <= M.TOPE_DIA + 0.01,
+      `semilla ${semilla}: la aprobación no supera el tope diario (${(j.social - antes.s).toFixed(1)})`);
+  }
+})();
+
+/* ------------------------------------------------------------------ */
 console.log('10c) La ciudad no es una cuadrícula');
 (() => {
   const posiciones = {};

@@ -2867,19 +2867,12 @@
       s.counters.dev++; s.counters.dayDev++;
     }
 
-    // los dos ejes: primero la carga fija de la acción, luego la de la vía
-    let dAuth = (act.au || 0) + (via ? via.au : 0);
-    let dSoc = (act.so || 0) + (via ? via.so : 0);
-    // rendimiento decreciente: la quinta vez que haces hoy lo mismo ya no dice
-    // nada nuevo de ti. Empuja a variar en lugar de repetir la acción óptima.
+    // los dos ejes: exactamente lo que la interfaz había prometido
+    const prev = ejesPrevistos(s, act, wayId);
     const vecesHoy = s.flags['hoy_' + act.id] || 0;
     s.flags['hoy_' + act.id] = vecesHoy + 1;
-    const gasto = 1 / (1 + vecesHoy * 0.8);
-    dAuth *= gasto; dSoc *= gasto;
     if (vecesHoy >= 2) out.push({ t: '↩️ Repetir lo mismo ya no te cambia tanto', k: 'neutral' });
-    if (est.id === 'ostracismo' && dSoc > 0) dSoc *= 0.5;   // cuesta más que te acepten
-    if (est.id === 'liderazgo' && dAuth > 0) dAuth *= 1.15;
-    moverEjes(s, dAuth, dSoc, out);
+    aplicarEjes(s, prev.auth, prev.soc, out);
     if (via) {
       if (wayId === 's') { s.counters.sociales++; s.counters.daySoc++; s.counters.rachaAuth = 0; }
       else {
@@ -2942,36 +2935,60 @@
   const TOPE_DIA = 8;     // lo máximo que un solo día puede mover cada eje
   const un = v => Math.round(v * 10) / 10;   // una cifra decimal, para que se note
 
-  function moverEjes(s, dAuth, dSoc, out, crudo) {
-    const f = crudo ? 1 : RITMO;
-    const c = s.counters;
-    // nadie se convierte en otra persona en una tarde: cada día tiene un tope
-    const recorte = (d, usado) => {
-      if (crudo) return d;
-      const queda = Math.max(0, TOPE_DIA - Math.abs(usado || 0));
-      return Math.sign(d) * Math.min(Math.abs(d), queda);
+  // Traduce un valor bruto de los datos a lo que de verdad se va a mover hoy:
+  // el ritmo lento del juego y el tope que tiene cada jornada.
+  function limitarEje(d, usadoHoy) {
+    if (!d) return 0;
+    const queda = Math.max(0, TOPE_DIA - Math.abs(usadoHoy || 0));
+    return Math.sign(d) * Math.min(Math.abs(d * RITMO), queda);
+  }
+
+  // Lo que esta acción movería AHORA MISMO, con todo aplicado: ritmo, tope del
+  // día, rendimiento decreciente por repetirla y el estado en que estás.
+  // La interfaz enseña esto mismo, así que lo prometido es lo que ocurre.
+  function ejesPrevistos(s, act, wayId) {
+    const via = viaDe(act, wayId);
+    let dAuth = (act.au || 0) + (via ? via.au : 0);
+    let dSoc = (act.so || 0) + (via ? via.so : 0);
+    const est = estadoDe(s.autenticidad, s.social).id;
+    if (est === 'ostracismo' && dSoc > 0) dSoc *= 0.5;   // cuesta más que te acepten
+    if (est === 'liderazgo' && dAuth > 0) dAuth *= 1.15;
+    // la quinta vez que haces hoy lo mismo ya no dice nada nuevo de ti
+    const gasto = 1 / (1 + (s.flags['hoy_' + act.id] || 0) * 0.8);
+    dAuth *= gasto; dSoc *= gasto;
+    return {
+      auth: limitarEje(dAuth, s.counters.movAuth),
+      soc: limitarEje(dSoc, s.counters.movSoc),
+      topeAuth: Math.abs(s.counters.movAuth || 0) >= TOPE_DIA - 0.01 && !!dAuth,
+      topeSoc: Math.abs(s.counters.movSoc || 0) >= TOPE_DIA - 0.01 && !!dSoc,
     };
+  }
+
+  // Escribe en los ejes valores ya calculados y lleva la cuenta del día.
+  function aplicarEjes(s, dAuth, dSoc, out) {
+    const c = s.counters;
     if (dAuth) {
-      const d = recorte(dAuth * f, c.movAuth);
-      if (d) {
-        c.movAuth = (c.movAuth || 0) + d;
-        s.autenticidad = c100(s.autenticidad + d);
-        if (out) out.push({ t: `🔥 Autenticidad ${d > 0 ? '+' : ''}${un(d)} (${Math.round(s.autenticidad)})`,
-          k: d > 0 ? 'good' : 'warn' });
-      } else if (out && !c.avisoTope) {
-        c.avisoTope = 1;
-        out.push({ t: '🌙 Por hoy ya has movido tu rumbo todo lo que un día da de sí', k: 'neutral' });
-      }
+      c.movAuth = (c.movAuth || 0) + dAuth;
+      s.autenticidad = c100(s.autenticidad + dAuth);
+      if (out) out.push({ t: `🔥 Autenticidad ${dAuth > 0 ? '+' : ''}${un(dAuth)} (${Math.round(s.autenticidad)})`,
+        k: dAuth > 0 ? 'good' : 'warn' });
+    } else if (out && !c.avisoTope && Math.abs(c.movAuth || 0) >= TOPE_DIA - 0.01) {
+      c.avisoTope = 1;
+      out.push({ t: '🌙 Por hoy ya has movido tu rumbo todo lo que un día da de sí', k: 'neutral' });
     }
     if (dSoc) {
-      const d = recorte(dSoc * f, c.movSoc);
-      if (d) {
-        c.movSoc = (c.movSoc || 0) + d;
-        s.social = c100(s.social + d);
-        if (out) out.push({ t: `👥 Aprobación ${d > 0 ? '+' : ''}${un(d)} (${Math.round(s.social)})`,
-          k: d > 0 ? 'good' : 'warn' });
-      }
+      c.movSoc = (c.movSoc || 0) + dSoc;
+      s.social = c100(s.social + dSoc);
+      if (out) out.push({ t: `👥 Aprobación ${dSoc > 0 ? '+' : ''}${un(dSoc)} (${Math.round(s.social)})`,
+        k: dSoc > 0 ? 'good' : 'warn' });
     }
+  }
+
+  // Para lo que no es una acción del mundo: misiones, regalos, objetos, eventos.
+  function moverEjes(s, dAuth, dSoc, out) {
+    aplicarEjes(s,
+      limitarEje(dAuth, s.counters.movAuth),
+      limitarEje(dSoc, s.counters.movSoc), out);
   }
 
   // Detecta los cambios de estado y avisa: la UI y el mundo cambian con ellos.
@@ -3063,7 +3080,7 @@
     venderObra(s, out, act, place, mm) {
       const base = 30 + s.stats.creatividad * 1.6 + s.social * 1.2;
       const pay = Math.round(base * (0.6 + rand(s) * 0.9) * (mm || 1));
-      s.money += pay; s.social = c100(s.social + 2);
+      s.money += pay; moverEjes(s, 0, 2, out);
       out.push({ t: `🖼️ Vendes tu obra por ${money(pay)}`, k: 'gold' });
     },
 
@@ -3116,11 +3133,11 @@
         + (s.bg === 'heredero' ? 0.12 : 0), 0.08, 0.88);
       if (rand(s) < p) {
         const amount = Math.round((600 + s.social * 45 + s.stats.finanzas * 22) * (0.7 + rand(s) * 0.8));
-        s.money += amount; s.social = c100(s.social + 8); s.net += 2;
+        s.money += amount; s.net += 2; moverEjes(s, 0, 8, out);
         out.push({ t: `🎙️ ¡Levantas ${money(amount)} de financiación!`, k: 'gold' });
         logLine(s, `Consigues ${money(amount)} de inversión.`, 'gold');
       } else {
-        s.social = c100(s.social - 2); s.mood = c100(s.mood - 5);
+        s.mood = c100(s.mood - 5); moverEjes(s, 0, -2, out);
         out.push({ t: '🎙️ No convences al panel. Te llevas apuntes y un no', k: 'bad' });
       }
     },
@@ -3139,12 +3156,12 @@
       const p = clamp(0.10 + b.level * 0.06 + s.stats.carisma / 300 + s.social / 300, 0.05, 0.75);
       if (rand(s) < p) {
         const prize = 1500 + b.level * 800;
-        s.money += prize; s.social = c100(s.social + 12); s.net += 3;
+        s.money += prize; s.net += 3; moverEjes(s, 0, 12, out);
         out.push({ t: `🏆 ¡Ganas el concurso! +${money(prize)}`, k: 'gold' });
         logLine(s, `Ganas el concurso de startups (+${money(prize)}).`, 'gold');
       } else {
-        s.social = c100(s.social + 2);
-        out.push({ t: '🥈 No ganas, pero te ven. +2 reputación', k: 'warn' });
+        moverEjes(s, 0, 2, out);
+        out.push({ t: '🥈 No ganas, pero te ven, y eso cuenta', k: 'warn' });
       }
     },
 
@@ -3224,9 +3241,9 @@
       name: (name || t.name).slice(0, 26), level: 1, emp: 0, marketing: 4,
       quality: 0, brand: 0, margin: 0, earned: 0, born: s.day };
     s.bizs.push(b);
-    s.social = c100(s.social + 4);
     logLine(s, `Registras tu negocio: ${b.name}.`, 'gold');
     const out = [{ t: `📋 ${t.icon} ${b.name} registrado. −${money(t.cost)}`, k: 'gold' }];
+    moverEjes(s, 0, 4, out);
     checkQuests(s, out); checkAchievements(s, out);
     return { ok: true, out };
   }
@@ -3247,7 +3264,7 @@
       if (s.money < cost) return { ok: false, why: `Necesitas ${money(cost)}` };
       if (b.level >= 6) return { ok: false, why: 'Ya está al máximo nivel' };
       s.money -= cost; b.level++;
-      s.social = c100(s.social + 3);
+      moverEjes(s, 0, 3, out);
       out.push({ t: `📈 ${b.name} sube a nivel ${b.level} (−${money(cost)})`, k: 'gold' });
       logLine(s, `${b.name} alcanza el nivel ${b.level}.`, 'gold');
     } else if (what === 'marketing') {
@@ -3481,7 +3498,7 @@
     if (f.energy) s.energy = clamp(s.energy + f.energy, 0, maxEnergy(s));
     if (f.stress) s.stress = c100(s.stress + f.stress);
     if (f.mood) s.mood = c100(s.mood + f.mood);
-    if (f.so) s.social = c100(s.social + f.so);
+    if (f.au || f.so) moverEjes(s, f.au || 0, f.so || 0, out);
     if (f.net) s.net += f.net;
     if (f.sick) s.flags.sick = 1;
     if (f.rentUp) s.flags.rent += f.rentUp;
@@ -4978,8 +4995,7 @@
     if (c) bits.push(`<span class="pill cost">💶 ${money(c)}</span>`);
     if (act.g) Object.keys(act.g).forEach(k =>
       bits.push(`<span class="pill xp" style="color:${STAT_BY[k].color}">${STAT_BY[k].icon} +${act.g[k]}</span>`));
-    if (act.au) bits.push(`<span class="pill auth">🔥 ${act.au > 0 ? '+' : ''}${act.au}</span>`);
-    if (act.so && !act.w) bits.push(`<span class="pill soc">👥 ${act.so > 0 ? '+' : ''}${act.so}</span>`);
+    if (!act.w && (act.au || act.so)) bits.push(ejePills(s, act, null));
     if (act.net) bits.push('<span class="pill">📇 contactos</span>');
     if (act.st) bits.push(`<span class="pill">🌡️ ${act.st > 0 ? '+' : ''}${Math.round(act.st)}</span>`);
     if (act.sp === 'trabajo' || act.sp === 'trabajoMedio' || act.sp === 'jornal' || act.sp === 'darClase')
@@ -4989,18 +5005,30 @@
     return bits.join('');
   }
 
-  // Pastillas de una vía: cómo mueve los dos ejes y qué cambia respecto a la otra.
-  function wayPills(via) {
+  // Pastillas de los ejes con el número que de verdad va a ocurrir: ya lleva
+  // aplicados el ritmo lento, el estado, lo que has repetido hoy y el tope del día.
+  function ejePills(s, act, wayId) {
+    const p = ejesPrevistos(s, act, wayId);
     const bits = [];
-    bits.push(`<span class="pill auth">🔥 ${via.au > 0 ? '+' : ''}${via.au}</span>`);
-    bits.push(`<span class="pill soc">👥 ${via.so > 0 ? '+' : ''}${via.so}</span>`);
+    const cifra = v => (v > 0 ? '+' : '−') + (Math.round(Math.abs(v) * 10) / 10).toLocaleString('es-ES');
+    if (p.topeAuth) bits.push('<span class="pill" title="Ya has movido tu rumbo todo lo que un día da de sí">🔥 tope del día</span>');
+    else if (p.auth) bits.push(`<span class="pill auth">🔥 ${cifra(p.auth)}</span>`);
+    if (p.topeSoc) bits.push('<span class="pill" title="La aprobación ya se ha movido todo lo que un día permite">👥 tope del día</span>');
+    else if (p.soc) bits.push(`<span class="pill soc">👥 ${cifra(p.soc)}</span>`);
+    return bits.join('');
+  }
+
+  // Pastillas de una vía: los ejes reales y qué cambia respecto a la otra.
+  function wayPills(s, act, wayId) {
+    const via = act.w[wayId];
+    const bits = [ejePills(s, act, wayId)];
     if (via.gm && via.gm !== 1) bits.push(`<span class="pill xp">exp ×${via.gm}</span>`);
     if (via.mm && via.mm !== 1) bits.push(`<span class="pill money">💰 ×${via.mm}</span>`);
     if (via.net) bits.push(`<span class="pill">📇 +${via.net}</span>`);
     if (via.st) bits.push(`<span class="pill">🌡️ ${via.st > 0 ? '+' : ''}${via.st}</span>`);
     if (via.cre) bits.push('<span class="pill">🎨 creativa</span>');
     if (via.sana) bits.push('<span class="pill sana">💚 suma en las dos</span>');
-    return bits.join('');
+    return bits.filter(Boolean).join('');
   }
 
   function placeBody(place) {
@@ -5019,6 +5047,19 @@
         + `Entrena sobre todo ${r.entrena.map(k => STAT_BY[k].icon + ' ' + STAT_BY[k].label).join(', ')}`
         + `${r.cobra ? '. Aquí puedes ganar dinero' : ''}${r.sana ? '. Hay decisiones que suman en las dos barras' : ''}.`));
     }
+    const restaAuth = Math.max(0, TOPE_DIA - Math.abs(s.counters.movAuth || 0));
+    const restaSoc = Math.max(0, TOPE_DIA - Math.abs(s.counters.movSoc || 0));
+    if (restaAuth < 1 && restaSoc < 1) {
+      wrap.appendChild(el('div', 'banner',
+        '🌙 <b>Hoy ya has movido los dos ejes todo lo que un día da de sí.</b> '
+        + 'Lo que hagas seguirá contando para tus características, tu dinero y tus proyectos, '
+        + 'pero tu rumbo no se moverá más hasta mañana.'));
+    } else if (restaAuth < 2.5 || restaSoc < 2.5) {
+      wrap.appendChild(el('div', 'banner',
+        `⏳ Te queda poco margen hoy: <b>${un(restaAuth)}</b> de autenticidad y `
+        + `<b>${un(restaSoc)}</b> de aprobación.`));
+    }
+
     const est = estadoActual(s);
     if (est.id !== 'transito') {
       wrap.appendChild(el('div', 'banner' + (est.id === 'liderazgo' ? ' ok' : ''),
@@ -5048,7 +5089,7 @@
           box.innerHTML =
             `<div class="wl">${id === 'a' ? '🔥' : '👥'} ${esc(via.l)}</div>
              <div class="wd">${esc(via.d)}</div>
-             <div class="wp">${wayPills(via)}</div>
+             <div class="wp">${wayPills(s, act, id)}</div>
              ${chk.ok ? '' : `<div class="warn">⚠️ ${esc(chk.why)}</div>`}`;
           const btn = el('button', 'btn sm' + (chk.ok ? (id === 'a' ? ' primary' : '') : ''), chk.ok ? 'Hacerlo así' : 'No disponible');
           btn.disabled = !chk.ok;
@@ -5727,7 +5768,7 @@
       // los dos ejes, los estados, las etapas y la entrevista
       EJES, ESTADOS, ETAPAS, ETAPA_BY, OBJETIVOS, ENTREVISTAS, FINALES,
       estadoDe, estadoActual, etapaPorEdad, enfoqueLaser, tonoRespuestas,
-      resolverEntrevista, moverEjes, revisarEstado, revisarFinales, viaDe, viaBloqueada,
+      resolverEntrevista, moverEjes, aplicarEjes, ejesPrevistos, limitarEje, revisarEstado, revisarFinales, viaDe, viaBloqueada,
       DISTRITOS, DIST_BY, resumenLugar, playerSpeed, puedeCorrer, efectoActual, RITMO, TOPE_DIA, COHERENCIA_DIAS,
       // mundo
       worldGen, reachability,
