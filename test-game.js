@@ -18,7 +18,7 @@ console.log('1) Datos coherentes');
   check(M.OBJETIVOS.length >= 3, 'hay objetivos profesionales que elegir');
 
   const ids = new Set(), actionIds = new Set();
-  let conDilema = 0, sinDilema = 0;
+  let conDilema = 0, sinDilema = 0, sanas = 0;
   M.PLACES.forEach(p => {
     check(!ids.has(p.id), `id de lugar único: ${p.id}`); ids.add(p.id);
     check(p.actions.length > 0, `${p.id}: tiene acciones`);
@@ -45,11 +45,23 @@ console.log('1) Datos coherentes');
         // el conflicto tiene que existir: las dos vías no pueden tirar igual
         check(a.w.a.au > a.w.s.au, `${p.id}/${a.id}: la vía auténtica da más autenticidad`);
         check(a.w.s.so > a.w.a.so, `${p.id}/${a.id}: la vía social da más aprobación`);
-        check(a.w.a.au > 0 && a.w.a.so <= 0, `${p.id}/${a.id}: ser fiel a ti cuesta aprobación`);
+        check(a.w.a.au > 0, `${p.id}/${a.id}: la vía auténtica sube la autenticidad`);
+        check(a.w.s.au < 0, `${p.id}/${a.id}: la vía complaciente baja la autenticidad`);
+        if (a.w.a.sana) {
+          sanas++;
+          check(a.w.a.so > 0, `${p.id}/${a.id}: la vía sana también suma aprobación`);
+        } else {
+          check(a.w.a.so <= 0, `${p.id}/${a.id}: sin ser generosa, ser fiel a ti cuesta aprobación`);
+        }
       } else sinDilema++;
     });
   });
   check(conDilema >= 60, `la mayoría de acciones plantean un dilema (${conDilema} de ${conDilema + sinDilema})`);
+  check(sanas >= 10, `hay una vía sana de sobra para no quedarse aislado (${sanas} acciones)`);
+  check(sanas < conDilema / 2, `pero la mayoría de dilemas siguen obligando a elegir (${sanas} de ${conDilema})`);
+  check(!!M.PLACE_BY.comunitario, 'existe un lugar dedicado a ayudar a otros');
+  check(M.PLACE_BY.comunitario.actions.every(a => a.w && a.w.a.sana),
+    'todas las acciones del centro comunitario suman en las dos barras');
 
   M.BIZ_TYPES.forEach(b => {
     b.stats.forEach(k => check(keys.has(k), `negocio ${b.id}: característica válida "${k}"`));
@@ -426,6 +438,164 @@ check(media(complacientes, 'social') > media(fieles, 'social'),
   `jugar complaciendo deja más aprobación (${media(complacientes, 'social').toFixed(0)} vs ${media(fieles, 'social').toFixed(0)})`);
 check(runs.some(s => s.final), 'alguna partida llega a un final');
 check(runs.some(s => s.bizs.length > 0 || s.counters.bizEarned > 0), 'las partidas llegan a montar algo propio');
+
+/* ------------------------------------------------------------------ */
+console.log('10b) Ritmo lento, coherencia y aprobación sana');
+(() => {
+  // una sola acción no puede mover los ejes más de un par de puntos
+  const s = M.newGame({ name: 'R', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', seed: 55 });
+  s.money = 4000;
+  const club = M.PLACE_BY.club, charla = club.actions.find(a => a.id === 'charla');
+  const a0 = s.autenticidad;
+  M.doAction(s, M.PLACE_BY.gimnasio, M.PLACE_BY.gimnasio.actions[0], 'a');
+  check(s.autenticidad - a0 < 3, `una acción mueve poco el eje (${(s.autenticidad - a0).toFixed(1)} puntos)`);
+  check(s.autenticidad - a0 > 0.5, 'pero se mueve algo');
+
+  // hacen falta muchas decisiones para cambiar de estado
+  const t = M.newGame({ name: 'T', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', seed: 56 });
+  t.money = 99999;
+  // se juega de verdad, encadenando acciones auténticas distintas cada día
+  const todas = [];
+  M.PLACES.forEach(p => p.actions.forEach(a => { if (a.w) todas.push([p, a]); }));
+  let acciones = 0;
+  while (t.autenticidad < 70 && t.day < 200) {
+    let hizoAlgo = false;
+    for (const [p, a] of todas) {
+      if (t.autenticidad >= 70) break;
+      if (!M.canDo(t, p, a, 'a').ok) continue;
+      M.doAction(t, p, a, 'a'); acciones++; hizoAlgo = true;
+    }
+    if (!hizoAlgo || t.hour > 21) M.endDay(t, []);
+  }
+  check(acciones >= 10, `subir la autenticidad hasta 70 exige muchas decisiones (${acciones})`);
+  check(t.day >= 3, `y varios días de constancia, no una tarde (${t.day} días)`);
+
+  // el tope diario: un solo día no puede moverte más de lo que un día da de sí
+  const tope = M.newGame({ name: 'X', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', seed: 65 });
+  tope.money = 99999;
+  const a0Tope = tope.autenticidad;
+  todas.forEach(([p, a]) => { if (M.canDo(tope, p, a, 'a').ok) M.doAction(tope, p, a, 'a'); });
+  check(tope.autenticidad - a0Tope <= M.TOPE_DIA + 0.01,
+    `el tope diario de ${M.TOPE_DIA} puntos se respeta (subió ${(tope.autenticidad - a0Tope).toFixed(1)})`);
+  const dia0 = tope.day;
+  M.endDay(tope, []);
+  check(tope.day === dia0 + 1 && tope.counters.movAuth === 0, 'y el tope se reinicia cada mañana');
+
+  // la coherencia devuelve aprobación sin tener que complacer
+  const c = M.newGame({ name: 'C', age: 30, bg: 'autodidacta', perk: 'ahorrador', objetivo: 'propio', seed: 57 });
+  c.autenticidad = 75; c.social = 40;
+  const soc0 = c.social;
+  for (let i = 0; i < M.COHERENCIA_DIAS + 6; i++) { c.autenticidad = 75; M.endDay(c, []); }
+  check(c.social > soc0, `mantenerse fiel acaba subiendo la aprobación (${soc0} → ${c.social.toFixed(1)})`);
+
+  // sin coherencia no hay ese premio: con la misma semilla, quien se mantiene
+  // fiel acaba con más aprobación que quien no
+  const d = M.newGame({ name: 'D', age: 30, bg: 'autodidacta', perk: 'ahorrador', objetivo: 'propio', seed: 57 });
+  d.autenticidad = 30; d.social = 40;
+  const c2 = M.newGame({ name: 'C', age: 30, bg: 'autodidacta', perk: 'ahorrador', objetivo: 'propio', seed: 57 });
+  c2.autenticidad = 75; c2.social = 40;
+  for (let i = 0; i < 14; i++) { d.autenticidad = 30; c2.autenticidad = 75; M.endDay(d, []); M.endDay(c2, []); }
+  check(c2.social > d.social, `la coherencia paga en aprobación (${c2.social.toFixed(1)} frente a ${d.social.toFixed(1)})`);
+
+  // una vía sana sube las dos barras a la vez
+  const v = M.newGame({ name: 'V', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', seed: 59 });
+  v.money = 4000; v.stats.liderazgo = 40;
+  const com = M.PLACE_BY.comunitario;
+  const antes = { a: v.autenticidad, s: v.social };
+  M.doAction(v, com, com.actions.find(a => a.id === 'mentorizar'), 'a');
+  check(v.autenticidad > antes.a && v.social > antes.s, 'mentorizar de verdad sube las dos barras');
+
+  // y la versión de cara a la galería sigue costando autenticidad
+  const g = M.newGame({ name: 'G', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', seed: 60 });
+  g.money = 4000;
+  const a1 = g.autenticidad;
+  M.doAction(g, com, com.actions.find(a => a.id === 'voluntariado'), 's');
+  check(g.autenticidad < a1, 'ir de voluntario con la cámara delante sigue costando autenticidad');
+})();
+
+/* ------------------------------------------------------------------ */
+console.log('10c) La ciudad no es una cuadrícula');
+(() => {
+  const posiciones = {};
+  const columnas = [];
+  for (let i = 0; i < 25; i++) {
+    const w = M.worldGen(4000 + i * 331);
+    columnas.push(new Set(w.buildings.map(b => b.x)).size);
+    w.buildings.forEach(b => { (posiciones[b.id] = posiciones[b.id] || []).push(b.x + ',' + b.y); });
+  }
+  const mediaColumnas = columnas.reduce((a, b) => a + b, 0) / columnas.length;
+  check(mediaColumnas >= 14, `los edificios no se alinean en pocas columnas (media ${mediaColumnas.toFixed(1)} distintas de 18)`);
+  Object.keys(posiciones).forEach(id => {
+    const distintas = new Set(posiciones[id]).size;
+    check(distintas >= 20, `${id} cae en un sitio distinto en cada partida (${distintas}/25)`);
+  });
+
+  // los barrios se mantienen agrupados aunque cambien de sitio
+  const w = M.worldGen(1234);
+  M.DISTRITOS.forEach(d => {
+    const suyos = w.buildings.filter(b => b.dist === d.id);
+    if (suyos.length < 2) return;
+    const a = w.anclas[d.id];
+    const lejos = suyos.filter(b => Math.hypot(b.x - a.x, b.y - a.y) > 38).length;
+    check(lejos === 0, `los lugares de ${d.name} quedan cerca de su barrio`);
+  });
+
+  // el barrio bajo tus pies se identifica bien
+  const d0 = w.distritoEn(w.spawn.x, w.spawn.y);
+  check(!!d0 && !!d0.name, 'el HUD sabe en qué barrio estás');
+})();
+
+/* ------------------------------------------------------------------ */
+console.log('10d) Correr por el mapa');
+(() => {
+  const s = M.newGame({ name: 'C', age: 25, bg: 'deportista', perk: 'incansable', objetivo: 'aprender', seed: 61 });
+  const and = M.playerSpeed(s, false), corre = M.playerSpeed(s, true);
+  check(corre > and * 1.6, `correr acelera de verdad (${and.toFixed(0)} → ${corre.toFixed(0)} px/s)`);
+  check(M.puedeCorrer(s), 'con energía se puede correr');
+  s.energy = 2;
+  check(!M.puedeCorrer(s), 'sin fuelle no se puede correr');
+  check(M.playerSpeed(s, true) === M.playerSpeed(s, false), 'y pulsar correr sin fuelle no cambia nada');
+  const fuerte = M.newGame({ name: 'F', age: 25, bg: 'deportista', perk: 'incansable', objetivo: 'aprender', seed: 62 });
+  fuerte.stats.vigor = 90;
+  check(M.playerSpeed(fuerte, true) > corre, 'el vigor te hace correr más rápido');
+})();
+
+/* ------------------------------------------------------------------ */
+console.log('10e) El diario guarda el detalle');
+(() => {
+  const s = M.newGame({ name: 'L', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', seed: 63 });
+  s.money = 4000;
+  M.doAction(s, M.PLACE_BY.gimnasio, M.PLACE_BY.gimnasio.actions[0], 'a');
+  const entrada = s.log[0];
+  check(!!entrada.det && entrada.det.length >= 2, 'la acción queda anotada con su desglose');
+  check(entrada.det.some(d => /Autenticidad/.test(d.t)), 'el desglose incluye el movimiento de los ejes');
+  check(entrada.det.every(d => d.t !== entrada.t), 'el desglose no repite el título');
+  M.endDay(s, []);
+  const cierre = s.log.find(l => /Cierre del día/.test(l.t));
+  check(!!cierre && !!cierre.det, 'el cierre del día se guarda entero');
+  check(cierre.det.some(d => /Gastos/.test(d.t)), 'con los gastos incluidos');
+  // sin duplicar lo que ya tiene entrada propia
+  const titulos = s.log.map(l => l.t);
+  s.log.forEach(l => (l.det || []).forEach(d => {
+    check(titulos.indexOf(d.t) === -1 || d.t === l.t, `el diario no repite «${d.t.slice(0, 30)}»`);
+  }));
+})();
+
+/* ------------------------------------------------------------------ */
+console.log('10f) Cada característica explica en qué influye');
+M.STATS.forEach(st => {
+  check(Array.isArray(st.efectos) && st.efectos.length >= 3, `${st.label}: al menos 3 efectos explicados`);
+  check(!!st.avatar, `${st.label}: dice qué cambia en el avatar`);
+  check(!!st.donde, `${st.label}: dice dónde se entrena`);
+  const s = M.newGame({ name: 'E', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', seed: 64 });
+  const txt = M.efectoActual(s, st.key);
+  check(!!txt && !/NaN|undefined/.test(txt), `${st.label}: el efecto actual se calcula (${txt})`);
+});
+M.PLACES.forEach(p => {
+  const r = M.resumenLugar(p);
+  check(r.entrena.length > 0 || r.acciones > 0, `${p.id}: la guía sabe resumirlo`);
+  check(!!p.about, `${p.id}: la guía tiene qué contar de él`);
+});
 
 /* ------------------------------------------------------------------ */
 console.log('11) Los finales');

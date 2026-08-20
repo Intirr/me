@@ -22,6 +22,33 @@ Todo el juego se mueve entre dos fuerzas que casi nunca tiran hacia el mismo lad
 Es *paz interior y sentido de dirección* contra *estatus y cómo te ven*. La partida
 consiste en negociar entre las dos sin romperte.
 
+**Los dos ejes se mueven despacio a propósito.** Una vida no cambia de rumbo en una
+tarde, así que el juego lo impide de tres maneras:
+
+- Cada movimiento vale **un tercio** de lo que marca la acción.
+- Ningún día puede mover un eje **más de 8 puntos**, hagas lo que hagas.
+- Repetir hoy la misma acción rinde cada vez menos: la quinta vez ya casi no dice
+  nada nuevo de ti.
+
+Pasar de 45 a 70 de autenticidad cuesta **días de constancia**, no una tarde de
+decisiones acertadas.
+
+### 💚 Ganar aprobación sin venderte
+
+Ser fiel a ti mismo *suele* costar aprobación, pero no siempre. Hay tres caminos
+honestos para que la gente te acepte sin dejar de ser tú:
+
+1. **17 decisiones que suben las dos barras.** Enseñar de verdad, contar también lo
+   que salió mal, colaborar con quien admiras, echar una mano en el mercado, negociar
+   de frente. Se marcan con 💚 en la interfaz.
+2. **El Centro Comunitario La Colmena**, un lugar entero dedicado a ello: voluntariado,
+   mentorizar a alguien que empieza, escuchar sin dar consejos, organizar algo para el
+   barrio. Cada acción tiene su versión sincera (💚 sube las dos) y su versión de cara a
+   la galería (más aprobación, menos autenticidad).
+3. **La coherencia.** Mantén la autenticidad por encima de 60 durante cinco días
+   seguidos y la gente empieza a respetar que no cambies según quién mire: la aprobación
+   sube sola, cada día un poco más.
+
 ## 🌗 Los tres estados
 
 De la combinación de ambos ejes sale un estado que cambia **la interfaz, el color
@@ -87,22 +114,42 @@ qué haces ahí.
 
 ## 🌍 3. El mundo
 
-Una ciudad de **108 × 84 casillas** en pixel art generado por código, con cinco distritos
-y **20 lugares**:
+Una ciudad de **108 × 84 casillas** en pixel art generado por código, con seis barrios
+y **21 lugares**. **No hay rejilla**: la ciudad se construye entera en cada partida — los
+barrios caen en sitios distintos, las calles serpentean entre ellos y cada edificio se
+coloca alrededor de su barrio con ángulo y distancia al azar. Después se talla un sendero
+desde cada puerta hasta la calle más cercana, así que nunca queda un sitio inaccesible.
 
-- **🌳 Norte** — tu apartamento, Gimnasio Titán, Centro Zen, Centro de Salud, Parque Sol
+- **🌳 Barrio Norte** — tu apartamento, Gimnasio Titán, Centro Zen, Parque Sol
 - **⛲ Centro** — Biblioteca Central, Café Aroma, Universidad, Club Social, Plaza Mayor
-- **🏦 Financiero** — Banco Meridiano, Torre Corporativa, Coworking Nodo, Incubadora Impulso
-- **🛒 Sur** — Mercado Central, Bazar Suministros, Escuela de Oficios, Estudio Creativo, Centro de Ferias
+- **🤝 Ribera Este** — Centro de Salud, Centro Comunitario La Colmena, Centro de Ferias
+- **🏦 Distrito Financiero** — Banco Meridiano, Torre Corporativa, Coworking Nodo, Incubadora Impulso
+- **🛒 Barrio Sur** — Mercado Central, Bazar Suministros, Escuela de Oficios, Estudio Creativo
 - **⚓ Costa** — Muelle del Sur
 
 ![Mapa del mundo](docs/mapa.png)
 
-Por la ciudad pasean **seis personajes** y no todos te tratan igual: la inversora deja
-de atenderte si caes en el ostracismo, y el librero y la artista se enfrían contigo si
-te pones la máscara.
+Se recorre andando o **corriendo con `Mayús`** (casi el doble de rápido, y el Vigor se
+nota). Por la ciudad pasean **siete personajes** y no todos te tratan igual: la inversora
+deja de atenderte si caes en el ostracismo, y el librero y la artista se enfrían contigo
+si te pones la máscara.
 
-## ⚙️ 4. Los sistemas
+## 📖 4. El tutorial y la guía
+
+Nada más salir de la entrevista, un **recorrido por los seis barrios** explica qué hay en
+cada uno y para qué sirve: qué características entrena cada lugar, si allí se cobra o se
+paga y dónde hay decisiones que suman en las dos barras. Se puede saltar, y queda
+disponible para siempre con la tecla `?` o desde el mapa. Además, la primera vez que
+entras a un sitio, una nota te dice de un vistazo qué vas a encontrar dentro.
+
+![La guía de la ciudad](docs/guia.png)
+
+Y cada característica explica **exactamente en qué influye**: en el currículum y en el
+perfil puedes desplegar sus efectos concretos ("abarata la energía de todas las acciones
+hasta un 24 %", "el banco te presta 60 € más por punto"), qué cambia en tu avatar y dónde
+se entrena. En el perfil, además, se traduce a lo que significa hoy con tu valor actual.
+
+## ⚙️ 5. Los sistemas
 
 - **Tiempo y energía** — el día va de las 7:00 a las 24:00; cada acción cuesta horas,
   energía y a veces dinero. Dormir cierra el día.
@@ -120,14 +167,18 @@ te pones la máscara.
 - **Objetos con doble lectura** — el traje sube la aprobación y baja la autenticidad;
   la biblioteca personal hace lo contrario.
 - **Eventos, hábitos, rachas y logros**, y guardado automático en el navegador.
+- **Diario detallado** — cada acción queda anotada con su desglose completo (cuánto se
+  movió cada eje, qué aprendiste, qué te costó), separado por días, y el cierre de cada
+  jornada se guarda entero. Los avisos en pantalla duran 11 segundos y se congelan si
+  pasas el ratón por encima.
 
-## 🏁 5. Los finales
+## 🏁 6. Los finales
 
 La partida termina cuando un estado se sostiene en el tiempo:
 
-- 🌟 **Liderazgo genuino** — 5 días con ambos ejes por encima de 70. El final bueno.
-- 🎭 **La máscara se quedó pegada** — 12 días complaciendo con la autenticidad por los suelos.
-- 🕳️ **El desierto** — 12 días aislado *y* sin rumbo propio.
+- 🌟 **Liderazgo genuino** — 8 días con ambos ejes por encima de 70. El final bueno.
+- 🎭 **La máscara se quedó pegada** — 18 días complaciendo con la autenticidad por los suelos.
+- 🕳️ **El desierto** — 18 días aislado *y* sin rumbo propio.
 
 Estar en el ostracismo con la cabeza clara **no es un final**: es un sitio incómodo
 donde se puede vivir y crear. Al llegar a un final puedes leer el epílogo y elegir entre
@@ -141,9 +192,9 @@ Abre **`juego.html`** en cualquier navegador moderno. No hay nada que instalar.
 python3 -m http.server 8000   # y visita http://localhost:8000/juego.html
 ```
 
-**Controles:** `W A S D` o flechas para moverte · `E` para interactuar · `P` perfil ·
-`N` negocios · `Q` misiones · `M` mapa · `L` diario · `Esc` cerrar. En móvil aparecen
-un mando y un botón **E**.
+**Controles:** `W A S D` o flechas para moverte · `Mayús` para correr · `E` para
+interactuar · `P` perfil · `N` negocios · `Q` misiones · `M` mapa · `L` diario ·
+`?` guía · `Esc` cerrar. En móvil aparecen un mando, un botón **E** y otro para correr.
 
 ## 🧪 Desarrollo
 
@@ -153,8 +204,8 @@ ejecuta en el navegador.
 
 ```bash
 npm install          # sólo para pruebas y previsualización
-npm test             # lógica pura (~299.000 comprobaciones)
-npm run test:dom     # integración real con jsdom: currículum → entrevista → mundo
+npm test             # lógica pura (~130.000 comprobaciones)
+npm run test:dom     # integración real con jsdom: currículum → entrevista → guía → mundo
 npm run test:all     # todo
 npm run preview:game # regenera docs/mapa.png y los avatares
 node shots.js        # regenera las capturas del README (necesita playwright-core)
@@ -163,7 +214,18 @@ node shots.js        # regenera las capturas del README (necesita playwright-cor
 `npm test` comprueba, entre otras cosas:
 
 - Que **las dos vías de cada acción tiran de verdad en direcciones opuestas**: la
-  auténtica siempre da más autenticidad y cuesta aprobación, y la social al revés.
+  auténtica siempre da más autenticidad y la complaciente siempre la baja; y que las
+  marcadas como 💚 sanas —y sólo ésas— suman también aprobación.
+- Que **el ritmo es lento**: una acción mueve menos de 3 puntos, ningún día mueve un eje
+  más de 8, y llegar a 70 de autenticidad exige varios días de decisiones distintas.
+- Que **la coherencia paga**: con la misma semilla, quien se mantiene fiel acaba con más
+  aprobación que quien no.
+- Que **la ciudad no es una cuadrícula**: en 25 semillas los edificios ocupan al menos 14
+  columnas distintas y cada lugar cae en un sitio diferente en cada partida, sin dejar de
+  agruparse por barrios.
+- Que **correr** acelera de verdad, que sin fuelle no se puede y que el Vigor se nota.
+- Que **el diario guarda el desglose** de cada acción sin repetir lo que ya tiene entrada
+  propia.
 - Que **la entrevista acaba en rechazo se responda como se responda**, en las cuatro
   etapas y con las tres columnas de respuestas.
 - Los umbrales de los **tres estados**, que la máscara bloquea lo creativo y baja el

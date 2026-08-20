@@ -57,10 +57,14 @@ async function entrevistar(p, columna) {
     await entrevistar(p, 2);
     await p.waitForTimeout(200);
     await p.screenshot({ path: path.join(DOCS, 'entrevista.png') }); hechas.push('entrevista.png');
-    // 3. el mundo y 4. el dilema
+    // 3. la guía inicial, 4. el mundo y 5. el dilema
     const bts = await p.$$('#entBody button');
     await bts[bts.length - 1].click();
     await p.waitForTimeout(900);
+    // el recorrido arranca solo: capturamos el paso de un barrio
+    await p.click('.guia-nav .btn.primary'); await p.waitForTimeout(250);
+    await p.screenshot({ path: path.join(DOCS, 'guia.png') }); hechas.push('guia.png');
+    await p.click('.guia-nav .btn.ghost'); await p.waitForTimeout(600);   // saltar la guía
     await p.screenshot({ path: path.join(DOCS, 'mundo.png') }); hechas.push('mundo.png');
     await p.keyboard.press('e'); await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(DOCS, 'dilema.png') }); hechas.push('dilema.png');
@@ -77,6 +81,8 @@ async function entrevistar(p, columna) {
     const bts = await p.$$('#entBody button');
     await bts[bts.length - 1].click();
     await p.waitForTimeout(500);
+    const saltar = await p.$('.guia-nav .btn.ghost');
+    if (saltar) { await saltar.click(); await p.waitForTimeout(200); }
     await p.evaluate(({ key, auth, social }) => {
       const raw = JSON.parse(localStorage.getItem(key));
       raw.s.autenticidad = auth; raw.s.social = social;
@@ -84,6 +90,8 @@ async function entrevistar(p, columna) {
     }, { key: SAVE, auth, social });
     await p.reload(); await p.waitForTimeout(300);
     await p.click('#btnLoadSave'); await p.waitForTimeout(900);
+    const saltar2 = await p.$('.guia-nav .btn.ghost');
+    if (saltar2) { await saltar2.click(); await p.waitForTimeout(500); }
     await p.screenshot({ path: path.join(DOCS, `estado-${nombre}.png`) });
     hechas.push(`estado-${nombre}.png`);
     await p.close();

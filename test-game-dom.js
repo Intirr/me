@@ -125,7 +125,25 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   check(doc.querySelector('[data-v="social"]') !== null, 'el HUD muestra la aprobación social');
   check(doc.querySelector('[data-v="estadoNom"]').textContent.length > 0, 'el HUD nombra el estado actual');
 
-  console.log('6) El bucle de render corre sin errores');
+  console.log('6) El recorrido inicial por la ciudad');
+  check($('modalBack').classList.contains('on'), 'al salir de la entrevista arranca la guía');
+  check(/Cómo funciona/i.test($('mTitle').textContent), 'empieza explicando el juego');
+  check(/dos maneras/i.test($('mBody').textContent), 'explica que cada acción tiene dos vías');
+  check(/las dos barras/i.test($('mBody').textContent), 'y que hay decisiones que suman en las dos');
+  const pasos = doc.querySelectorAll('.guia-punto').length;
+  check(pasos === 8, `la guía tiene un paso por barrio más la intro y los mandos (${pasos})`);
+  // recorrer la guía entera comprobando que cada barrio lista sus lugares
+  let lugaresVistos = 0;
+  for (let i = 1; i < pasos; i++) {
+    const sig = [...doc.querySelectorAll('.guia-nav .btn')].find(b => /Siguiente|Empezar|Cerrar/.test(b.textContent));
+    click(sig);
+    lugaresVistos += doc.querySelectorAll('#mBody .act').length;
+  }
+  check(lugaresVistos >= 21, `la guía describe los 21 lugares del mapa (${lugaresVistos})`);
+  check(/Mayús/i.test($('mBody').textContent), 'el último paso explica cómo correr');
+  click([...doc.querySelectorAll('.guia-nav .btn')].find(b => /Empezar|Cerrar/.test(b.textContent)));
+  check(!$('modalBack').classList.contains('on'), 'la guía se cierra al terminar');
+
   await wait(320);
   check(errors.length === 0, 'sin errores en el bucle: ' + errors.join(' | '));
 
@@ -133,6 +151,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   key('e');
   check($('modalBack').classList.contains('on'), 'pulsar E delante de la puerta abre el lugar');
   check($('mTitle').textContent === 'Tu apartamento', `apareces junto a tu casa (salió "${$('mTitle').textContent}")`);
+  check(/Primera vez aquí/i.test($('mBody').textContent), 'la primera visita explica para qué sirve el sitio');
   const acciones = [...doc.querySelectorAll('#mBody .act')];
   check(acciones.length >= 3, 'la casa ofrece varias acciones');
   const planificar = acciones.find(a => a.textContent.includes('Planificar el día'));
@@ -176,8 +195,13 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     key('Escape');
     check(!$('modalBack').classList.contains('on'), `Escape cierra ${title}`);
   }
+  key('l');
+  check(doc.querySelectorAll('#mBody .log-day').length > 0, 'el diario separa por días');
+  check(doc.querySelectorAll('#mBody .log-sub').length > 0, 'y guarda el desglose de cada entrada');
+  key('Escape');
   key('p');
   check(/Autenticidad/i.test($('mBody').textContent), 'el perfil muestra los dos ejes');
+  check(/en qué influye|detalle/i.test($('mBody').textContent), 'el perfil explica cada característica');
   check(doc.querySelectorAll('#mBody .stat-row .pm button').length === 8, 'el perfil permite subir las 8 características');
   key('Escape');
   for (const b of doc.querySelectorAll('[data-open]')) {
@@ -185,6 +209,12 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     check($('modalBack').classList.contains('on'), `el botón ${b.dataset.open} abre su panel`);
     click($('mClose'));
   }
+
+  console.log('9b) La guía se puede volver a abrir');
+  key('?');
+  check($('modalBack').classList.contains('on'), 'la tecla ? abre la guía');
+  check(/Guía de la ciudad/i.test($('mSub').textContent), 'y es la guía de la ciudad');
+  key('Escape');
 
   console.log('10) La pantalla de final está montada');
   check(!!$('screenFinal'), 'existe la pantalla de final');

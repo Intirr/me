@@ -161,6 +161,19 @@
   .stat-row .pm button:hover:not(:disabled) { background: var(--panel-3); }
   .stat-row .pm button:disabled { opacity: .3; cursor: not-allowed; }
   .stat-desc { font-size: 11.5px; color: var(--muted-2); margin: -2px 0 8px; }
+  .linkbtn {
+    background: none; border: 0; padding: 0; cursor: pointer; font-size: 11.5px;
+    color: var(--accent); text-decoration: underline; text-underline-offset: 2px; font-family: inherit;
+  }
+  .linkbtn:hover { color: #8ab0ff; }
+  .stat-info {
+    margin: -4px 0 12px; padding: 10px 12px; border-radius: 10px;
+    background: rgba(255,255,255,.025); border: 1px solid var(--border); font-size: 11.5px;
+  }
+  .stat-info ul { margin: 0 0 6px; padding-left: 16px; color: var(--muted); }
+  .stat-info li { margin-bottom: 3px; }
+  .stat-info .av { color: #c4b5fd; margin-bottom: 2px; }
+  .stat-info .dn { color: var(--muted-2); }
 
   .opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
   .opt {
@@ -242,6 +255,9 @@
   .toast.bad  { border-left-color: var(--danger); }
   .toast.warn { border-left-color: var(--warn); }
   .toast.gold { border-left-color: var(--gold); }
+  .toast { cursor: default; transition: border-color .2s; }
+  .toast.held { border-color: var(--border-2); background: rgba(20,26,35,.97); }
+  .toasts { max-height: calc(100vh - 200px); overflow: hidden; }
   @keyframes toastIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
 
   /* Mando táctil */
@@ -260,6 +276,13 @@
     background: rgba(91,140,255,.85); border: 1px solid #8ab0ff; color: #06101f;
   }
   .touch-e.on { display: block; }
+  .touch-run {
+    position: absolute; right: 96px; bottom: 104px; z-index: 6; display: none;
+    width: 54px; height: 54px; border-radius: 50%; font-size: 20px;
+    background: rgba(26,34,48,.85); border: 1px solid var(--border-2); color: var(--text);
+  }
+  .touch-run.on { display: block; }
+  .touch-run.activo { background: rgba(74,222,128,.8); border-color: #4ade80; }
 
   /* =============================================================
      MODALES
@@ -330,6 +353,8 @@
     background: var(--panel); border: 1px solid var(--border); text-align: left;
   }
   .way.auth { border-left: 3px solid #f59e0b; }
+  .way.auth.sana { border-left-color: #4ade80; }
+  .pill.sana { color: #86efac; border-color: rgba(74,222,128,.5); }
   .way.soc  { border-left: 3px solid #5b8cff; }
   .way .wl { font-size: 13px; font-weight: 700; }
   .way .wd { font-size: 11.5px; color: var(--muted); line-height: 1.45; flex: 1; }
@@ -390,7 +415,20 @@
   .quest .prog > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
   .quest .rw { font-size: 11px; color: var(--gold); font-weight: 700; text-align: right; white-space: nowrap; }
 
-  .log-list { max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+  .log-list { max-height: 460px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding-right: 4px; }
+  .log-day {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.6px; color: var(--muted-2);
+    font-weight: 700; margin: 12px 0 2px; padding-bottom: 4px; border-bottom: 1px solid var(--border);
+  }
+  .log-day:first-child { margin-top: 0; }
+  .log-det { margin-top: 5px; display: flex; flex-direction: column; gap: 2px; }
+  .log-sub {
+    font-size: 11.5px; color: var(--muted); padding-left: 10px; border-left: 1px solid var(--border-2);
+  }
+  .log-sub.good { color: #86efac; border-left-color: rgba(74,222,128,.45); }
+  .log-sub.bad { color: #fca5a5; border-left-color: rgba(255,107,107,.45); }
+  .log-sub.warn { color: #ffd7a5; border-left-color: rgba(255,176,87,.45); }
+  .log-sub.gold { color: #fcd34d; border-left-color: rgba(251,191,36,.45); }
   .log-line { font-size: 12.5px; padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,.02); border-left: 2px solid var(--border-2); }
   .log-line .d { color: var(--muted-2); font-family: var(--mono); font-size: 11px; margin-right: 7px; }
   .log-line.good { border-left-color: var(--good); }
@@ -417,6 +455,16 @@
   @media (max-width: 760px) { .profile-grid { grid-template-columns: 1fr; } .hud-left { display: none; } }
 
   .dialog-txt { font-size: 14px; line-height: 1.6; }
+  .guia-nav {
+    display: flex; align-items: center; gap: 10px; margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .guia-puntos { display: flex; gap: 5px; margin: 0 auto; }
+  .guia-punto {
+    width: 8px; height: 8px; border-radius: 50%; padding: 0; cursor: pointer;
+    background: var(--border-2); border: 0;
+  }
+  .guia-punto.on { background: var(--accent); transform: scale(1.3); }
   .dialog-txt em { color: var(--accent); font-style: normal; font-weight: 700; }
   .choice-list { display: grid; gap: 8px; margin-top: 14px; }
 
@@ -660,11 +708,13 @@
     </div>
   </div>
   <button class="touch-e" id="touchE">E</button>
+  <button class="touch-run" id="touchRun">🏃</button>
 
   <div class="hud hud-bottom">
     <div class="keyhelp" id="keyhelp">
-      <kbd>W A S D</kbd> moverse · <kbd>E</kbd> interactuar · <kbd>P</kbd> perfil ·
-      <kbd>N</kbd> negocios · <kbd>Q</kbd> misiones · <kbd>M</kbd> mapa · <kbd>Esc</kbd> cerrar
+      <kbd>W A S D</kbd> moverse · <kbd>Mayús</kbd> correr · <kbd>E</kbd> interactuar ·
+      <kbd>P</kbd> perfil · <kbd>N</kbd> negocios · <kbd>Q</kbd> misiones · <kbd>M</kbd> mapa ·
+      <kbd>?</kbd> guía · <kbd>Esc</kbd> cerrar
     </div>
     <div class="spacer"></div>
     <div class="menu-row">
@@ -673,6 +723,7 @@
       <button class="btn sm" data-open="quests">🎯 Misiones</button>
       <button class="btn sm" data-open="map">🗺️ Mapa</button>
       <button class="btn sm" data-open="log">📜 Diario</button>
+      <button class="btn sm" data-open="guia">📖 Guía</button>
       <button class="btn sm" id="btnSaveGame">💾</button>
     </div>
   </div>
@@ -774,23 +825,95 @@
      2. CARACTERÍSTICAS DEL PERSONAJE
      ================================================================ */
 
+  // Cada característica dice exactamente en qué influye: nada de números opacos.
+  // 'efectos' son las consecuencias reales en la simulación; 'avatar', lo que
+  // cambia en tu figura; 'donde', dónde se entrena.
   const STATS = [
     { key: 'vigor',       label: 'Vigor',       icon: '💪', color: '#ff6b6b',
-      desc: 'Energía máxima, aguante físico y recuperación.' },
+      desc: 'Energía máxima, aguante físico y recuperación.',
+      efectos: [
+        'Energía máxima: +0,55 por punto (base 68)',
+        'Sube lo que te pagan por trabajos de esfuerzo',
+        'Necesitas 40 para el bloque de alto rendimiento del gimnasio',
+      ],
+      avatar: 'Ensancha los hombros y la complexión de tu figura.',
+      donde: 'Gimnasio · Parque · Muelle · casa (con gimnasio en casa)' },
+
     { key: 'intelecto',   label: 'Intelecto',   icon: '🧠', color: '#5b8cff',
-      desc: 'Aprendizaje, análisis y estrategia de negocio.' },
+      desc: 'Aprendizaje, análisis y estrategia de negocio.',
+      efectos: [
+        'Sube la probabilidad de ascender en la empresa',
+        'Sube lo que cobras por dar clase (+1,1 € por punto)',
+        'Es la base de la startup tecnológica',
+        'Necesitas 35 para optar a un puesto mejor y 45 para dar clase',
+      ],
+      avatar: 'Enciende el halo sobre tu cabeza.',
+      donde: 'Biblioteca · Universidad · Coworking · Ferias' },
+
     { key: 'disciplina',  label: 'Disciplina',  icon: '🎯', color: '#b07cff',
-      desc: 'Constancia: gastas menos energía y mantienes rachas.' },
+      desc: 'Constancia: gastas menos energía y mantienes lo que empiezas.',
+      efectos: [
+        'Abarata la energía de TODAS las acciones (hasta un 24 % menos)',
+        'Sube lo que cobras por jornada de trabajo',
+        'Sube la probabilidad de conseguir un aumento',
+      ],
+      avatar: 'Te endereza la postura y da cuerpo a la figura.',
+      donde: 'Gimnasio · Escuela de Oficios · Coworking · planificar en casa' },
+
     { key: 'carisma',     label: 'Carisma',     icon: '🗣️', color: '#ffb057',
-      desc: 'Ventas, negociación y primeras impresiones.' },
+      desc: 'Ventas, negociación y primeras impresiones.',
+      efectos: [
+        'Más contactos por cada acción social (hasta +45 %)',
+        'Sube mucho la probabilidad de que te suban el sueldo',
+        'Decide si convences en un pitch a inversores',
+        'Es la base del puesto de mercado y de la agencia',
+      ],
+      avatar: 'Abre los brazos y separa las piernas: postura de quien ocupa espacio.',
+      donde: 'Café · Club Social · Plaza · Escuela de Oficios' },
+
     { key: 'creatividad', label: 'Creatividad', icon: '🎨', color: '#f472b6',
-      desc: 'Ideas, producto y diferenciación en el mercado.' },
+      desc: 'Ideas, producto y diferenciación en el mercado.',
+      efectos: [
+        'Mejora la calidad del producto de tus negocios',
+        'Hace más potentes tus campañas de marketing',
+        'Sube el precio al que vendes tu obra (+1,6 € por punto)',
+        'Es la base de la tienda online y de la startup',
+      ],
+      avatar: 'Enciende el halo sobre tu cabeza, junto al intelecto.',
+      donde: 'Estudio Creativo · Plaza · Parque · Club Social' },
+
     { key: 'finanzas',    label: 'Finanzas',    icon: '💰', color: '#fbbf24',
-      desc: 'Márgenes, inversión y control del dinero.' },
+      desc: 'Márgenes, inversión y control del dinero.',
+      efectos: [
+        'Sube tu límite de préstamo en 60 € por punto',
+        'Sube la financiación que levantas en un pitch',
+        'Es la base de la tienda online y de la cafetería',
+        'Necesitas 30 para el máster y 40 para abrir cafetería',
+      ],
+      avatar: 'Agranda el núcleo de energía de tu pecho.',
+      donde: 'Banco · Biblioteca · Incubadora · Mercado' },
+
     { key: 'liderazgo',   label: 'Liderazgo',   icon: '🤝', color: '#34d399',
-      desc: 'Equipo, delegación y alianzas duraderas.' },
+      desc: 'Equipo, delegación y alianzas duraderas.',
+      efectos: [
+        'Sin liderazgo no puedes contratar: hacen falta 18, y 10 más por cada empleado',
+        'Sube la probabilidad de ascender',
+        'Es la base de la agencia y de la cafetería',
+        'Necesitas 25 para organizar algo en el barrio',
+      ],
+      avatar: 'Abre los brazos, junto al carisma.',
+      donde: 'Escuela de Oficios · Centro Comunitario · Coworking · Incubadora' },
+
     { key: 'equilibrio',  label: 'Equilibrio',  icon: '🧘', color: '#22d3ee',
-      desc: 'Manejo del estrés, ánimo y sostenibilidad.' },
+      desc: 'Manejo del estrés, ánimo y sostenibilidad en el tiempo.',
+      efectos: [
+        'Amortigua todo el estrés que ganas (hasta un 33 % menos)',
+        'Mejora el descanso: duermes mejor y recuperas más energía',
+        'Sube tu rendimiento general en todo (hasta +20 %)',
+        'Energía máxima: +0,16 por punto',
+      ],
+      avatar: 'Te endereza la postura y te quita el encorvamiento.',
+      donde: 'Centro Zen · Muelle · Parque · Centro de Salud' },
   ];
   const STAT_KEYS = STATS.map(s => s.key);
   const STAT_BY = {};
@@ -1229,7 +1352,7 @@
   const PLACES = [
     /* ---------------------------- NORTE ---------------------------- */
     { id: 'casa', name: 'Tu apartamento', icon: '🏠', color: '#8b6f47', kind: 'building',
-      x: 12, y: 10, w: 7, h: 7, hint: 'Entrar en casa',
+      dist: 'norte', w: 7, h: 7, hint: 'Entrar en casa',
       about: 'Tu base. Aquí descansas, planificas y, si te equipas, también entrenas y estudias.',
       actions: [
         { id: 'dormir', label: 'Dormir hasta mañana', icon: '🛌', sp: 'dormir',
@@ -1260,7 +1383,7 @@
       ] },
 
     { id: 'gimnasio', name: 'Gimnasio Titán', icon: '🏋️', color: '#ff6b6b', kind: 'building',
-      x: 30, y: 9, w: 8, h: 8, hint: 'Entrar al gimnasio',
+      dist: 'norte', w: 8, h: 8, hint: 'Entrar al gimnasio',
       about: 'Hierro, sudor y constancia. El cuerpo sostiene todo lo demás.',
       actions: [
         { id: 'fuerza', label: 'Entrenar fuerza', icon: '💪', h: 1.5, e: 22, c: 10,
@@ -1286,7 +1409,7 @@
       ] },
 
     { id: 'zen', name: 'Centro Zen', icon: '🧘', color: '#22d3ee', kind: 'building',
-      x: 48, y: 10, w: 7, h: 7, hint: 'Entrar al centro',
+      dist: 'norte', w: 7, h: 7, hint: 'Entrar al centro',
       about: 'Aquí se trabaja lo que no se ve: la cabeza que dirige el resto.',
       actions: [
         { id: 'meditar', label: 'Meditar', icon: '🧘', h: 1, e: 6, c: 12,
@@ -1312,7 +1435,7 @@
       ] },
 
     { id: 'clinica', name: 'Centro de Salud', icon: '🩺', color: '#e5e7eb', kind: 'building',
-      x: 86, y: 9, w: 8, h: 8, hint: 'Entrar al centro de salud',
+      dist: 'este', w: 8, h: 8, hint: 'Entrar al centro de salud',
       about: 'Mantenimiento preventivo del único vehículo que no puedes cambiar.',
       actions: [
         { id: 'chequeo', label: 'Chequeo general', icon: '🔬', h: 1.5, e: 8, c: 55,
@@ -1331,7 +1454,7 @@
       ] },
 
     { id: 'parque', name: 'Parque Sol', icon: '🌳', color: '#34d399', kind: 'spot',
-      x: 72, y: 12, hint: 'Usar el parque',
+      dist: 'norte', hint: 'Usar el parque',
       about: 'Aire libre gratis: el mejor gimnasio y el mejor despacho para pensar.',
       actions: [
         { id: 'correr', label: 'Salir a correr', icon: '🏃', h: 1, e: 16,
@@ -1358,7 +1481,7 @@
 
     /* ---------------------------- CENTRO --------------------------- */
     { id: 'plaza', name: 'Plaza Mayor', icon: '⛲', color: '#a8a29e', kind: 'spot',
-      x: 40, y: 26, hint: 'Quedarte en la plaza',
+      dist: 'centro', hint: 'Quedarte en la plaza',
       about: 'El corazón de la ciudad: gente, ruido y oportunidades sin filtro.',
       actions: [
         { id: 'observar', label: 'Observar y tomar notas', icon: '📝', h: 1, e: 4,
@@ -1380,12 +1503,12 @@
           g: { carisma: 34, liderazgo: 12 }, net: 2, so: 4, st: 12, mo: 8,
           req: { stat: { carisma: 30 } },
           desc: 'Subirte a algo y sostener la mirada de cincuenta personas.',
-          w: { a: { l: 'Contar tu historia real', d: 'Incluido lo que aún no funciona.', au: 10, so: -2, gm: 1.2 },
+          w: { a: { l: 'Contar tu historia real', d: 'Incluido lo que aún no funciona. Conecta.', au: 10, so: 3, sana: 1, gm: 1.2 },
                s: { l: 'Contar la historia que aplauden', d: 'La versión con final feliz.', au: -6, so: 10, net: 2 } } },
       ] },
 
     { id: 'biblioteca', name: 'Biblioteca Central', icon: '📚', color: '#5b8cff', kind: 'building',
-      x: 12, y: 23, w: 9, h: 8, hint: 'Entrar a la biblioteca',
+      dist: 'centro', w: 9, h: 8, hint: 'Entrar a la biblioteca',
       about: 'Silencio barato y conocimiento acumulado durante siglos.',
       actions: [
         { id: 'leer', label: 'Leer un libro', icon: '📖', h: 2, e: 10,
@@ -1406,18 +1529,18 @@
         { id: 'clublectura', label: 'Club de lectura', icon: '🫂', h: 1.5, e: 8,
           g: { intelecto: 14, carisma: 12 }, net: 1, mo: 5, st: -4,
           desc: 'Discutir lo leído fija el doble de lo que retienes solo.',
-          w: { a: { l: 'Defender tu lectura', d: 'Aunque seas el único que la defiende.', au: 7, so: -5, gm: 1.15 },
+          w: { a: { l: 'Defender tu lectura', d: 'Aunque seas el único que la defiende. Se respeta.', au: 7, so: 1, sana: 1, gm: 1.15 },
                s: { l: 'Asentir con la mayoría', d: 'Te ahorras la discusión.', au: -6, so: 8, net: 1 } } },
       ] },
 
     { id: 'cafe', name: 'Café Aroma', icon: '☕', color: '#c8975b', kind: 'building',
-      x: 30, y: 24, w: 7, h: 7, hint: 'Entrar al café',
+      dist: 'centro', w: 7, h: 7, hint: 'Entrar al café',
       about: 'Donde se cierran más tratos que en muchas oficinas.',
       actions: [
         { id: 'networking', label: 'Café con alguien', icon: '🤝', h: 1, e: 5, c: 6,
           g: { carisma: 16, liderazgo: 6 }, net: 1, mo: 7, st: -6,
           desc: 'Una hora, un café y una relación que puede valer años.',
-          w: { a: { l: 'Una conversación de verdad', d: 'Una hora con una sola persona.', au: 6, so: -2, net: 1 },
+          w: { a: { l: 'Una conversación de verdad', d: 'Una hora con una sola persona, escuchando de verdad.', au: 6, so: 3, sana: 1, net: 1 },
                s: { l: 'Repartir tu tarjeta a diez', d: 'Nombres que olvidarás mañana.', au: -5, so: 8, net: 2 } } },
         { id: 'trabajarcafe', label: 'Trabajar desde el café', icon: '💼', h: 2, e: 12, c: 8,
           g: { creatividad: 14, disciplina: 10 }, st: 4,
@@ -1438,7 +1561,7 @@
       ] },
 
     { id: 'universidad', name: 'Universidad', icon: '🎓', color: '#b07cff', kind: 'building',
-      x: 48, y: 22, w: 11, h: 9, hint: 'Entrar a la universidad',
+      dist: 'centro', w: 11, h: 9, hint: 'Entrar a la universidad',
       about: 'Formación seria: cara, lenta y con efectos que duran toda la partida.',
       actions: [
         { id: 'claseuni', label: 'Asistir a una clase', icon: '📐', h: 3, e: 18, c: 35,
@@ -1465,24 +1588,24 @@
       ] },
 
     { id: 'club', name: 'Club Social Aurora', icon: '🎭', color: '#f472b6', kind: 'building',
-      x: 66, y: 23, w: 9, h: 8, hint: 'Entrar al club',
+      dist: 'centro', w: 9, h: 8, hint: 'Entrar al club',
       about: 'Tu red de contactos vive aquí. Los negocios no se hacen solos.',
       actions: [
         { id: 'evento', label: 'Evento de networking', icon: '🥂', h: 3, e: 22, c: 25,
           g: { carisma: 22, liderazgo: 10 }, net: 3, so: 5, st: 8, mo: 6,
           desc: 'Muchas tarjetas, algunas conversaciones que importan.',
-          w: { a: { l: 'Quedarte con dos conversaciones buenas', d: 'Te vas pronto y con algo real.', au: 6, so: -2, net: 1 },
+          w: { a: { l: 'Quedarte con dos conversaciones buenas', d: 'Te vas pronto y con algo real.', au: 6, so: 3, sana: 1, net: 1 },
                s: { l: 'Saludar a todo el mundo', d: 'Cierras el local sin recordar a nadie.', au: -6, so: 9, net: 3 } } },
         { id: 'improv', label: 'Taller de improvisación', icon: '🎬', h: 2, e: 16, c: 30,
           g: { creatividad: 26, carisma: 16 }, mo: 10, st: -8,
           desc: 'Perder el miedo al ridículo es una ventaja competitiva.',
-          w: { a: { l: 'Hacer el ridículo de verdad', d: 'Te lanzas sin red y te sale fatal.', au: 9, so: -4, gm: 1.25, cre: 1 },
+          w: { a: { l: 'Hacer el ridículo de verdad', d: 'Te lanzas sin red y te sale fatal. Y caes bien por eso.', au: 9, so: 2, sana: 1, gm: 1.25, cre: 1 },
                s: { l: 'Repetir lo que hace reír seguro', d: 'Funciona y no arriesgas nada.', au: -4, so: 7, gm: 0.8 } } },
         { id: 'charla', label: 'Dar una charla', icon: '🎤', h: 2, e: 20,
           g: { carisma: 26, liderazgo: 20 }, net: 2, so: 8, st: 14,
           req: { stat: { carisma: 38 }, net: 5 },
           desc: 'Enseñar lo que sabes te posiciona como referente.', reqText: '5 contactos',
-          w: { a: { l: 'Contar también lo que salió mal', d: 'La parte que nadie cuenta.', au: 10, so: -3, gm: 1.2 },
+          w: { a: { l: 'Contar también lo que salió mal', d: 'La parte que nadie cuenta. A la gente le sirve.', au: 10, so: 4, sana: 1, gm: 1.2 },
                s: { l: 'Contar sólo la parte que brilla', d: 'Aplausos garantizados.', au: -7, so: 11, net: 2 } } },
         { id: 'cenainv', label: 'Cena con inversores', icon: '🍷', h: 3, e: 22, c: 140,
           g: { carisma: 18, finanzas: 16, liderazgo: 12 }, net: 4, so: 10, st: 10,
@@ -1494,7 +1617,7 @@
 
     /* -------------------------- FINANCIERO ------------------------- */
     { id: 'banco', name: 'Banco Meridiano', icon: '🏦', color: '#fbbf24', kind: 'building',
-      x: 12, y: 38, w: 9, h: 9, hint: 'Entrar al banco',
+      dist: 'finanzas', w: 9, h: 9, hint: 'Entrar al banco',
       about: 'Ahorro, deuda e intereses. El dinero también trabaja mientras duermes.',
       actions: [
         { id: 'depositar', label: 'Ingresar en ahorro', icon: '📥', sp: 'depositar', h: 0.5, e: 2,
@@ -1513,7 +1636,7 @@
       ] },
 
     { id: 'torre', name: 'Torre Corporativa', icon: '🏢', color: '#94a3b8', kind: 'building',
-      x: 30, y: 36, w: 9, h: 11, hint: 'Entrar a la oficina',
+      dist: 'finanzas', w: 9, h: 11, hint: 'Entrar a la oficina',
       about: 'Tu empleo: ingresos previsibles a cambio de tus mejores horas.',
       actions: [
         { id: 'turno', label: 'Jornada completa', icon: '🕘', h: 6, e: 32, sp: 'trabajo',
@@ -1544,7 +1667,7 @@
       ] },
 
     { id: 'coworking', name: 'Coworking Nodo', icon: '🧑‍💻', color: '#5b8cff', kind: 'building',
-      x: 48, y: 38, w: 10, h: 9, hint: 'Entrar al coworking',
+      dist: 'finanzas', w: 10, h: 9, hint: 'Entrar al coworking',
       about: 'Mesa, wifi y gente construyendo cosas. Aquí crece tu negocio.',
       actions: [
         { id: 'trabajonegocio', label: 'Trabajar en tu negocio', icon: '⚙️', h: 3, e: 20,
@@ -1560,7 +1683,7 @@
         { id: 'socio', label: 'Buscar socio o equipo', icon: '👯', h: 2, e: 14,
           g: { liderazgo: 20, carisma: 12 }, net: 2, so: 2,
           desc: 'Nadie construye algo grande solo.',
-          w: { a: { l: 'Buscar a alguien que comparta el porqué', d: 'Tardas más en encontrarlo.', au: 7, so: -3, net: 1 },
+          w: { a: { l: 'Buscar a alguien que comparta el porqué', d: 'Tardas más en encontrarlo, pero no te fallará.', au: 7, so: 2, sana: 1, net: 1 },
                s: { l: 'Buscar a alguien con contactos', d: 'Rápido, útil y frío.', au: -5, so: 8, net: 2 } } },
         { id: 'profundo', label: 'Sesión de trabajo profundo', icon: '🎯', h: 4, e: 26,
           g: { intelecto: 28, disciplina: 24 }, st: 12, mo: -2,
@@ -1570,7 +1693,7 @@
       ] },
 
     { id: 'incubadora', name: 'Incubadora Impulso', icon: '🚀', color: '#34d399', kind: 'building',
-      x: 66, y: 38, w: 9, h: 9, hint: 'Entrar a la incubadora',
+      dist: 'finanzas', w: 9, h: 9, hint: 'Entrar a la incubadora',
       about: 'Donde una idea se convierte en una empresa con papeles y cuentas.',
       actions: [
         { id: 'fundar', label: 'Registrar un negocio', icon: '📋', sp: 'fundar', h: 2, e: 14,
@@ -1583,7 +1706,7 @@
         { id: 'mentoria', label: 'Mentoría de negocio', icon: '🧭', h: 2, e: 12, c: 85,
           g: { liderazgo: 22, finanzas: 18 }, so: 3, st: -4,
           desc: 'Que alguien te señale el error antes de que te cueste dinero.',
-          w: { a: { l: 'Enseñar tus números reales', d: 'Los malos también.', au: 7, so: -2, gm: 1.2 },
+          w: { a: { l: 'Enseñar tus números reales', d: 'Los malos también. Así el consejo sirve.', au: 7, so: 2, sana: 1, gm: 1.2 },
                s: { l: 'Enseñar la versión maquillada', d: 'El consejo que recibes no sirve.', au: -6, so: 6, gm: 0.7 } } },
         { id: 'modelo', label: 'Taller de modelo de negocio', icon: '🧩', h: 3, e: 18, c: 160,
           g: { finanzas: 26, creatividad: 22, intelecto: 12 }, so: 4, net: 1, st: 6,
@@ -1594,7 +1717,7 @@
 
     /* ------------------------------ SUR ---------------------------- */
     { id: 'mercado', name: 'Mercado Central', icon: '🛒', color: '#f59e0b', kind: 'building',
-      x: 12, y: 54, w: 12, h: 9, hint: 'Entrar al mercado',
+      dist: 'sur', w: 12, h: 9, hint: 'Entrar al mercado',
       about: 'Producto fresco, precios reales y comerciantes que llevan décadas.',
       actions: [
         { id: 'compra', label: 'Comprar comida de verdad', icon: '🥦', h: 1, e: 5, c: 48,
@@ -1605,7 +1728,7 @@
         { id: 'ayudar', label: 'Echar una mano en un puesto', icon: '🧺', h: 3, e: 22, sp: 'jornal',
           g: { carisma: 14, disciplina: 10, vigor: 8 }, st: 6,
           desc: 'Trabajo honesto por horas: dinero rápido y calle.',
-          w: { a: { l: 'Trabajar con las manos y callarlo', d: 'Nadie sabrá que pasaste la mañana ahí.', au: 6, so: -3 },
+          w: { a: { l: 'Echar una mano de verdad', d: 'Te quedas hasta que el puesto queda recogido.', au: 6, so: 3, sana: 1 },
                s: { l: 'Contarlo como una experiencia', d: 'Queda muy bien en tu relato.', au: -4, so: 5 } } },
         { id: 'competencia', label: 'Estudiar a la competencia', icon: '🕵️', h: 1.5, e: 10,
           g: { finanzas: 16, creatividad: 14, intelecto: 8 }, so: 2,
@@ -1615,12 +1738,12 @@
         { id: 'proveedores', label: 'Negociar con proveedores', icon: '📦', h: 1.5, e: 12,
           sp: 'proveedores', g: { finanzas: 20, carisma: 14 }, st: 6, req: { biz: true },
           desc: 'Cada punto de margen que arañas es beneficio limpio.',
-          w: { a: { l: 'Negociar de frente', d: 'Cedes algo, ganas un aliado.', au: 6, so: -2 },
+          w: { a: { l: 'Negociar de frente', d: 'Cedes algo, ganas un aliado para años.', au: 6, so: 3, sana: 1 },
                s: { l: 'Apretar hasta donde duela', d: 'Ganas margen y una mala fama silenciosa.', au: -6, so: 7, mm: 1.25 } } },
       ] },
 
     { id: 'bazar', name: 'Bazar Suministros', icon: '🏪', color: '#a78bfa', kind: 'building',
-      x: 30, y: 55, w: 8, h: 8, hint: 'Entrar al bazar',
+      dist: 'sur', w: 8, h: 8, hint: 'Entrar al bazar',
       about: 'Herramientas que compras una vez y te acompañan toda la partida.',
       actions: [
         { id: 'comprar', label: 'Ver el catálogo', icon: '🛍️', sp: 'tienda', h: 0.5, e: 2,
@@ -1628,7 +1751,7 @@
       ] },
 
     { id: 'escuela', name: 'Escuela de Oficios', icon: '🔧', color: '#fb923c', kind: 'building',
-      x: 48, y: 54, w: 9, h: 9, hint: 'Entrar a la escuela',
+      dist: 'sur', w: 9, h: 9, hint: 'Entrar a la escuela',
       about: 'Formación práctica y rápida. Habilidades que se venden mañana mismo.',
       actions: [
         { id: 'taller', label: 'Taller práctico', icon: '🪚', h: 3, e: 20, c: 70,
@@ -1650,12 +1773,12 @@
           g: { liderazgo: 20, carisma: 14 }, so: 5, mo: 8,
           req: { stat: { intelecto: 45 } },
           desc: 'Te pagan por enseñar lo que ya dominas.',
-          w: { a: { l: 'Enseñar lo que sabes de verdad', d: 'Aunque el aula sea pequeña.', au: 8, so: -2, gm: 1.2 },
+          w: { a: { l: 'Enseñar lo que sabes de verdad', d: 'Aunque el aula sea pequeña, sale gente sabiendo más.', au: 8, so: 5, sana: 1, gm: 1.2 },
                s: { l: 'Enseñar lo que llena aulas', d: 'Promesas fáciles, aula llena.', au: -5, so: 8, mm: 1.25 } } },
       ] },
 
     { id: 'estudio', name: 'Estudio Creativo', icon: '🎨', color: '#f472b6', kind: 'building',
-      x: 66, y: 55, w: 9, h: 8, hint: 'Entrar al estudio',
+      dist: 'sur', w: 9, h: 8, hint: 'Entrar al estudio',
       about: 'Prototipos, marca y obra propia. La diferenciación se fabrica aquí.',
       actions: [
         { id: 'prototipar', label: 'Prototipar una idea', icon: '🧪', h: 3, e: 18, c: 45,
@@ -1671,7 +1794,7 @@
         { id: 'colaborar', label: 'Colaborar con otros creadores', icon: '🤗', h: 2, e: 14,
           g: { creatividad: 20, carisma: 12 }, net: 2, mo: 7, st: -6,
           desc: 'Mezclar mundos produce ideas que no se te ocurrirían solo.',
-          w: { a: { l: 'Colaborar con quien admiras', d: 'Aunque no tenga público.', au: 7, so: -2, net: 1, cre: 1 },
+          w: { a: { l: 'Colaborar con quien admiras', d: 'Aunque no tenga público. Los dos salís ganando.', au: 7, so: 4, sana: 1, net: 1, cre: 1 },
                s: { l: 'Colaborar con quien tiene público', d: 'Aunque no te aporte nada.', au: -5, so: 9, net: 2 } } },
         { id: 'vender', label: 'Vender tu obra', icon: '🖼️', h: 2, e: 16, sp: 'venderObra',
           g: { creatividad: 14, carisma: 10 }, req: { stat: { creatividad: 40 } },
@@ -1681,14 +1804,14 @@
       ] },
 
     { id: 'feria', name: 'Centro de Ferias', icon: '🎪', color: '#38bdf8', kind: 'building',
-      x: 84, y: 54, w: 11, h: 9, hint: 'Entrar al recinto ferial',
+      dist: 'este', w: 11, h: 9, hint: 'Entrar al recinto ferial',
       about: 'Escaparate, competencia y conferencias: donde se acelera un negocio.',
       actions: [
         { id: 'stand', label: 'Montar un stand', icon: '🎟️', h: 4, e: 28, c: 220,
           sp: 'stand', g: { carisma: 18, finanzas: 10 }, net: 3, so: 10, st: 12,
           req: { biz: true },
           desc: 'Un día entero delante de clientes potenciales.',
-          w: { a: { l: 'Enseñar el producto de verdad', d: 'Con sus límites por delante.', au: 7, so: -2 },
+          w: { a: { l: 'Enseñar el producto de verdad', d: 'Con sus límites por delante. La gente lo agradece.', au: 7, so: 3, sana: 1 },
                s: { l: 'Montar el stand más llamativo', d: 'Luces, regalos y humo.', au: -5, so: 9, mm: 1.2 } } },
         { id: 'conferencia', label: 'Asistir a una conferencia', icon: '🎧', h: 4, e: 22, c: 120,
           g: { intelecto: 24, finanzas: 14, creatividad: 12 }, net: 3, so: 4, st: 6,
@@ -1708,8 +1831,36 @@
                s: { l: 'Repartir currículums a todo el mundo', d: 'Treinta copias, cero conversaciones.', au: -4, so: 7, net: 2 } } },
       ] },
 
+    { id: 'comunitario', name: 'Centro Comunitario La Colmena', icon: '🤝', color: '#4ade80', kind: 'building',
+      dist: 'este', w: 10, h: 8, hint: 'Entrar al centro comunitario',
+      about: 'El único sitio del mapa donde ser tú y caer bien no se pelean: ayudar de verdad '
+           + 'sube las dos barras a la vez. Aquí no se cobra, se devuelve.',
+      actions: [
+        { id: 'voluntariado', label: 'Echar el día de voluntario', icon: '🧤', h: 3, e: 20,
+          g: { equilibrio: 18, carisma: 12, vigor: 8 }, st: -10, mo: 12,
+          desc: 'Reparto, cocina, lo que haga falta. Nadie pregunta a qué te dedicas.',
+          w: { a: { l: 'Trabajar y ya está', d: 'Sin contarlo, sin foto, sin nombre en ninguna lista.', au: 9, so: 4, sana: 1, gm: 1.2 },
+               s: { l: 'Ir con la cámara delante', d: 'Tres horas de trabajo y una publicación que rinde más.', au: -6, so: 10 } } },
+        { id: 'mentorizar', label: 'Mentorizar a alguien que empieza', icon: '🧑‍🏫', h: 2, e: 14,
+          g: { liderazgo: 24, carisma: 14, intelecto: 8 }, st: -4, mo: 10, net: 1,
+          desc: 'Alguien está donde tú estabas hace dos años. Explicárselo también te ordena a ti.',
+          w: { a: { l: 'Contarle lo que te costó', d: 'Incluidos los errores que preferirías olvidar.', au: 10, so: 5, sana: 1, gm: 1.25 },
+               s: { l: 'Darle los consejos de siempre', d: 'Los que quedan bien y no sirven a nadie.', au: -5, so: 7, gm: 0.7 } } },
+        { id: 'escuchar', label: 'Escuchar a quien lo necesita', icon: '👂', h: 1, e: 6,
+          g: { equilibrio: 20, carisma: 10 }, st: -18, mo: 10,
+          desc: 'Una hora entera sin dar consejos ni mirar el móvil. Cuesta más de lo que parece.',
+          w: { a: { l: 'Escuchar de verdad', d: 'Sin resolver nada. Sólo estar.', au: 8, so: 3, sana: 1, gm: 1.2 },
+               s: { l: 'Dar consejo y pasar página', d: 'Rápido, útil en apariencia, olvidable.', au: -4, so: 4, gm: 0.7 } } },
+        { id: 'barrio', label: 'Organizar algo para el barrio', icon: '🎪', h: 4, e: 26, c: 70,
+          g: { liderazgo: 28, carisma: 20, creatividad: 12 }, st: 8, mo: 12, net: 2,
+          desc: 'Una comida, un taller, un mercadillo. Poner a la gente en el mismo sitio.',
+          req: { stat: { liderazgo: 25 } },
+          w: { a: { l: 'Que sea de todos', d: 'Repartes el mérito y sale mejor.', au: 10, so: 7, sana: 1, gm: 1.2 },
+               s: { l: 'Que se vea que lo hiciste tú', d: 'Sale igual de bien y todos saben de quién fue.', au: -7, so: 12 } } },
+      ] },
+
     { id: 'muelle', name: 'Muelle del Sur', icon: '⚓', color: '#38bdf8', kind: 'spot',
-      x: 40, y: 76, hint: 'Bajar al muelle',
+      dist: 'costa', hint: 'Bajar al muelle',
       about: 'El borde del mapa: agua, silencio y perspectiva.',
       actions: [
         { id: 'nadar', label: 'Nadar', icon: '🏊', h: 1.5, e: 20,
@@ -1718,15 +1869,31 @@
         { id: 'pescar', label: 'Pescar', icon: '🎣', h: 2, e: 8, sp: 'pescar',
           g: { equilibrio: 20, disciplina: 12 }, st: -20, mo: 8,
           desc: 'Entrenar la paciencia. A veces también cenas gratis.', au: 7, so: -3 },
-        { id: 'atardecer', label: 'Ver el atardecer', icon: '🌇', h: 1, e: 2, min: 18,
+        { id: 'atardecer', label: 'Ver el atardecer', icon: '🌇', h: 1, e: 2, min: 18, once: 'dia',
           g: { equilibrio: 16 }, st: -24, mo: 16,
-          desc: 'Sólo a partir de las 18:00. Sin móvil.', au: 9, so: -4 },
-        { id: 'rumbo', label: 'Reflexionar sobre tu rumbo', icon: '🧭', h: 1, e: 5, sp: 'rumbo',
+          desc: 'Sólo a partir de las 18:00, una vez al día. Sin móvil.', au: 9, so: -4 },
+        { id: 'rumbo', label: 'Reflexionar sobre tu rumbo', icon: '🧭', h: 1, e: 5, sp: 'rumbo', once: 'dia',
           g: { disciplina: 14, equilibrio: 14, intelecto: 8 }, st: -12, mo: 6,
-          desc: '¿Vas donde querías ir? Revisar el mapa también es avanzar.', au: 12, so: -5 },
+          desc: 'Una vez al día. ¿Vas donde querías ir? Revisar el mapa también es avanzar.', au: 12, so: -5 },
       ] },
   ];
   const PLACE_BY = {}; PLACES.forEach(p => { PLACE_BY[p.id] = p; });
+
+  // Resume un lugar a partir de lo que se puede hacer en él: qué entrena,
+  // si se cobra o se paga, y si permite ser generoso sin perder aprobación.
+  function resumenLugar(p) {
+    const exp = {};
+    let cobra = false, cuesta = false, sana = false, dilemas = 0;
+    p.actions.forEach(a => {
+      if (a.g) Object.keys(a.g).forEach(k => { exp[k] = (exp[k] || 0) + a.g[k]; });
+      if (a.c) cuesta = true;
+      if (a.m || ['trabajo', 'trabajoMedio', 'jornal', 'darClase', 'venderObra', 'pescar', 'stand', 'concurso', 'pitch'].indexOf(a.sp) >= 0) cobra = true;
+      if (a.w) { dilemas++; if (a.w.a.sana) sana = true; }
+    });
+    const top = Object.keys(exp).sort((a, b) => exp[b] - exp[a]).slice(0, 3);
+    return { entrena: top, cobra, cuesta, sana, dilemas, acciones: p.actions.length };
+  }
+
 
   /* ================================================================
      5. PERSONAJES, MISIONES, LOGROS Y EVENTOS
@@ -1739,21 +1906,21 @@
   //   'neutro' — te habla siempre
   const NPCS = [
     { id: 'marta', name: 'Marta', role: 'Dueña del mercado', icon: '🧕', color: '#f59e0b',
-      x: 20, y: 66, range: 8, tipo: 'neutro',
+      cerca: 'mercado', range: 8, tipo: 'neutro',
       lines: [
         'Llevo treinta años aquí. El secreto no es vender mucho un día, es abrir todos los días.',
         'Nadie del barrio entendió que dejara la oficina. Ahora vienen a comprarme.',
       ],
       gift: { net: 1, au: 4, g: { finanzas: 20 }, text: 'Marta te enseña cómo lleva sus cuentas en una libreta.' } },
     { id: 'diego', name: 'Diego', role: 'Entrenador', icon: '🧑‍🦱', color: '#ff6b6b',
-      x: 40, y: 18, range: 9, tipo: 'neutro',
+      cerca: 'gimnasio', range: 9, tipo: 'neutro',
       lines: [
         'Tu cuerpo es el equipo con el que trabajas. Nadie rinde con la batería al 20 %.',
         'No busques motivación. Busca una hora fija y repite.',
       ],
       gift: { au: 3, g: { vigor: 24, disciplina: 12 }, text: 'Diego te corrige la técnica y te apunta una rutina.' } },
     { id: 'sara', name: 'Sara', role: 'Inversora', icon: '👩‍💼', color: '#34d399',
-      x: 70, y: 49, range: 10, tipo: 'social',
+      cerca: 'incubadora', range: 10, tipo: 'social',
       lines: [
         'No invierto en ideas, invierto en gente que ejecuta. Enséñame lo que ya hiciste.',
         'Si no sabes tu margen de memoria, todavía no tienes un negocio.',
@@ -1761,7 +1928,7 @@
       frio: 'Sara mira el móvil mientras hablas. "Ahora mismo estoy liada."',
       gift: { so: 6, net: 2, g: { finanzas: 18 }, text: 'Sara te da su contacto y dos consejos que valen dinero.' } },
     { id: 'tomas', name: 'Tomás', role: 'Librero', icon: '👴', color: '#5b8cff',
-      x: 18, y: 33, range: 8, tipo: 'auth',
+      cerca: 'biblioteca', range: 8, tipo: 'auth',
       lines: [
         'Un libro al mes durante diez años te convierte en otra persona.',
         'Leer sin aplicar es entretenimiento caro.',
@@ -1769,15 +1936,23 @@
       frio: 'Tomás te mira un rato largo. "Hace tiempo que no dices nada tuyo."',
       gift: { au: 6, g: { intelecto: 24 }, text: 'Tomás te presta un libro que llevaba años guardando.' } },
     { id: 'nadia', name: 'Nadia', role: 'Artista', icon: '👩‍🎨', color: '#f472b6',
-      x: 70, y: 64, range: 9, tipo: 'auth',
+      cerca: 'estudio', range: 9, tipo: 'auth',
       lines: [
         'Copia hasta que te salga tu voz. Nadie empieza siendo original.',
         'Enseña el trabajo antes de que esté perfecto. Perfecto no llega nunca.',
       ],
       frio: 'Nadia sonríe con educación y sigue pintando. Ya no te cuenta en qué trabaja.',
       gift: { au: 7, g: { creatividad: 26 }, net: 1, text: 'Nadia te invita a su próximo proyecto colectivo.' } },
+    { id: 'rosa', name: 'Rosa', role: 'Voluntaria del centro', icon: '👵', color: '#4ade80',
+      cerca: 'comunitario', range: 8, tipo: 'neutro',
+      lines: [
+        'Aquí nadie pregunta a qué te dedicas. Se agradece, ¿verdad?',
+        'Ayudar no te quita tiempo de lo tuyo. Te lo devuelve ordenado.',
+      ],
+      gift: { au: 6, so: 4, g: { equilibrio: 16, liderazgo: 12 }, net: 1,
+        text: 'Rosa te apunta en el turno del sábado y te presenta a media docena de vecinos.' } },
     { id: 'luis', name: 'Luis', role: 'Médico de familia', icon: '🧑‍⚕️', color: '#22d3ee',
-      x: 88, y: 19, range: 9, tipo: 'neutro',
+      cerca: 'clinica', range: 9, tipo: 'neutro',
       lines: [
         'El estrés sostenido no se nota hasta que se nota. Descansa antes de necesitarlo.',
         'Veo a mucha gente rota por sostener una vida que no eligió.',
@@ -1825,7 +2000,7 @@
       reward: { xp: 320, money: 400 },
       check: s => ({ cur: (s.autenticidad >= 55 && s.social >= 55) ? 1 : 0, max: 1 }) },
     { id: 'q10', name: 'Liderazgo genuino', icon: '🌟', chain: 10,
-      desc: 'Los dos ejes por encima de 70. Sosténlo cinco días y habrás llegado.',
+      desc: 'Los dos ejes por encima de 70. Sosténlo ocho días y habrás llegado.',
       reward: { xp: 600, money: 800 },
       check: s => ({ cur: (s.autenticidad > 70 && s.social > 70) ? 1 : 0, max: 1 }) },
   ];
@@ -1874,8 +2049,11 @@
   /* ================================================================
      6. GENERACIÓN DEL MUNDO
 
-     Mundo de 108 × 84 casillas (32 px cada una) con distritos fijos,
-     carreteras que los conectan y decoración procedural determinista.
+     Ciudad de 108 × 84 casillas construida sin rejilla: seis barrios
+     repartidos por el mapa, calles que serpentean entre ellos, edificios
+     colocados alrededor de cada barrio con ángulo y distancia al azar, y
+     un sendero tallado desde cada puerta hasta la calle más cercana.
+     Todo determinista: la misma semilla da la misma ciudad.
      ================================================================ */
 
   const TILE = 16;   // 1 casilla = 16 píxeles del lienzo interno
@@ -1884,148 +2062,391 @@
   const T = { GRASS: 0, ROAD: 1, PLAZA: 2, WATER: 3, SAND: 4, FOREST: 5, FIELD: 6, DECK: 7, BUILD: 8, DOOR: 9 };
 
   const TILE_COLOR = {
-    0: '#2f6b3d', 1: '#3f4551', 2: '#6b7280', 3: '#1d4e6b', 4: '#c2a878',
+    0: '#2f6b3d', 1: '#4a4f5c', 2: '#6b7280', 3: '#1d4e6b', 4: '#c2a878',
     5: '#245732', 6: '#77803c', 7: '#7a5a3a', 8: '#2b3242', 9: '#8a6a45',
   };
 
-  // Carreteras (bandas de 3 casillas) que estructuran la ciudad.
-  const H_ROADS = [18, 32, 48, 64];
-  const V_ROADS = [8, 26, 44, 62, 80];
+  // Los seis barrios. La posición lleva variación por semilla: nunca caen
+  // exactamente en el mismo sitio dos partidas.
+  const DISTRITOS = [
+    { id: 'norte',   name: 'Barrio Norte',        icon: '🌳', x: 24, y: 16, color: '#4ade80',
+      desc: 'Residencial y tranquilo. Aquí vives, entrenas y te recuperas.' },
+    { id: 'centro',  name: 'Centro',              icon: '⛲', x: 58, y: 21, color: '#5b8cff',
+      desc: 'La plaza, el conocimiento y la vida social de la ciudad.' },
+    { id: 'este',    name: 'Ribera Este',         icon: '🤝', x: 88, y: 32, color: '#22d3ee',
+      desc: 'Salud, comunidad y el recinto ferial, junto al lago.' },
+    { id: 'finanzas', name: 'Distrito Financiero', icon: '🏦', x: 25, y: 49, color: '#fbbf24',
+      desc: 'Donde está el dinero, el empleo y quien financia proyectos.' },
+    { id: 'sur',     name: 'Barrio Sur',          icon: '🛒', x: 66, y: 57, color: '#f59e0b',
+      desc: 'Comercio, oficios y talleres. La ciudad que trabaja con las manos.' },
+    { id: 'costa',   name: 'Costa',               icon: '⚓', x: 42, y: 73, color: '#38bdf8',
+      desc: 'El borde del mapa: agua, silencio y perspectiva.' },
+  ];
+  const DIST_BY = {}; DISTRITOS.forEach(d => { DIST_BY[d.id] = d; });
+
+  // Qué barrios conecta cada calle (con un par de vueltas de más, para que
+  // la ciudad sea una red y no un árbol).
+  const CALLES = [
+    ['norte', 'centro'], ['centro', 'este'], ['norte', 'finanzas'],
+    ['finanzas', 'sur'], ['centro', 'sur'], ['sur', 'costa'],
+    ['este', 'sur'], ['finanzas', 'costa'], ['norte', 'centro'],
+  ];
 
   function worldGen(seed) {
     const rnd = mulberry32(seed >>> 0);
     const n = MAP_W * MAP_H;
     const tiles = new Uint8Array(n);
     const solid = new Uint8Array(n);
+    const libreDeProps = new Uint8Array(n);
     const shade = new Float32Array(n);
     const idx = (x, y) => y * MAP_W + x;
-    const inMap = (x, y) => x >= 0 && y >= 0 && x < MAP_W && y < MAP_H;
-    const set = (x, y, t) => { if (inMap(x, y)) tiles[idx(x, y)] = t; };
-    const get = (x, y) => (inMap(x, y) ? tiles[idx(x, y)] : T.WATER);
+    const dentro = (x, y) => x >= 1 && y >= 1 && x < MAP_W - 1 && y < MAP_H - 1;
+    const set = (x, y, t) => { if (dentro(x, y)) tiles[idx(x, y)] = t; };
+    const get = (x, y) => (dentro(x, y) ? tiles[idx(x, y)] : T.WATER);
 
-    // --- base: hierba con variación ---
-    for (let i = 0; i < n; i++) { tiles[i] = T.GRASS; shade[i] = rnd(); }
-
-    // --- bosque al oeste y alrededor del parque ---
-    const rect = (x0, y0, x1, y1, t) => {
-      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, t);
-    };
-    rect(0, 0, 6, MAP_H - 1, T.FOREST);
-    rect(66, 4, 79, 16, T.FOREST);          // Parque Sol
-    rect(96, 60, MAP_W - 1, 74, T.FOREST);  // bosque sureste
-    rect(88, 66, 95, 74, T.FIELD);          // huertos
-
-    // --- lago al este con playa alrededor ---
-    for (let y = 22; y <= 45; y++) {
-      for (let x = 90; x < MAP_W; x++) {
-        const dx = (x - 100) / 9, dy = (y - 33.5) / 12;
-        const d = dx * dx + dy * dy + (rnd() - 0.5) * 0.06;
-        if (d < 0.82) set(x, y, T.WATER);
-        else if (d < 1.0) set(x, y, T.SAND);
+    /* --- 1. terreno base con manchas suaves de bosque y campo --- */
+    const semillasRuido = [];
+    for (let i = 0; i < 26; i++) semillasRuido.push({ x: rnd() * MAP_W, y: rnd() * MAP_H, r: 6 + rnd() * 13, t: rnd() });
+    for (let y = 0; y < MAP_H; y++) {
+      for (let x = 0; x < MAP_W; x++) {
+        const i = idx(x, y);
+        shade[i] = rnd();
+        let t = T.GRASS;
+        for (const m of semillasRuido) {
+          const d = Math.hypot(x - m.x, y - m.y);
+          if (d < m.r * (0.75 + shade[i] * 0.4)) { t = m.t < 0.62 ? T.FOREST : T.FIELD; break; }
+        }
+        tiles[i] = t;
       }
     }
-    // --- costa sur: arena y mar ---
-    for (let x = 0; x < MAP_W; x++) {
-      const wob = Math.floor(Math.sin(x * 0.21) * 1.6 + rnd() * 1.2);
-      for (let y = 74 + wob; y < MAP_H; y++) set(x, y, y >= 79 + wob ? T.WATER : T.SAND);
+    // franja de bosque en el borde oeste, para cerrar el mapa con algo vivo
+    for (let y = 0; y < MAP_H; y++) {
+      const ancho = 4 + Math.round(Math.sin(y * 0.14) * 2 + rnd() * 2);
+      for (let x = 0; x < ancho; x++) set(x, y, T.FOREST);
     }
-    // muelle de madera sobre el agua
-    rect(38, 74, 42, 82, T.DECK);
 
-    // --- carreteras ---
-    H_ROADS.forEach(y => rect(0, y, MAP_W - 1, y + 2, T.ROAD));
-    V_ROADS.forEach(x => rect(x, 0, x + 2, 73, T.ROAD));
-    rect(38, 71, 42, 73, T.ROAD);            // bajada al muelle
-    rect(40, 64, 42, 73, T.ROAD);
-
-    // --- plaza pavimentada en el centro ---
-    rect(37, 22, 43, 31, T.PLAZA);
-    // sendero de entrada al Parque Sol (evita que el bosque lo aísle)
-    rect(64, 11, 72, 13, T.PLAZA);
-
-    // --- edificios ---
-    const buildings = [];
-    PLACES.forEach(p => {
-      if (p.kind !== 'building') return;
-      rect(p.x, p.y, p.x + p.w - 1, p.y + p.h - 1, T.BUILD);
-      for (let y = p.y; y < p.y + p.h; y++)
-        for (let x = p.x; x < p.x + p.w; x++) solid[idx(x, y)] = 1;
-      const door = { x: p.x + Math.floor(p.w / 2), y: p.y + p.h };
-      set(door.x, door.y, T.DOOR);
-      solid[idx(door.x, door.y)] = 0;
-      // sendero desde la puerta hasta la carretera más cercana
-      let ty = door.y;
-      while (ty < MAP_H - 1 && get(door.x, ty) !== T.ROAD && ty < door.y + 6) {
-        if (get(door.x, ty) !== T.DOOR) set(door.x, ty, T.PLAZA);
-        solid[idx(door.x, ty)] = 0;
-        ty++;
+    /* --- 2. lago de contorno irregular y costa al sur --- */
+    const lago = { x: 92 + rnd() * 6, y: 40 + rnd() * 8, r: 5 + rnd() * 2.5 };
+    const lobulos = [];
+    for (let i = 0; i < 9; i++) lobulos.push({ a: rnd() * 6.283, d: 3 + rnd() * 9, r: 3 + rnd() * 6 });
+    const enLago = (x, y) => {
+      if (Math.hypot(x - lago.x, y - lago.y) < lago.r) return true;
+      for (const l of lobulos) {
+        const cx = lago.x + Math.cos(l.a) * l.d, cy = lago.y + Math.sin(l.a) * l.d;
+        if (Math.hypot(x - cx, y - cy) < l.r) return true;
       }
-      buildings.push({ id: p.id, x: p.x, y: p.y, w: p.w, h: p.h, door, color: p.color, icon: p.icon, name: p.name });
-    });
-
-    // --- puntos de interés sin edificio ---
-    const spots = PLACES.filter(p => p.kind === 'spot').map(p => ({ id: p.id, x: p.x, y: p.y, icon: p.icon, name: p.name }));
-
-    // --- sólidos por terreno ---
-    for (let i = 0; i < n; i++) if (tiles[i] === T.WATER) solid[i] = 1;
-    for (let x = 0; x < MAP_W; x++) { solid[idx(x, 0)] = 1; solid[idx(x, MAP_H - 1)] = 1; }
-    for (let y = 0; y < MAP_H; y++) { solid[idx(0, y)] = 1; solid[idx(MAP_W - 1, y)] = 1; }
-    // el muelle es transitable aunque esté sobre el agua
-    for (let y = 74; y <= 82; y++) for (let x = 38; x <= 42; x++) { if (inMap(x, y)) { tiles[idx(x, y)] = T.DECK; solid[idx(x, y)] = 0; } }
-
-    // --- decoración: nada puede tapar carreteras, puertas ni accesos ---
-    const props = [];
-    const blockedForProps = (x, y) => {
-      const t = get(x, y);
-      if (t === T.ROAD || t === T.PLAZA || t === T.DOOR || t === T.BUILD || t === T.DECK) return true;
-      if (solid[idx(x, y)]) return true;
-      // margen de seguridad alrededor de puertas y puntos de interés
-      for (const b of buildings) if (Math.abs(x - b.door.x) <= 1 && Math.abs(y - b.door.y) <= 2) return true;
-      for (const s of spots) if (Math.abs(x - s.x) <= 2 && Math.abs(y - s.y) <= 2) return true;
-      // no encerrar accesos: deja libre el borde de las carreteras
-      for (const ry of H_ROADS) if (y >= ry - 1 && y <= ry + 3) return true;
-      for (const rx of V_ROADS) if (x >= rx - 1 && x <= rx + 3) return true;
       return false;
     };
-    const addProp = (x, y, kind, isSolid) => {
+    for (let y = 26; y < 62; y++) {
+      for (let x = 78; x < MAP_W; x++) {
+        if (enLago(x, y)) set(x, y, T.WATER);
+        else if (enLago(x + 1.6, y) || enLago(x - 1.6, y) || enLago(x, y + 1.6) || enLago(x, y - 1.6)) set(x, y, T.SAND);
+      }
+    }
+    for (let x = 0; x < MAP_W; x++) {
+      const ola = Math.sin(x * 0.11) * 2.2 + Math.sin(x * 0.29) * 1.4 + rnd() * 1.4;
+      const arena = Math.round(76 + ola), mar = Math.round(80 + ola);
+      for (let y = arena; y < MAP_H; y++) set(x, y, y >= mar ? T.WATER : T.SAND);
+    }
+
+    /* --- 3. los barrios, con su punto exacto movido por la semilla --- */
+    const anclas = {};
+    DISTRITOS.forEach(d => {
+      anclas[d.id] = {
+        id: d.id,
+        x: clamp(Math.round(d.x + (rnd() - 0.5) * 9), 10, MAP_W - 12),
+        y: clamp(Math.round(d.y + (rnd() - 0.5) * 7), 8, MAP_H - 14),
+      };
+    });
+
+    /* --- 4. calles que serpentean entre barrios (sobre el agua, puentes) --- */
+    const calles = [];
+    const sellarCalle = (cx, cy, ancho) => {
+      const r = ancho / 2;
+      for (let y = Math.floor(cy - r); y <= Math.ceil(cy + r); y++) {
+        for (let x = Math.floor(cx - r); x <= Math.ceil(cx + r); x++) {
+          if (!dentro(x, y)) continue;
+          if (Math.hypot(x - cx, y - cy) > r) continue;
+          const i = idx(x, y);
+          tiles[i] = (tiles[i] === T.WATER) ? T.DECK : T.ROAD;   // puente donde toque agua
+          solid[i] = 0; libreDeProps[i] = 1;
+          calles.push(i);
+        }
+      }
+    };
+    CALLES.forEach(([a, b]) => {
+      const A = anclas[a], B = anclas[b];
+      const dx = B.x - A.x, dy = B.y - A.y, len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len, uy = dy / len, px = -uy, py = ux;
+      const amp = 3 + rnd() * 6, fase = rnd() * 6.283, freq = 1 + rnd() * 2;
+      const ancho = 2.6 + rnd() * 1.4;
+      const pasos = Math.ceil(len * 3);
+      for (let i = 0; i <= pasos; i++) {
+        const t = i / pasos;
+        const desv = Math.sin(t * Math.PI * freq + fase) * amp * Math.sin(t * Math.PI);
+        sellarCalle(A.x + ux * len * t + px * desv, A.y + uy * len * t + py * desv, ancho);
+      }
+    });
+
+    /* --- 5. edificios repartidos alrededor de su barrio --- */
+    const buildings = [];
+    const ocupado = new Uint8Array(n);
+    const marcarOcupado = (x0, y0, w, h) => {
+      for (let y = y0 - 1; y < y0 + h + 3; y++)
+        for (let x = x0 - 1; x < x0 + w + 1; x++)
+          if (dentro(x, y)) ocupado[idx(x, y)] = 1;
+    };
+    // El solar no puede pisar agua, calle ni otro edificio. El anillo de
+    // alrededor sí puede tocar la calle: los edificios dan a la acera.
+    const cabe = (x0, y0, w, h) => {
+      if (x0 < 2 || y0 < 2 || x0 + w > MAP_W - 3 || y0 + h + 3 > MAP_H - 2) return false;
+      for (let y = y0; y < y0 + h; y++) {
+        for (let x = x0; x < x0 + w; x++) {
+          if (!dentro(x, y)) return false;
+          const i = idx(x, y), t = tiles[i];
+          if (ocupado[i] || t === T.WATER || t === T.ROAD || t === T.DECK || t === T.BUILD) return false;
+        }
+      }
+      for (let y = y0 - 1; y < y0 + h + 2; y++) {
+        for (let x = x0 - 1; x < x0 + w + 1; x++) {
+          if (!dentro(x, y)) return false;
+          const i = idx(x, y);
+          if (ocupado[i] || tiles[i] === T.BUILD) return false;
+        }
+      }
+      // delante de la puerta hace falta un hueco por donde entrar
+      const dx = x0 + Math.floor(w / 2);
+      for (let y = y0 + h; y <= y0 + h + 1; y++)
+        if (!dentro(dx, y) || tiles[idx(dx, y)] === T.WATER || tiles[idx(dx, y)] === T.BUILD) return false;
+      return true;
+    };
+    const sitioPara = (p, ancla) => {
+      for (let intento = 0; intento < 600; intento++) {
+        const ang = rnd() * 6.283;
+        const rad = 5 + (intento / 600) * 30 + rnd() * 6;
+        const x = Math.round(ancla.x + Math.cos(ang) * rad - p.w / 2);
+        const y = Math.round(ancla.y + Math.sin(ang) * rad - p.h / 2);
+        if (cabe(x, y, p.w, p.h)) return { x, y };
+      }
+      // último recurso: barrido completo del mapa, del sitio más cercano al barrio
+      const candidatos = [];
+      for (let y = 2; y < MAP_H - p.h - 4; y++)
+        for (let x = 2; x < MAP_W - p.w - 3; x++)
+          if (cabe(x, y, p.w, p.h)) candidatos.push({ x, y, d: Math.hypot(x - ancla.x, y - ancla.y) });
+      if (candidatos.length) return candidatos.sort((a, b) => a.d - b.d)[0];
+      // y si aún así no cabe, se hace sitio: nunca puede faltar un lugar
+      for (let y = 3; y < MAP_H - p.h - 5; y++)
+        for (let x = 3; x < MAP_W - p.w - 4; x++) {
+          let choca = false;
+          for (let yy = y - 1; yy < y + p.h + 2 && !choca; yy++)
+            for (let xx = x - 1; xx < x + p.w + 1 && !choca; xx++)
+              if (!dentro(xx, yy) || tiles[idx(xx, yy)] === T.BUILD || tiles[idx(xx, yy)] === T.WATER) choca = true;
+          if (!choca) return { x, y };
+        }
+      return null;
+    };
+
+    // Talla un sendero desde una casilla hasta la calle más cercana. Busca el
+    // camino de verdad (esquivando edificios y prefiriendo tierra firme), no una
+    // línea recta: así ninguna puerta puede quedar aislada.
+    const esCalle = new Uint8Array(n);
+    calles.forEach(i => { esCalle[i] = 1; });
+
+    const sendero = (x0, y0) => {
+      if (!dentro(x0, y0)) return;
+      const coste = new Int32Array(n).fill(-1);
+      const padre = new Int32Array(n).fill(-1);
+      const inicio = idx(x0, y0);
+      coste[inicio] = 0;
+      // cola por cubos: tierra cuesta 1, cruzar agua cuesta 10
+      const cubos = [[inicio]];
+      let nivel = 0, destino = -1;
+      while (nivel < cubos.length && destino < 0) {
+        const cubo = cubos[nivel];
+        if (!cubo) { nivel++; continue; }
+        for (let k = 0; k < cubo.length; k++) {
+          const c = cubo[k];
+          if (coste[c] !== nivel) continue;
+          if (esCalle[c] && c !== inicio) { destino = c; break; }
+          const cx = c % MAP_W, cy = (c - (c % MAP_W)) / MAP_W;
+          for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+            const x = cx + dx, y = cy + dy;
+            if (!dentro(x, y)) continue;
+            const j = idx(x, y);
+            if (tiles[j] === T.BUILD) continue;
+            const paso = (tiles[j] === T.WATER) ? 10 : 1;
+            const nuevo = nivel + paso;
+            if (coste[j] !== -1 && coste[j] <= nuevo) continue;
+            coste[j] = nuevo; padre[j] = c;
+            (cubos[nuevo] = cubos[nuevo] || []).push(j);
+          }
+        }
+        if (destino < 0) nivel++;
+      }
+      if (destino < 0) return;
+      for (let c = destino; c !== -1; c = padre[c]) {
+        const cx = c % MAP_W, cy = (c - (c % MAP_W)) / MAP_W;
+        for (const [ox, oy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
+          if (!dentro(cx + ox, cy + oy)) continue;
+          const j = idx(cx + ox, cy + oy);
+          if (tiles[j] === T.BUILD || tiles[j] === T.ROAD || tiles[j] === T.DOOR) continue;
+          tiles[j] = (tiles[j] === T.WATER) ? T.DECK : T.PLAZA;
+          solid[j] = 0; libreDeProps[j] = 1;
+        }
+        if (c === inicio) break;
+      }
+    };
+
+    // Los edificios se colocan barrio a barrio, mezclando el orden para que
+    // no salgan siempre en la misma disposición.
+    const edificiosPorBarrio = {};
+    PLACES.filter(p => p.kind === 'building').forEach(p => {
+      (edificiosPorBarrio[p.dist] = edificiosPorBarrio[p.dist] || []).push(p);
+    });
+    Object.keys(edificiosPorBarrio).forEach(d => {
+      const lista = edificiosPorBarrio[d];
+      for (let i = lista.length - 1; i > 0; i--) {           // baraja determinista
+        const j = Math.floor(rnd() * (i + 1));
+        const tmp = lista[i]; lista[i] = lista[j]; lista[j] = tmp;
+      }
+      lista.forEach(p => {
+        const pos = sitioPara(p, anclas[d] || anclas.centro);
+        if (!pos) return;
+        for (let y = pos.y; y < pos.y + p.h; y++)
+          for (let x = pos.x; x < pos.x + p.w; x++) { tiles[idx(x, y)] = T.BUILD; solid[idx(x, y)] = 1; }
+        marcarOcupado(pos.x, pos.y, p.w, p.h);
+        const door = { x: pos.x + Math.floor(p.w / 2), y: pos.y + p.h };
+        tiles[idx(door.x, door.y)] = T.DOOR;
+        solid[idx(door.x, door.y)] = 0; libreDeProps[idx(door.x, door.y)] = 1;
+        // pequeño rellano delante de la puerta
+        for (let y = door.y; y <= door.y + 1; y++)
+          for (let x = door.x - 1; x <= door.x + 1; x++) {
+            if (!dentro(x, y) || tiles[idx(x, y)] === T.BUILD || tiles[idx(x, y)] === T.DOOR) continue;
+            if (tiles[idx(x, y)] !== T.ROAD) tiles[idx(x, y)] = T.PLAZA;
+            solid[idx(x, y)] = 0; libreDeProps[idx(x, y)] = 1;
+          }
+        sendero(door.x, door.y + 1);
+        buildings.push({ id: p.id, x: pos.x, y: pos.y, w: p.w, h: p.h, door,
+          color: p.color, icon: p.icon, name: p.name, dist: p.dist });
+      });
+    });
+
+    /* --- 6. puntos al aire libre --- */
+    const spots = [];
+    PLACES.filter(p => p.kind === 'spot').forEach(p => {
+      const ancla = anclas[p.dist] || anclas.centro;
+      let pos = null;
+      for (let intento = 0; intento < 400 && !pos; intento++) {
+        const ang = rnd() * 6.283, rad = 4 + (intento / 400) * 20 + rnd() * 6;
+        const x = Math.round(ancla.x + Math.cos(ang) * rad), y = Math.round(ancla.y + Math.sin(ang) * rad);
+        if (!dentro(x, y)) continue;
+        let ok = true;
+        for (let dy = -2; dy <= 2 && ok; dy++)
+          for (let dx = -2; dx <= 2 && ok; dx++) {
+            const t = get(x + dx, y + dy);
+            if (t === T.BUILD || t === T.WATER || ocupado[idx(x + dx, y + dy)]) ok = false;
+          }
+        if (ok) pos = { x, y };
+      }
+      if (!pos) pos = { x: ancla.x, y: ancla.y };
+      // el muelle se adentra en el mar sobre tablones
+      if (p.id === 'muelle') {
+        let y = pos.y;
+        while (y < MAP_H - 2 && get(pos.x, y) !== T.WATER) y++;
+        for (let k = 0; k < 9 && y + k < MAP_H - 1; k++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const i = idx(pos.x + dx, y + k);
+            if (!dentro(pos.x + dx, y + k)) continue;
+            tiles[i] = T.DECK; solid[i] = 0; libreDeProps[i] = 1;
+          }
+        }
+        pos = { x: pos.x, y: Math.min(MAP_H - 3, y + 5) };
+      }
+      for (let dy = -2; dy <= 2; dy++)
+        for (let dx = -2; dx <= 2; dx++) {
+          if (!dentro(pos.x + dx, pos.y + dy)) continue;
+          const i = idx(pos.x + dx, pos.y + dy);
+          if (tiles[i] === T.BUILD) continue;
+          libreDeProps[i] = 1; solid[i] = 0;
+          if (tiles[i] === T.WATER) tiles[i] = T.DECK;
+          ocupado[i] = 1;
+        }
+      sendero(pos.x, pos.y);
+      spots.push({ id: p.id, x: pos.x, y: pos.y, icon: p.icon, name: p.name, dist: p.dist });
+    });
+
+    /* --- 7. el agua y los bordes son sólidos; los tablones no --- */
+    for (let i = 0; i < n; i++) if (tiles[i] === T.WATER) solid[i] = 1;
+    for (let i = 0; i < n; i++) if (tiles[i] === T.DECK || tiles[i] === T.ROAD || tiles[i] === T.PLAZA || tiles[i] === T.DOOR) solid[i] = 0;
+    for (let x = 0; x < MAP_W; x++) { solid[idx(x, 0)] = 1; solid[idx(x, MAP_H - 1)] = 1; }
+    for (let y = 0; y < MAP_H; y++) { solid[idx(0, y)] = 1; solid[idx(MAP_W - 1, y)] = 1; }
+
+    /* --- 8. decoración, nunca sobre calles, senderos ni puertas --- */
+    const props = [];
+    const addProp = (x, y, kind, esSolido) => {
       props.push({ x, y, kind, r: rnd() });
-      if (isSolid) solid[idx(x, y)] = 1;
+      if (esSolido) solid[idx(x, y)] = 1;
     };
     for (let y = 1; y < MAP_H - 1; y++) {
       for (let x = 1; x < MAP_W - 1; x++) {
-        if (blockedForProps(x, y)) continue;
-        const t = get(x, y), r = rnd();
+        const i = idx(x, y);
+        if (libreDeProps[i] || solid[i]) continue;
+        const t = tiles[i], r = rnd();
         if (t === T.FOREST) {
-          if (r < 0.34) addProp(x, y, r < 0.17 ? 'pino' : 'arbol', true);
-          else if (r < 0.44) addProp(x, y, 'arbusto', false);
-          else if (r < 0.48) addProp(x, y, 'seta', false);
+          if (r < 0.30) addProp(x, y, r < 0.15 ? 'pino' : 'arbol', true);
+          else if (r < 0.42) addProp(x, y, 'arbusto', false);
+          else if (r < 0.46) addProp(x, y, 'seta', false);
         } else if (t === T.GRASS) {
-          if (r < 0.045) addProp(x, y, 'arbol', true);
-          else if (r < 0.06) addProp(x, y, 'roca', true);
-          else if (r < 0.11) addProp(x, y, 'arbusto', false);
-          else if (r < 0.2) addProp(x, y, 'flor', false);
+          if (r < 0.030) addProp(x, y, 'arbol', true);
+          else if (r < 0.042) addProp(x, y, 'roca', true);
+          else if (r < 0.09) addProp(x, y, 'arbusto', false);
+          else if (r < 0.18) addProp(x, y, 'flor', false);
         } else if (t === T.SAND) {
-          if (r < 0.02) addProp(x, y, 'roca', true);
+          if (r < 0.015) addProp(x, y, 'roca', true);
           else if (r < 0.05) addProp(x, y, 'concha', false);
         } else if (t === T.FIELD) {
-          if (r < 0.5) addProp(x, y, 'cultivo', false);
+          if (r < 0.45) addProp(x, y, 'cultivo', false);
         }
       }
     }
-    // farolas y bancos a lo largo de las carreteras (no bloquean)
-    H_ROADS.forEach(ry => { for (let x = 4; x < MAP_W - 4; x += 7) { if (!solid[idx(x, ry - 1)] && get(x, ry - 1) !== T.BUILD) props.push({ x, y: ry - 1, kind: 'farola', r: 0.5 }); } });
-    V_ROADS.forEach(rx => { for (let y = 6; y < 72; y += 9) { if (!solid[idx(rx + 3, y)] && get(rx + 3, y) !== T.BUILD) props.push({ x: rx + 3, y, kind: 'farola', r: 0.5 }); } });
-    [[38, 27], [42, 27], [38, 24], [42, 24]].forEach(([x, y]) => props.push({ x, y, kind: 'banco', r: 0.3 }));
-    props.push({ x: 40, y: 26, kind: 'fuente', r: 0 });
-    props.push({ x: 72, y: 12, kind: 'fuente', r: 0 });
+    // farolas a lo largo de las calles y bancos junto a las puertas
+    calles.forEach((i, k) => {
+      if (k % 47) return;
+      const cx = i % MAP_W, cy = (i - (i % MAP_W)) / MAP_W;
+      for (const [dx, dy] of [[2, 0], [-2, 0], [0, 2], [0, -2]]) {
+        const x = cx + dx, y = cy + dy;
+        if (!dentro(x, y)) continue;
+        const j = idx(x, y);
+        if (solid[j] || libreDeProps[j] || tiles[j] === T.BUILD) continue;
+        props.push({ x, y, kind: 'farola', r: 0.5 }); libreDeProps[j] = 1;
+        break;
+      }
+    });
+    buildings.forEach(b => {
+      const x = b.door.x + 2, y = b.door.y + 1;
+      if (dentro(x, y) && !solid[idx(x, y)] && tiles[idx(x, y)] !== T.BUILD) props.push({ x, y, kind: 'banco', r: 0.3 });
+    });
+    spots.forEach(sp => { if (sp.id !== 'muelle') props.push({ x: sp.x, y: sp.y, kind: 'fuente', r: 0 }); });
 
-    // --- posición inicial: delante de tu casa ---
-    const home = buildings.find(b => b.id === 'casa');
-    const spawn = { x: (home.door.x + 0.5) * TILE, y: (home.door.y + 1.6) * TILE };
+    /* --- 9. dónde apareces --- */
+    const casa = buildings.find(b => b.id === 'casa') || buildings[0];
+    const spawn = { x: (casa.door.x + 0.5) * TILE, y: (casa.door.y + 1.5) * TILE };
 
-    const world = { W: MAP_W, H: MAP_H, tiles, solid, shade, buildings, spots, props, spawn, seed: seed >>> 0 };
+    const world = { W: MAP_W, H: MAP_H, tiles, solid, shade, buildings, spots, props, spawn,
+      anclas, seed: seed >>> 0 };
     world.isSolid = (tx, ty) => (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) ? true : !!solid[ty * MAP_W + tx];
-    world.tileAt = (tx, ty) => (inMap(tx, ty) ? tiles[ty * MAP_W + tx] : T.WATER);
+    world.tileAt = (tx, ty) => (dentro(tx, ty) ? tiles[ty * MAP_W + tx] : T.WATER);
+    // barrio más cercano a un punto del mundo, para el HUD
+    world.distritoEn = (px, py) => {
+      const tx = px / TILE, ty = py / TILE;
+      let mejor = DISTRITOS[0], d0 = Infinity;
+      DISTRITOS.forEach(d => {
+        const a = anclas[d.id];
+        const dd = Math.hypot(a.x - tx, a.y - ty);
+        if (dd < d0) { d0 = dd; mejor = d; }
+      });
+      return mejor;
+    };
     return world;
   }
 
@@ -2057,6 +2478,7 @@
      ================================================================ */
 
   const WAKE_HOUR = 7;
+  const COHERENCIA_DIAS = 5;   // días seguidos con la autenticidad alta antes de que se note fuera
   const DAY_END = 24;
   const SAVE_KEY = 'rutapropia_save_v2';
 
@@ -2098,6 +2520,7 @@
       quests: {}, achievements: {},
       counters: { dev: 0, planDays: 0, bizEarned: 0, actions: 0, streak: 0, bestStreak: 0,
                   dayDev: 0, dayAuth: 0, daySoc: 0, planToday: 0, workDays: 0, hadDebt: true,
+                  diasCoherente: 0, sanas: 0, movAuth: 0, movSoc: 0, avisoTope: 0,
                   firstBizIncome: false, autenticas: 0, sociales: 0, rachaAuth: 0,
                   diasLiderazgo: 0, diasMascara: 0, diasDesierto: 0, diasOstracismo: 0 },
       // la evaluación inicial y su rechazo
@@ -2124,15 +2547,16 @@
   function resolverEntrevista(s, marcas) {
     const ent = ENTREVISTAS[s.etapa] || ENTREVISTAS.joven;
     const tono = tonoRespuestas(marcas);
+    const ECO = 0.5;   // la entrevista pesa, pero no te deja clavado en un extremo
     marcas.forEach(m => {
-      s.autenticidad = c100(s.autenticidad + m.a);
-      s.social = c100(s.social + m.s);
+      s.autenticidad = c100(s.autenticidad + m.a * ECO);
+      s.social = c100(s.social + m.s * ECO);
     });
     s.entrevista = { hecha: true, tono, respuestas: marcas.map(m => m.t) };
 
     // el rechazo deja marca según cómo lo viviste
-    if (tono === 'auth') { s.mood = c100(s.mood - 6); s.autenticidad = c100(s.autenticidad + 4); }
-    else if (tono === 'social') { s.mood = c100(s.mood - 14); s.autenticidad = c100(s.autenticidad - 4); s.stress = c100(s.stress + 10); }
+    if (tono === 'auth') { s.mood = c100(s.mood - 6); s.autenticidad = c100(s.autenticidad + 2); }
+    else if (tono === 'social') { s.mood = c100(s.mood - 14); s.autenticidad = c100(s.autenticidad - 2); s.stress = c100(s.stress + 10); }
     else { s.mood = c100(s.mood - 10); s.stress = c100(s.stress + 6); }
 
     s.estado = estadoDe(s.autenticidad, s.social).id;
@@ -2154,9 +2578,20 @@
     return Math.round(Math.max(30, m));
   }
 
-  function logLine(s, text, kind) {
-    s.log.unshift({ d: s.day, h: hhmm(s.hour), t: text, k: kind || 'neutral' });
-    if (s.log.length > 250) s.log.length = 250;
+  // Cada entrada del diario puede llevar el desglose completo de lo que pasó,
+  // para poder releer con calma lo que los avisos enseñan de pasada.
+  function logLine(s, text, kind, detalle) {
+    const e = { d: s.day, h: hhmm(s.hour), t: text, k: kind || 'neutral' };
+    if (detalle && detalle.length) {
+      const yaAnotado = {};
+      s.log.slice(0, 12).forEach(x => { yaAnotado[x.t] = 1; });
+      e.det = detalle
+        .filter(o => o && o.t && o.t !== text && !yaAnotado[o.t])
+        .map(o => ({ t: o.t, k: o.k || 'neutral' }));
+      if (!e.det.length) delete e.det;
+    }
+    s.log.unshift(e);
+    if (s.log.length > 400) s.log.length = 400;
   }
 
   function rand(s) {
@@ -2190,10 +2625,28 @@
       s.xp -= levelNeed(s.level);
       s.level++; s.points += 3; ups++;
       s.mood = c100(s.mood + 5);
-      if (out) out.push({ t: `⬆️ ¡Nivel ${s.level}! +3 puntos de característica`, k: 'gold' });
-      logLine(s, `Subes al nivel ${s.level}. Tienes puntos por repartir.`, 'gold');
+      const txt = `⬆️ ¡Nivel ${s.level}! +3 puntos de característica por repartir`;
+      if (out) out.push({ t: txt, k: 'gold' });
+      logLine(s, txt, 'gold');
     }
     return ups;
+  }
+
+  // Traduce el valor actual de una característica a lo que significa hoy.
+  function efectoActual(s, key) {
+    const v = s.stats[key];
+    switch (key) {
+      case 'vigor':       return `Energía máxima: ${maxEnergy(s)}`;
+      case 'intelecto':   return `Dar una clase te paga ${money(45 + v * 1.1 + s.social * 0.8)}`;
+      case 'disciplina':  return `Las acciones cuestan un ${Math.round(v / 420 * 100)} % menos de energía`;
+      case 'carisma':     return `Haces un ${Math.round(v / 220 * 100)} % más de contactos`;
+      case 'creatividad': return `Cada campaña de marketing suma ${Math.round(8 + v / 12)} puntos`;
+      case 'finanzas':    return `El banco te presta hasta ${money(Math.max(0, loanLimit(s)))}`;
+      case 'liderazgo':   return v < 18 ? 'Todavía no puedes contratar a nadie'
+                                        : `Puedes dirigir a ${Math.floor((v - 18) / 10) + 1} persona(s)`;
+      case 'equilibrio':  return `Aguantas un ${Math.round(v / 300 * 100)} % más de presión`;
+      default: return '';
+    }
   }
 
   function spendPoint(s, key) {
@@ -2417,12 +2870,22 @@
     // los dos ejes: primero la carga fija de la acción, luego la de la vía
     let dAuth = (act.au || 0) + (via ? via.au : 0);
     let dSoc = (act.so || 0) + (via ? via.so : 0);
+    // rendimiento decreciente: la quinta vez que haces hoy lo mismo ya no dice
+    // nada nuevo de ti. Empuja a variar en lugar de repetir la acción óptima.
+    const vecesHoy = s.flags['hoy_' + act.id] || 0;
+    s.flags['hoy_' + act.id] = vecesHoy + 1;
+    const gasto = 1 / (1 + vecesHoy * 0.8);
+    dAuth *= gasto; dSoc *= gasto;
+    if (vecesHoy >= 2) out.push({ t: '↩️ Repetir lo mismo ya no te cambia tanto', k: 'neutral' });
     if (est.id === 'ostracismo' && dSoc > 0) dSoc *= 0.5;   // cuesta más que te acepten
     if (est.id === 'liderazgo' && dAuth > 0) dAuth *= 1.15;
     moverEjes(s, dAuth, dSoc, out);
     if (via) {
       if (wayId === 's') { s.counters.sociales++; s.counters.daySoc++; s.counters.rachaAuth = 0; }
-      else { s.counters.autenticas++; s.counters.dayAuth++; s.counters.rachaAuth++; }
+      else {
+        s.counters.autenticas++; s.counters.dayAuth++; s.counters.rachaAuth++;
+        if (via.sana) s.counters.sanas = (s.counters.sanas || 0) + 1;
+      }
     }
 
     // estado
@@ -2466,23 +2929,48 @@
     revisarEstado(s, out);
     checkQuests(s, out);
     checkAchievements(s, out);
-    logLine(s, titulo, 'neutral');
+    logLine(s, titulo, via && via.sana ? 'good' : 'neutral', out);
     return { ok: true, out };
   }
 
   /* ------------------ Los dos ejes y sus estados -------------------- */
 
   // Mueve autenticidad y aprobación social y lo cuenta al jugador.
-  function moverEjes(s, dAuth, dSoc, out) {
+  // Los dos ejes se mueven despacio a propósito: una vida no cambia de rumbo
+  // en una tarde. Todo lo que los toca pasa por aquí y se divide por tres.
+  const RITMO = 0.34;
+  const TOPE_DIA = 8;     // lo máximo que un solo día puede mover cada eje
+  const un = v => Math.round(v * 10) / 10;   // una cifra decimal, para que se note
+
+  function moverEjes(s, dAuth, dSoc, out, crudo) {
+    const f = crudo ? 1 : RITMO;
+    const c = s.counters;
+    // nadie se convierte en otra persona en una tarde: cada día tiene un tope
+    const recorte = (d, usado) => {
+      if (crudo) return d;
+      const queda = Math.max(0, TOPE_DIA - Math.abs(usado || 0));
+      return Math.sign(d) * Math.min(Math.abs(d), queda);
+    };
     if (dAuth) {
-      s.autenticidad = c100(s.autenticidad + dAuth);
-      if (out) out.push({ t: `🔥 Autenticidad ${dAuth > 0 ? '+' : ''}${Math.round(dAuth)} (${Math.round(s.autenticidad)})`,
-        k: dAuth > 0 ? 'good' : 'warn' });
+      const d = recorte(dAuth * f, c.movAuth);
+      if (d) {
+        c.movAuth = (c.movAuth || 0) + d;
+        s.autenticidad = c100(s.autenticidad + d);
+        if (out) out.push({ t: `🔥 Autenticidad ${d > 0 ? '+' : ''}${un(d)} (${Math.round(s.autenticidad)})`,
+          k: d > 0 ? 'good' : 'warn' });
+      } else if (out && !c.avisoTope) {
+        c.avisoTope = 1;
+        out.push({ t: '🌙 Por hoy ya has movido tu rumbo todo lo que un día da de sí', k: 'neutral' });
+      }
     }
     if (dSoc) {
-      s.social = c100(s.social + dSoc);
-      if (out) out.push({ t: `👥 Aprobación ${dSoc > 0 ? '+' : ''}${Math.round(dSoc)} (${Math.round(s.social)})`,
-        k: dSoc > 0 ? 'good' : 'warn' });
+      const d = recorte(dSoc * f, c.movSoc);
+      if (d) {
+        c.movSoc = (c.movSoc || 0) + d;
+        s.social = c100(s.social + d);
+        if (out) out.push({ t: `👥 Aprobación ${d > 0 ? '+' : ''}${un(d)} (${Math.round(s.social)})`,
+          k: d > 0 ? 'good' : 'warn' });
+      }
     }
   }
 
@@ -2494,8 +2982,10 @@
     s.estado = nuevo.id;
     s.estadoDesde = s.day;
     s.energy = clamp(s.energy, 0, maxEnergy(s));   // la máscara baja el techo de energía
-    if (out) out.push({ t: `${nuevo.icon} ${nuevo.name}`, k: nuevo.id === 'liderazgo' ? 'gold' : nuevo.id === 'transito' ? 'neutral' : 'warn' });
-    logLine(s, `Entras en «${nuevo.name}».`, nuevo.id === 'liderazgo' ? 'gold' : 'warn');
+    const txtEstado = `${nuevo.icon} Entras en «${nuevo.name}»`;
+    const tono = nuevo.id === 'liderazgo' ? 'gold' : nuevo.id === 'transito' ? 'neutral' : 'warn';
+    if (out) out.push({ t: txtEstado, k: tono });
+    logLine(s, txtEstado, tono, nuevo.efectos.map(e => ({ t: e, k: 'neutral' })));
     if (nuevo.id === 'ostracismo') s.achievements.a2 = true;
     if (nuevo.id === 'mascara') s.achievements.a4 = true;
     if (nuevo.id === 'liderazgo') s.achievements.a8 = true;
@@ -2741,6 +3231,9 @@
     return { ok: true, out };
   }
 
+  const BIZ_ACCION = { mejorar: 'sube de nivel', marketing: 'campaña de marketing',
+    contratar: 'contratación', despedir: 'reducción de plantilla', vender: 'venta del negocio' };
+
   const BIZ_UPGRADE = b => Math.round(BIZ_BY[b.type].cost * (0.55 + (b.level - 1) * 0.55));
   const BIZ_MARKETING = b => Math.round(90 + b.level * 70);
   const BIZ_HIRE = b => Math.round(280 + b.emp * 180);
@@ -2783,6 +3276,7 @@
       logLine(s, `Vendes ${b.name} por ${money(v)}.`, 'gold');
     } else return { ok: false, why: 'Acción desconocida' };
     checkQuests(s, out); checkAchievements(s, out);
+    logLine(s, `💼 ${b.name}: ${BIZ_ACCION[what] || what}`, 'neutral', out);
     return { ok: true, out };
   }
 
@@ -2808,26 +3302,26 @@
 
   const FINALES = {
     liderazgo: {
-      id: 'liderazgo', name: 'Liderazgo genuino', icon: '🌟', tono: 'good', dias: 5,
+      id: 'liderazgo', name: 'Liderazgo genuino', icon: '🌟', tono: 'good', dias: 8,
       titulo: 'Lo conseguiste sin dejar de ser tú',
-      texto: s => `Cinco días seguidos siendo el mismo dentro y fuera. Lo que construiste `
+      texto: s => `Ocho días seguidos siendo el mismo dentro y fuera. Lo que construiste `
         + `${s.bizs.length ? `(${s.bizs.map(b => b.name).join(', ')}) ` : ''}funciona porque es tuyo, `
         + `no a pesar de serlo. La gente que te rodea no te aplaude: te escucha. `
         + `Aquel comité que te rechazó el primer día tenía razón en una cosa: no encajabas. `
         + `Nunca ibas a encajar. Tenías que construir el sitio.`,
     },
     mascara: {
-      id: 'mascara', name: 'La máscara se quedó pegada', icon: '🎭', tono: 'bad', dias: 12,
+      id: 'mascara', name: 'La máscara se quedó pegada', icon: '🎭', tono: 'bad', dias: 18,
       titulo: 'Todos contentos menos uno',
-      texto: s => `Doce días con aprobación de sobra y sin nada dentro. Tienes ${money(netWorth(s))} `
+      texto: s => `Dieciocho días con aprobación de sobra y sin nada dentro. Tienes ${money(netWorth(s))} `
         + `de patrimonio, ${s.net} contactos y ninguna razón para levantarte. `
         + `Nadie va a venir a decirte que pares: desde fuera esto es exactamente lo que se espera de ti. `
-        + `El rechazo del primer día te dolió menos que estos doce.`,
+        + `El rechazo del primer día te dolió menos que estas semanas.`,
     },
     desierto: {
-      id: 'desierto', name: 'El desierto', icon: '🕳️', tono: 'bad', dias: 12,
+      id: 'desierto', name: 'El desierto', icon: '🕳️', tono: 'bad', dias: 18,
       titulo: 'Solo, y sin saber para qué',
-      texto: s => `Doce días fuera del mapa social y sin una brújula propia que lo justifique. `
+      texto: s => `Dieciocho días fuera del mapa social y sin una brújula propia que lo justifique. `
         + `El ostracismo se aguanta cuando sabes por qué estás ahí; tú dejaste de saberlo. `
         + `Nadie te llama y tampoco tienes nada que contarles. Se puede volver de aquí, `
         + `pero no en esta partida.`,
@@ -2928,17 +3422,33 @@
 
     // 4. los dos ejes se enfrían solos: mantenerlos cuesta
     if (s.net > 0 && rand(s) < 0.35) s.net = Math.max(0, s.net - 1);
-    if (s.social > 0) s.social = c100(s.social - 0.6);
+    if (s.social > 0) s.social = c100(s.social - 0.6 * RITMO);
     if (s.counters.dayDev > 0 && s.counters.dayAuth === 0) {
-      s.autenticidad = c100(s.autenticidad - 1.2);   // un día entero haciendo lo que se espera
+      s.autenticidad = c100(s.autenticidad - 1.2 * RITMO);   // un día entero haciendo lo que se espera
     } else if (s.counters.dayAuth >= 3) {
-      s.autenticidad = c100(s.autenticidad + 0.6);   // un día entero siendo tú
+      s.autenticidad = c100(s.autenticidad + 0.6 * RITMO);   // un día entero siendo tú
       out.push({ t: '🔥 Hoy has decidido por ti de principio a fin', k: 'good' });
     }
+
+    // coherencia: si no cambias según quién mire, la gente acaba respetándolo
+    if (s.autenticidad >= 60) {
+      s.counters.diasCoherente = (s.counters.diasCoherente || 0) + 1;
+      if (s.counters.diasCoherente >= COHERENCIA_DIAS) {
+        const gana = 0.5 + Math.min(1, (s.counters.diasCoherente - COHERENCIA_DIAS) / 20);
+        s.social = c100(s.social + gana);
+        if (s.counters.diasCoherente === COHERENCIA_DIAS)
+          out.push({ t: '🤝 La gente empieza a respetar que no cambies según quién mire', k: 'gold' });
+        else if (s.counters.diasCoherente % 7 === 0)
+          out.push({ t: `🤝 Llevas ${s.counters.diasCoherente} días siendo el mismo: se nota fuera`, k: 'good' });
+      }
+    } else s.counters.diasCoherente = 0;
+
     revisarEstado(s, out);
     revisarFinales(s, out);
     s.day++; s.hour = wake;
     s.counters.dayDev = 0; s.counters.planToday = 0; s.counters.dayAuth = 0; s.counters.daySoc = 0;
+    Object.keys(s.flags).forEach(k => { if (k.indexOf('hoy_') === 0) delete s.flags[k]; });
+    s.counters.movAuth = 0; s.counters.movSoc = 0; s.counters.avisoTope = 0;
     if (s.flags.despensa > 0) s.flags.despensa--;
     if (s.flags.bizPenalty > 0) s.flags.bizPenalty--;
     if (s.flags.sick && rand(s) < 0.5) s.flags.sick = 0;
@@ -2951,8 +3461,8 @@
 
     checkQuests(s, out);
     checkAchievements(s, out);
-    logLine(s, `Empieza el día ${s.day}.`, 'neutral');
     out.unshift({ t: `🌅 Día ${s.day} · has dormido ${Math.round(slept)} h`, k: 'neutral' });
+    logLine(s, `🌙 Cierre del día ${s.day - 1}`, 'neutral', out);
     return out;
   }
 
@@ -2978,7 +3488,7 @@
     if (f.bizPenalty) s.flags.bizPenalty = 5;
     if (f.g) Object.keys(f.g).forEach(k => gainStat(s, k, f.g[k], out));
     out.push({ t: `📰 ${ev.txt}`, k: ev.kind === 'good' ? 'good' : ev.kind === 'bad' ? 'bad' : ev.kind === 'warn' ? 'warn' : 'neutral' });
-    logLine(s, ev.txt, ev.kind === 'neutral' ? 'neutral' : ev.kind);
+    logLine(s, `📰 ${ev.txt}`, ev.kind === 'neutral' ? 'neutral' : ev.kind);
   }
 
   /* --------------------- Misiones y logros -------------------------- */
@@ -2996,8 +3506,9 @@
         if (r.au || r.so) moverEjes(s, r.au || 0, r.so || 0, out);
         if (r.g) Object.keys(r.g).forEach(k => gainStat(s, k, r.g[k], out));
         if (r.xp) gainXP(s, r.xp, out);
-        if (out) out.push({ t: `🎯 Misión completada: ${q.name}${r.money ? ` (+${money(r.money)})` : ''}`, k: 'gold' });
-        logLine(s, `Misión completada: ${q.name}.`, 'gold');
+        const txtQ = `🎯 Misión completada: ${q.name}${r.money ? ` (+${money(r.money)})` : ''}`;
+        if (out) out.push({ t: txtQ, k: 'gold' });
+        logLine(s, txtQ, 'gold', [{ t: q.desc, k: 'neutral' }]);
       }
     });
   }
@@ -3008,7 +3519,7 @@
       s.achievements[id] = 'dado';
       const a = ACHIEVEMENTS.find(x => x.id === id);
       if (a && out) out.push({ t: `🏅 Logro: ${a.name}`, k: 'gold' });
-      if (a) logLine(s, `Logro desbloqueado: ${a.name}.`, 'gold');
+      if (a) logLine(s, `🏅 Logro: ${a.name}`, 'gold', [{ t: a.desc, k: 'neutral' }]);
     };
     // los estados marcan su logro al entrar; aquí se confirman y se anuncian
     ['a1', 'a2', 'a3', 'a4', 'a5', 'a8', 'a10'].forEach(id => { if (s.achievements[id]) give(id); });
@@ -3055,6 +3566,7 @@
     }
     revisarEstado(s, out);
     checkQuests(s, out); checkAchievements(s, out);
+    logLine(s, `💬 Hablas con ${npc.name} (${npc.role})`, 'neutral', out);
     return out;
   }
 
@@ -3285,16 +3797,22 @@
 
   const R = (ctx, x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x | 0, y | 0, Math.max(1, w | 0), Math.max(1, h | 0)); };
 
+  // Cada personaje ronda el lugar donde tiene sentido encontrárselo.
   function initNpcs(world) {
     return NPCS.map(n => {
-      const p = { def: n, x: (n.x + 0.5) * TILE, y: (n.y + 0.5) * TILE, hx: n.x, hy: n.y,
-        t: Math.random() * 6, dir: 'down', vx: 0, vy: 0 };
-      let tries = 0;
-      while (world.isSolid(Math.floor(p.x / TILE), Math.floor(p.y / TILE)) && tries < 60) {
-        p.x += TILE; if (p.x > (world.W - 2) * TILE) { p.x = TILE * 2; p.y += TILE; }
-        tries++;
+      const b = world.buildings.find(x => x.id === n.cerca) || world.spots.find(x => x.id === n.cerca);
+      let hx = b ? (b.door ? b.door.x + 2 : b.x + 2) : Math.floor(world.W / 2);
+      let hy = b ? (b.door ? b.door.y + 2 : b.y + 2) : Math.floor(world.H / 2);
+      // busca la casilla transitable más cercana a ese punto
+      let mejor = null;
+      for (let r = 0; r <= 6 && !mejor; r++) {
+        for (let dy = -r; dy <= r && !mejor; dy++)
+          for (let dx = -r; dx <= r && !mejor; dx++)
+            if (!world.isSolid(hx + dx, hy + dy)) mejor = { x: hx + dx, y: hy + dy };
       }
-      return p;
+      if (mejor) { hx = mejor.x; hy = mejor.y; }
+      return { def: n, x: (hx + 0.5) * TILE, y: (hy + 0.5) * TILE, hx, hy,
+        t: Math.random() * 6, dir: 'down', vx: 0, vy: 0 };
     });
   }
 
@@ -3729,6 +4247,20 @@
      ================================================================ */
 
   const HALF = 4; // media anchura de la caja de colisión del jugador
+  const SPEED_BASE = 80;        // píxeles por segundo caminando
+
+  const puedeCorrer = s => s.energy > maxEnergy(s) * 0.12;
+
+  // Velocidad de movimiento. Correr casi duplica, y el vigor se nota al correr.
+  function playerSpeed(s, corriendo) {
+    let sp = SPEED_BASE;
+    if (hasItem(s, 'bici')) sp *= 1.45;
+    if (s.energy < maxEnergy(s) * 0.2) sp *= 0.78;
+    if (s.flags.sick) sp *= 0.85;
+    if (corriendo && puedeCorrer(s)) sp *= 1.75 + s.stats.vigor / 400;
+    return sp;
+  }
+
 
   function blocked(world, x, y) {
     const pts = [[x - HALF, y - HALF], [x + HALF, y - HALF], [x - HALF, y - 1], [x + HALF, y - 1]];
@@ -3745,14 +4277,13 @@
     if (G.keys.down) dy += 1;
     if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
 
-    let sp = p.speed;
-    if (hasItem(G.s, 'bici')) sp *= 1.45;
-    if (G.s.energy < maxEnergy(G.s) * 0.2) sp *= 0.78;
-    if (G.s.flags.sick) sp *= 0.85;
+    // correr: sólo si te queda fuelle
+    p.corriendo = !!G.keys.correr && puedeCorrer(G.s);
+    const sp = playerSpeed(G.s, p.corriendo);
 
     p.moving = !!(dx || dy);
     if (p.moving) {
-      p.anim += dt;
+      p.anim += dt * (p.corriendo ? 1.6 : 1);
       if (Math.abs(dx) > Math.abs(dy)) p.dir = dx > 0 ? 'right' : 'left';
       else if (dy) p.dir = dy > 0 ? 'down' : 'up';
       const nx = p.x + dx * sp * dt;
@@ -3870,7 +4401,18 @@
          <div class="bar"><i style="background:${st.color}"></i></div>
          <div class="vv"></div>
          <div class="pm"><button data-d="-1" aria-label="Bajar ${st.label}">−</button><button data-d="1" aria-label="Subir ${st.label}">+</button></div>`;
-      const desc = el('div', 'stat-desc', st.desc);
+      const desc = el('div', 'stat-desc');
+      desc.innerHTML = esc(st.desc) + ' <button class="linkbtn" type="button">¿en qué influye?</button>';
+      const detalle = el('div', 'stat-info',
+        `<ul>${st.efectos.map(e => `<li>${esc(e)}</li>`).join('')}</ul>
+         <div class="av">🧬 En tu avatar: ${esc(st.avatar)}</div>
+         <div class="dn">📍 Se entrena en: ${esc(st.donde)}</div>`);
+      detalle.style.display = 'none';
+      desc.querySelector('.linkbtn').addEventListener('click', () => {
+        const abierto = detalle.style.display !== 'none';
+        detalle.style.display = abierto ? 'none' : 'block';
+        desc.querySelector('.linkbtn').textContent = abierto ? '¿en qué influye?' : 'ocultar';
+      });
       row.querySelectorAll('button').forEach(b => {
         b.addEventListener('click', () => {
           const d = Number(b.dataset.d);
@@ -3884,6 +4426,7 @@
       row.dataset.key = st.key;
       rows.appendChild(row);
       rows.appendChild(desc);
+      rows.appendChild(detalle);
     });
 
     // --- objetivo profesional: la primera decisión del juego ---
@@ -4074,6 +4617,153 @@
     body.appendChild(b);
   }
 
+  /* ------------------- Guía de la ciudad y tutorial -------------------- */
+
+  // Los pasos del recorrido inicial: primero cómo funciona el juego, después
+  // un barrio por pantalla con todo lo que hay dentro y para qué sirve.
+  function pasosTutorial() {
+    const pasos = [{
+      icon: '🧭', titulo: 'Cómo funciona esto',
+      cuerpo: () => {
+        const w = el('div');
+        w.appendChild(el('p', 'dialog-txt',
+          'Acaban de rechazarte. A partir de aquí nadie te va a decir qué hacer: te mueves por la ciudad, '
+          + 'entras donde quieras y decides en qué gastas tus horas.'));
+        w.appendChild(el('div', 'ejes', `
+          <div class="eje">
+            <div class="lbl"><span>🔥 Autenticidad</span><b>ser fiel a ti</b></div>
+            <div class="bar"><i style="width:55%;background:linear-gradient(90deg,#b45309,#fbbf24)"></i></div>
+          </div>
+          <div class="eje">
+            <div class="lbl"><span>👥 Aprobación social</span><b>encajar</b></div>
+            <div class="bar"><i style="width:45%;background:linear-gradient(90deg,#1e3a8a,#60a5fa)"></i></div>
+          </div>`));
+        w.appendChild(el('p', 'dialog-txt',
+          'Casi todo lo que hagas se puede hacer de <em>dos maneras</em>: a tu manera (sube la autenticidad, '
+          + 'suele costar aprobación) o como se espera de ti (al revés, y a veces paga mejor).'));
+        w.appendChild(el('div', 'banner ok',
+          '💚 Algunas decisiones suben <b>las dos barras</b>: enseñar de verdad, ayudar, colaborar, escuchar. '
+          + 'No hace falta elegir entre tener criterio y caer bien.'));
+        w.appendChild(el('p', 'stat-desc',
+          'Ambas suben y bajan despacio, a propósito: una vida no cambia de rumbo en una tarde.'));
+        return w;
+      },
+    }];
+
+    DISTRITOS.forEach(d => {
+      pasos.push({
+        icon: d.icon, titulo: d.name,
+        cuerpo: () => {
+          const w = el('div');
+          w.appendChild(el('p', 'dialog-txt', esc(d.desc)));
+          const lista = el('div', 'act-list');
+          PLACES.filter(p => p.dist === d.id).forEach(p => {
+            const r = resumenLugar(p);
+            const fila = el('div', 'act');
+            fila.style.gridTemplateColumns = '1fr';
+            fila.innerHTML =
+              `<div>
+                 <div class="t">${p.icon} ${esc(p.name)}</div>
+                 <div class="d">${esc(p.about || '')}</div>
+                 <div class="costs">
+                   ${r.entrena.map(k => `<span class="pill xp" style="color:${STAT_BY[k].color}">${STAT_BY[k].icon} ${STAT_BY[k].label}</span>`).join('')}
+                   ${r.cobra ? '<span class="pill money">💰 aquí se cobra</span>' : ''}
+                   ${r.cuesta ? '<span class="pill cost">💶 cuesta dinero</span>' : ''}
+                   ${r.sana ? '<span class="pill sana">💚 suma en las dos</span>' : ''}
+                   <span class="pill">${r.acciones} acciones</span>
+                 </div>
+               </div>`;
+            lista.appendChild(fila);
+          });
+          w.appendChild(lista);
+          return w;
+        },
+      });
+    });
+
+    pasos.push({
+      icon: '🎮', titulo: 'Los mandos',
+      cuerpo: () => {
+        const w = el('div');
+        w.appendChild(el('div', 'kv-grid',
+          `<div class="kv"><div class="k">Moverte</div><div class="v" style="font-size:14px">W A S D o flechas</div></div>
+           <div class="kv"><div class="k">Correr</div><div class="v" style="font-size:14px">Mayús</div></div>
+           <div class="kv"><div class="k">Entrar / hablar</div><div class="v" style="font-size:14px">E</div></div>
+           <div class="kv"><div class="k">Perfil</div><div class="v" style="font-size:14px">P</div></div>
+           <div class="kv"><div class="k">Negocios</div><div class="v" style="font-size:14px">N</div></div>
+           <div class="kv"><div class="k">Misiones</div><div class="v" style="font-size:14px">Q</div></div>
+           <div class="kv"><div class="k">Mapa</div><div class="v" style="font-size:14px">M</div></div>
+           <div class="kv"><div class="k">Diario</div><div class="v" style="font-size:14px">L</div></div>
+           <div class="kv"><div class="k">Esta guía</div><div class="v" style="font-size:14px">?</div></div>`));
+        w.appendChild(el('div', 'banner',
+          '⏳ El día va de las 7:00 a las 24:00 y cada acción consume horas y energía. '
+          + 'Cuando se te acabe el día, vuelve a casa y duerme: ahí se cobran los negocios y se pagan los gastos.'));
+        w.appendChild(el('p', 'stat-desc',
+          'Puedes volver a abrir esta guía cuando quieras con la tecla ? o desde el mapa.'));
+        return w;
+      },
+    });
+    return pasos;
+  }
+
+  const TUT = { i: 0, pasos: null, alEmpezar: false };
+
+  function abrirGuia(desdeElPrincipio) {
+    TUT.pasos = pasosTutorial();
+    TUT.i = 0;
+    TUT.alEmpezar = !!desdeElPrincipio;
+    pintarPasoGuia();
+  }
+
+  function pintarPasoGuia() {
+    const paso = TUT.pasos[TUT.i];
+    openModal({
+      icon: paso.icon,
+      title: paso.titulo,
+      sub: `Guía de la ciudad · ${TUT.i + 1} de ${TUT.pasos.length}`,
+      render: () => {
+        const w = el('div');
+        w.appendChild(paso.cuerpo());
+        const nav = el('div', 'guia-nav');
+        const puntos = el('div', 'guia-puntos');
+        TUT.pasos.forEach((_, i) => {
+          const p = el('button', 'guia-punto' + (i === TUT.i ? ' on' : ''));
+          p.title = TUT.pasos[i].titulo;
+          p.addEventListener('click', () => { TUT.i = i; pintarPasoGuia(); });
+          puntos.appendChild(p);
+        });
+        const atras = el('button', 'btn', '← Atrás');
+        atras.disabled = TUT.i === 0;
+        atras.addEventListener('click', () => { TUT.i--; pintarPasoGuia(); });
+        const ultimo = TUT.i === TUT.pasos.length - 1;
+        const sig = el('button', 'btn primary', ultimo ? (TUT.alEmpezar ? 'Empezar a vivir' : 'Cerrar') : 'Siguiente →');
+        sig.addEventListener('click', () => {
+          if (ultimo) { cerrarGuia(); return; }
+          TUT.i++; pintarPasoGuia();
+        });
+        nav.appendChild(atras); nav.appendChild(puntos); nav.appendChild(sig);
+        if (TUT.alEmpezar && !ultimo) {
+          const saltar = el('button', 'btn ghost sm', 'Saltar la guía');
+          saltar.addEventListener('click', cerrarGuia);
+          nav.appendChild(saltar);
+        }
+        w.appendChild(nav);
+        return w;
+      },
+    });
+  }
+
+  function cerrarGuia() {
+    const eraInicio = TUT.alEmpezar;
+    TUT.alEmpezar = false;
+    closeModal();
+    if (eraInicio && G.s) {
+      G.s.flags.tutorial = 1;
+      save();
+      toast('🧭 La guía queda en la tecla ? por si la necesitas', 'neutral');
+    }
+  }
+
   /* ---------------------------- El final ------------------------------ */
 
   function mostrarFinal(s) {
@@ -4099,17 +4789,25 @@
      12. INTERFAZ DEL JUEGO: HUD, AVISOS Y MODALES
      ================================================================ */
 
+  const TOAST_MS = 11000;   // los avisos se quedan lo suficiente para poder leerlos
+
   function toast(text, kind) {
     const box = $('toasts');
     if (!box) return;
     const t = el('div', 'toast ' + (kind || 'neutral'), text);
     box.appendChild(t);
-    while (box.children.length > 6) box.removeChild(box.firstChild);
-    setTimeout(() => {
+    while (box.children.length > 8) box.removeChild(box.firstChild);
+    // pasar el ratón por encima congela el aviso
+    let muerte = setTimeout(cerrar, TOAST_MS);
+    t.addEventListener('mouseenter', () => { clearTimeout(muerte); t.classList.add('held'); });
+    t.addEventListener('mouseleave', () => { t.classList.remove('held'); muerte = setTimeout(cerrar, 2500); });
+    t.addEventListener('click', cerrar);
+    function cerrar() {
+      if (!t.parentNode) return;
       t.style.transition = 'opacity .4s, transform .4s';
       t.style.opacity = '0'; t.style.transform = 'translateX(14px)';
       setTimeout(() => t.remove(), 420);
-    }, 4200 + Math.random() * 600);
+    }
   }
   const showOut = out => (out || []).forEach(o => toast(o.t, o.k));
 
@@ -4208,12 +4906,9 @@
   }
 
   function districtName(p) {
-    const ty = p.y / TILE;
-    if (ty < 20) return '🌳 Distrito Norte';
-    if (ty < 35) return '⛲ Centro';
-    if (ty < 51) return '🏦 Distrito Financiero';
-    if (ty < 70) return '🛒 Distrito Sur';
-    return '⚓ Costa';
+    if (!G.world || !G.world.distritoEn) return '🧭 La ciudad';
+    const d = G.world.distritoEn(p.x, p.y);
+    return `${d.icon} ${d.name}`;
   }
 
   function updatePrompt() {
@@ -4304,6 +4999,7 @@
     if (via.net) bits.push(`<span class="pill">📇 +${via.net}</span>`);
     if (via.st) bits.push(`<span class="pill">🌡️ ${via.st > 0 ? '+' : ''}${via.st}</span>`);
     if (via.cre) bits.push('<span class="pill">🎨 creativa</span>');
+    if (via.sana) bits.push('<span class="pill sana">💚 suma en las dos</span>');
     return bits.join('');
   }
 
@@ -4311,6 +5007,18 @@
     const s = G.s;
     const wrap = el('div');
     if (place.about) wrap.appendChild(el('p', 'stat-desc', esc(place.about)));
+
+    // la primera vez que entras, una nota de para qué sirve este sitio
+    const clave = 'visto_' + place.id;
+    if (!s.flags[clave]) {
+      s.flags[clave] = 1;
+      const r = resumenLugar(place);
+      const d = DIST_BY[place.dist];
+      wrap.appendChild(el('div', 'banner ok',
+        `✨ <b>Primera vez aquí.</b> ${d ? d.icon + ' ' + esc(d.name) + '. ' : ''}`
+        + `Entrena sobre todo ${r.entrena.map(k => STAT_BY[k].icon + ' ' + STAT_BY[k].label).join(', ')}`
+        + `${r.cobra ? '. Aquí puedes ganar dinero' : ''}${r.sana ? '. Hay decisiones que suman en las dos barras' : ''}.`));
+    }
     const est = estadoActual(s);
     if (est.id !== 'transito') {
       wrap.appendChild(el('div', 'banner' + (est.id === 'liderazgo' ? ' ok' : ''),
@@ -4336,7 +5044,7 @@
           const via = act.w[id];
           if (!via) return;
           const chk = canDo(s, place, act, id);
-          const box = el('div', 'way ' + cls);
+          const box = el('div', 'way ' + cls + (via.sana ? ' sana' : ''));
           box.innerHTML =
             `<div class="wl">${id === 'a' ? '🔥' : '👥'} ${esc(via.l)}</div>
              <div class="wd">${esc(via.d)}</div>
@@ -4613,6 +5321,7 @@
          <div class="bar" title="${prog} % hacia el siguiente punto">
            <i style="background:${st.color};width:${s.stats[st.key]}%"></i></div>
          <div class="vv">${s.stats[st.key]}</div>`;
+      row.title = st.efectos.join(' · ');
       const pm = el('div', 'pm');
       const plus = el('button', '', '+');
       plus.disabled = s.points <= 0 || s.stats[st.key] >= 100;
@@ -4623,6 +5332,21 @@
       pm.appendChild(plus);
       row.appendChild(pm);
       rows.appendChild(row);
+
+      const info = el('div', 'stat-desc');
+      info.innerHTML = `<b style="color:${st.color}">${esc(efectoActual(s, st.key))}</b>`
+        + ` <button class="linkbtn" type="button">detalle</button>`;
+      const det = el('div', 'stat-info',
+        `<ul>${st.efectos.map(e => `<li>${esc(e)}</li>`).join('')}</ul>
+         <div class="av">🧬 ${esc(st.avatar)}</div>
+         <div class="dn">📍 ${esc(st.donde)}</div>`);
+      det.style.display = 'none';
+      info.querySelector('.linkbtn').addEventListener('click', () => {
+        const abierto = det.style.display !== 'none';
+        det.style.display = abierto ? 'none' : 'block';
+      });
+      rows.appendChild(info);
+      rows.appendChild(det);
     });
     right.appendChild(rows);
 
@@ -4757,25 +5481,43 @@
     holder.appendChild(cv);
     wrap.appendChild(holder);
     setTimeout(() => drawMinimap(cv), 0);
-    wrap.appendChild(el('div', 'legend',
-      `<div><i style="background:#8b6f47"></i>Norte: casa, gimnasio, centro zen, salud, parque</div>
-       <div><i style="background:#5b8cff"></i>Centro: biblioteca, café, universidad, club social, plaza</div>
-       <div><i style="background:#fbbf24"></i>Financiero: banco, oficina, coworking, incubadora</div>
-       <div><i style="background:#f59e0b"></i>Sur: mercado, bazar, escuela, estudio, ferias</div>
-       <div><i style="background:#38bdf8"></i>Costa: muelle</div>`));
+    wrap.appendChild(el('div', 'legend', DISTRITOS.map(d => {
+      const cuantos = PLACES.filter(p => p.dist === d.id).length;
+      return `<div><i style="background:${d.color}"></i>${d.icon} ${esc(d.name)} · ${cuantos} lugar${cuantos === 1 ? '' : 'es'}</div>`;
+    }).join('')));
     wrap.appendChild(el('p', 'stat-desc',
-      'Muévete con WASD o las flechas y pulsa E delante de una puerta o de un punto brillante.'));
+      'Cada partida coloca la ciudad de forma distinta. Muévete con WASD o las flechas, corre con Mayús '
+      + 'y pulsa E delante de una puerta o de un punto brillante.'));
+    const btnGuia = el('button', 'btn wide', '📖 Abrir la guía de la ciudad');
+    btnGuia.style.marginTop = '12px';
+    btnGuia.addEventListener('click', () => abrirGuia());
+    wrap.appendChild(btnGuia);
     return wrap;
   }
 
   function logBody() {
     const s = G.s;
     const wrap = el('div');
+    wrap.appendChild(el('p', 'stat-desc',
+      'Todo lo que ha pasado, con el desglose completo de cada decisión: cuánto se movió cada eje, '
+      + 'qué aprendiste y qué te costó.'));
     const list = el('div', 'log-list');
     if (!s.log.length) list.appendChild(el('div', 'empty', 'Todavía no hay nada anotado.'));
+
+    let diaActual = null;
     s.log.forEach(l => {
-      list.appendChild(el('div', 'log-line ' + (l.k || 'neutral'),
-        `<span class="d">D${l.d} ${l.h}</span>${esc(l.t)}`));
+      if (l.d !== diaActual) {
+        diaActual = l.d;
+        list.appendChild(el('div', 'log-day', `Día ${l.d}`));
+      }
+      const linea = el('div', 'log-line ' + (l.k || 'neutral'),
+        `<span class="d">${l.h}</span>${esc(l.t)}`);
+      if (l.det && l.det.length) {
+        const det = el('div', 'log-det');
+        l.det.forEach(o => det.appendChild(el('div', 'log-sub ' + (o.k || 'neutral'), esc(o.t))));
+        linea.appendChild(det);
+      }
+      list.appendChild(linea);
     });
     wrap.appendChild(list);
     return wrap;
@@ -4787,6 +5529,7 @@
     quests:  () => openModal({ icon: '🎯', title: 'Misiones', sub: 'Tu recorrido de desarrollo personal y empresarial', render: questsBody }),
     map:     () => openModal({ icon: '🗺️', title: 'Mapa de la ciudad', sub: 'Cinco distritos, veinte lugares', render: mapBody }),
     log:     () => openModal({ icon: '📜', title: 'Diario', sub: 'Todo lo que te ha pasado', render: logBody }),
+    guia:    () => abrirGuia(false),
   };
 
   /* ================================================================
@@ -4797,6 +5540,7 @@
     ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
     w: 'up', s: 'down', a: 'left', d: 'right',
     W: 'up', S: 'down', A: 'left', D: 'right',
+    Shift: 'correr',
   };
 
   function interact() {
@@ -4818,6 +5562,7 @@
       else if (low === 'q') PANELS.quests();
       else if (low === 'm') PANELS.map();
       else if (low === 'l') PANELS.log();
+      else if (k === '?' || low === 'h') abrirGuia(false);
     });
     document.addEventListener('keyup', e => { if (KEYMAP[e.key]) G.keys[KEYMAP[e.key]] = false; });
     window.addEventListener('blur', () => { G.keys = {}; });
@@ -4857,6 +5602,11 @@
         b.addEventListener('mouseleave', off);
       });
       $('touchE').addEventListener('click', interact);
+      $('touchRun').classList.add('on');
+      $('touchRun').addEventListener('click', () => {
+        G.keys.correr = !G.keys.correr;
+        $('touchRun').classList.toggle('activo', !!G.keys.correr);
+      });
     }
 
     // clic o toque en el mundo: caminar hacia ese punto no, pero sí interactuar si estás cerca
@@ -4942,12 +5692,14 @@
 
     const et = ETAPA_BY[s.etapa];
     toast(`👋 ${esc(s.name)}, ${s.age} años. ${et.icon} ${esc(et.name)}.`, 'good');
-    toast('Pulsa E delante de una puerta. Cada acción se puede hacer de dos maneras.', 'neutral');
 
     G.running = true;
     G.last = performance.now();
     requestAnimationFrame(loop);
-    if (s.final) mostrarFinal(s);
+    if (s.final) { mostrarFinal(s); return; }
+    // la primera vez, el recorrido por la ciudad
+    if (!s.flags.tutorial) abrirGuia(true);
+    else toast('Pulsa E delante de una puerta. Cada acción se puede hacer de dos maneras.', 'neutral');
   }
 
   function init() {
@@ -4976,6 +5728,7 @@
       EJES, ESTADOS, ETAPAS, ETAPA_BY, OBJETIVOS, ENTREVISTAS, FINALES,
       estadoDe, estadoActual, etapaPorEdad, enfoqueLaser, tonoRespuestas,
       resolverEntrevista, moverEjes, revisarEstado, revisarFinales, viaDe, viaBloqueada,
+      DISTRITOS, DIST_BY, resumenLugar, playerSpeed, puedeCorrer, efectoActual, RITMO, TOPE_DIA, COHERENCIA_DIAS,
       // mundo
       worldGen, reachability,
       // simulación
