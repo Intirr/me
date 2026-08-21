@@ -58,8 +58,10 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   const rows = doc.querySelectorAll('#statRows .stat-row');
   check(rows.length === 8, `se listan las 8 habilidades (${rows.length})`);
   check(doc.querySelectorAll('#objGrid .opt').length >= 3, 'se puede declarar un objetivo profesional');
-  check(doc.querySelectorAll('#bgGrid .opt').length === 6, 'se listan las 6 experiencias previas');
-  check(doc.querySelectorAll('#perkGrid .opt').length === 6, 'se listan los 6 rasgos');
+  check(doc.querySelectorAll('#bgGrid .opt').length === 10, 'se listan las 10 experiencias previas');
+  check(doc.querySelectorAll('#perkGrid .opt').length === 10, 'se listan los 10 rasgos');
+  check(doc.querySelectorAll('#afiGrid .opt').length === 10, 'se listan las 10 aficiones y manías');
+  check(doc.querySelectorAll('#afiGrid .opt.sel').length === 2, 'vienen dos aficiones marcadas');
   check($('createAvatar').innerHTML.indexOf('<svg') === 0, 'el avatar se dibuja desde el principio');
 
   console.log('2) La edad decide la etapa de vida');
@@ -81,6 +83,11 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   check($('createAvatar').innerHTML !== before, 'el avatar cambia con las habilidades');
   click(rows[0].querySelectorAll('.pm button')[0]);
   check($('poolLeft').textContent === '51', 'restar devuelve el punto');
+
+  const afis = doc.querySelectorAll('#afiGrid .opt');
+  click(afis[5]); click(afis[6]); click(afis[7]);
+  check(doc.querySelectorAll('#afiGrid .opt.sel').length === 2, 'nunca hay más de dos aficiones elegidas');
+  check(/elegidas 2 de 2/.test($('afiHint').textContent), 'el contador de aficiones se actualiza');
 
   const objBtn = doc.querySelectorAll('#objGrid .opt')[2];
   click(objBtn);

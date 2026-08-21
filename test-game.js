@@ -63,9 +63,24 @@ console.log('1) Datos coherentes');
   check(M.PLACE_BY.comunitario.actions.every(a => a.w && a.w.a.sana),
     'todas las acciones del centro comunitario suman en las dos barras');
 
-  M.BIZ_TYPES.forEach(b => {
-    b.stats.forEach(k => check(keys.has(k), `negocio ${b.id}: característica válida "${k}"`));
-    check(b.base > b.upkeep, `negocio ${b.id}: el ingreso base supera los costes fijos`);
+  // las piezas con las que se monta un negocio
+  M.BIZ_SECTORES.forEach(x => {
+    x.stats.forEach(k => check(keys.has(k), `sector ${x.id}: característica válida "${k}"`));
+    check(x.productos.length >= 3, `sector ${x.id}: sugiere productos concretos`);
+    check(!!x.desc && !!x.icon, `sector ${x.id}: se explica`);
+  });
+  [['público', M.BIZ_PUBLICO], ['modelo', M.BIZ_MODELO], ['enfoque', M.BIZ_ENFOQUE]].forEach(([nom, lista]) => {
+    check(lista.length >= 4, `hay al menos 4 opciones de ${nom}`);
+    lista.forEach(x => {
+      check(!!x.desc && !!x.icon && !!x.name, `${nom} ${x.id}: se explica`);
+      Object.keys(x.req || {}).forEach(k => check(keys.has(k), `${nom} ${x.id}: requisito válido "${k}"`));
+    });
+  });
+  M.BIZ_TYPES.forEach(t => {
+    check(!!t.cfg && !!t.cfg.sector && !!t.cfg.publico && !!t.cfg.modelo && !!t.cfg.enfoque,
+      `plantilla ${t.id}: define las cuatro piezas`);
+    check(!!t.producto, `plantilla ${t.id}: trae un producto concreto`);
+    check(M.bizCoste(t.cfg) > 0, `plantilla ${t.id}: tiene un coste`);
   });
   M.QUESTS.forEach(q => check(typeof q.check === 'function', `misión ${q.id}: tiene comprobación`));
 })();
@@ -270,7 +285,7 @@ console.log('8) Reglas de las acciones');
   check(!M.canDo(s, gym, fuerza).ok, 'sin energía la acción se bloquea');
   s.energy = 100; s.money = 0;
   check(!M.canDo(s, gym, fuerza).ok, 'sin dinero la acción se bloquea');
-  s.money = 1000; s.hour = 23.5;
+  s.money = 1000; s.hour = M.DAY_END - 0.5;
   check(!M.canDo(s, gym, fuerza).ok, 'de madrugada ya no da tiempo');
   const avanzado = gym.actions[3];
   s.hour = 9; s.stats.vigor = 10;
@@ -394,7 +409,15 @@ function play(seed, bgId, perkId, sesgo, days) {
       const [p, a, wid] = pick;
       const r = M.doAction(s, p, a, wid);
       if (r.ui) {
-        if (r.ui === 'fundar') { const t = M.BIZ_TYPES.find(t => M.canFound(s, t.id).ok); if (t) M.foundBiz(s, t.id, t.name); }
+        if (r.ui === 'fundar') {
+          // primero una plantilla; si no llega el dinero, algo pequeño a medida
+          const t = M.BIZ_TYPES.find(t => M.canFound(s, t.id).ok);
+          if (t) M.foundBiz(s, t.id, t.name);
+          else {
+            const barato = { sector: 'oficio', publico: 'barrio', modelo: 'comision', enfoque: 'honesto' };
+            if (M.canFound(s, barato).ok) M.foundBiz(s, barato, 'Lo mío', 'Reparaciones a domicilio');
+          }
+        }
         else if (r.ui === 'tienda') { const it = M.ITEMS.find(i => !s.items[i.id] && s.money > i.cost * 3); if (it) M.buyItem(s, it.id); }
         else if (r.ui === 'depositar') M.bankDeposit(s, Math.floor(s.money * 0.3));
         else if (r.ui === 'amortizar') M.bankRepay(s, Math.min(s.money, s.debt));
@@ -479,7 +502,8 @@ console.log('10b) Ritmo lento, coherencia y aprobación sana');
     `el tope diario de ${M.TOPE_DIA} puntos se respeta (subió ${(tope.autenticidad - a0Tope).toFixed(1)})`);
   const dia0 = tope.day;
   M.endDay(tope, []);
-  check(tope.day === dia0 + 1 && tope.counters.movAuth === 0, 'y el tope se reinicia cada mañana');
+  check(tope.day === dia0 + 1 && Math.abs(tope.counters.baseAuth - tope.autenticidad) < 0.01,
+    'y cada mañana se parte de cero otra vez');
 
   // la coherencia devuelve aprobación sin tener que complacer
   const c = M.newGame({ name: 'C', age: 30, bg: 'autodidacta', perk: 'ahorrador', objetivo: 'propio', seed: 57 });
@@ -568,7 +592,8 @@ console.log('10b-bis) Lo que la interfaz promete es lo que ocurre');
 
   // con el tope agotado, la previsión avisa y el movimiento es cero
   const t = limpio(1001);
-  t.counters.movAuth = M.TOPE_DIA; t.counters.movSoc = M.TOPE_DIA;
+  t.counters.baseAuth = t.autenticidad - M.TOPE_DIA;
+  t.counters.baseSoc = t.social - M.TOPE_DIA;
   const prevTope = M.ejesPrevistos(t, fuerza, 'a');
   check(prevTope.auth === 0 && prevTope.topeAuth === true, 'con el tope agotado la previsión lo dice');
   const a1 = t.autenticidad;
@@ -688,6 +713,184 @@ M.PLACES.forEach(p => {
   check(r.entrena.length > 0 || r.acciones > 0, `${p.id}: la guía sabe resumirlo`);
   check(!!p.about, `${p.id}: la guía tiene qué contar de él`);
 });
+
+/* ------------------------------------------------------------------ */
+console.log('10g) Montar el negocio que quieras');
+(() => {
+  const base = () => {
+    const s = M.newGame({ name: 'N', age: 30, bg: 'heredero', perk: 'analitico', objetivo: 'propio', seed: 800 });
+    s.money = 999999; M.STAT_KEYS.forEach(k => { s.stats[k] = 55; });
+    return s;
+  };
+
+  // se puede montar cualquier combinación de las cuatro piezas
+  let combinaciones = 0, fallos = 0;
+  M.BIZ_SECTORES.forEach(sec => M.BIZ_PUBLICO.forEach(pub => M.BIZ_MODELO.forEach(mod => M.BIZ_ENFOQUE.forEach(enf => {
+    const cfg = { sector: sec.id, publico: pub.id, modelo: mod.id, enfoque: enf.id };
+    const coste = M.bizCoste(cfg);
+    if (!(coste > 0 && isFinite(coste))) fallos++;
+    const s = base();
+    const r = M.foundBiz(s, cfg, 'Prueba', 'Un producto');
+    if (!r.ok) { fallos++; return; }
+    const b = s.bizs[0];
+    const inc = M.bizIncome(s, b);
+    if (!isFinite(inc)) fallos++;
+    if (!(M.bizVolatilidad(b) > 0 && M.bizVolatilidad(b) <= 1.2)) fallos++;
+    if (!isFinite(M.bizIngresoDelDia(s, b))) fallos++;
+    if (!isFinite(M.bizValue(s, b))) fallos++;
+    combinaciones++;
+  }))));
+  check(combinaciones === 8 * 5 * 5 * 5, `se pueden montar las ${combinaciones} combinaciones`);
+  check(fallos === 0, `ninguna combinación produce números rotos (${fallos} fallos)`);
+
+  // las piezas cambian de verdad los números
+  const barato = { sector: 'oficio', publico: 'barrio', modelo: 'comision', enfoque: 'honesto' };
+  const caro = { sector: 'comida', publico: 'lujo', modelo: 'suscripcion', enfoque: 'ruidoso' };
+  check(M.bizCoste(caro) > M.bizCoste(barato) * 5,
+    `montar algo grande cuesta mucho más (${M.bizCoste(barato)} frente a ${M.bizCoste(caro)})`);
+
+  const s1 = base(), s2 = base();
+  M.foundBiz(s1, barato, 'A', 'P'); M.foundBiz(s2, caro, 'B', 'P');
+  check(M.bizVolatilidad(s1.bizs[0]) < M.bizVolatilidad(s2.bizs[0]),
+    'lo pequeño y honesto baila menos que lo ruidoso y de lujo');
+
+  // el modelo por horas no escala como los demás
+  const horas = base(), suscr = base();
+  M.foundBiz(horas, { sector: 'servicios', publico: 'empresas', modelo: 'horas', enfoque: 'calidad' }, 'H', 'P');
+  M.foundBiz(suscr, { sector: 'servicios', publico: 'empresas', modelo: 'suscripcion', enfoque: 'calidad' }, 'S', 'P');
+  const crece = (st) => { const b = st.bizs[0]; const a = M.bizIncome(st, b); b.level = 6; b.emp = 5; return M.bizIncome(st, b) / Math.max(1, a); };
+  check(crece(horas) < crece(suscr), 'vender horas tiene menos techo que una suscripción');
+
+  // el enfoque y el público te marcan al registrarlo
+  const honesto = base(), ruidoso = base();
+  const a0 = honesto.autenticidad;
+  M.foundBiz(honesto, { sector: 'oficio', publico: 'nicho', modelo: 'suelto', enfoque: 'honesto' }, 'A', 'P');
+  M.foundBiz(ruidoso, { sector: 'oficio', publico: 'general', modelo: 'suelto', enfoque: 'ruidoso' }, 'B', 'P');
+  check(honesto.autenticidad > ruidoso.autenticidad, 'montar algo honesto y de nicho te deja más entero');
+  check(ruidoso.social > honesto.social, 'y montar algo ruidoso y masivo te da más aprobación');
+  check(honesto.autenticidad > a0, 'montar algo tuyo sube la autenticidad');
+
+  // requisitos y plantillas
+  const pobre = M.newGame({ name: 'P', age: 20, bg: 'estudiante', perk: 'ahorrador', objetivo: 'propio', seed: 801 });
+  check(!M.canFound(pobre, caro).ok, 'sin dinero ni características no se monta cualquier cosa');
+  M.BIZ_TYPES.forEach(t => {
+    const s = base();
+    const r = M.foundBiz(s, t.id);
+    check(r.ok, `la plantilla ${t.id} se puede registrar de un clic`);
+    check(s.bizs[0].producto && s.bizs[0].name, `la plantilla ${t.id} trae nombre y producto`);
+  });
+  // el nombre y el producto que escribes se guardan
+  const nom = base();
+  M.foundBiz(nom, barato, 'Manitas Pérez', 'Arreglo de bicicletas viejas');
+  check(nom.bizs[0].name === 'Manitas Pérez' && nom.bizs[0].producto === 'Arreglo de bicicletas viejas',
+    'el negocio guarda el nombre y el producto que escribes');
+})();
+
+/* ------------------------------------------------------------------ */
+console.log('10h) Conversaciones');
+(() => {
+  const s = M.newGame({ name: 'C', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', seed: 900 });
+
+  // todos los personajes tienen conversaciones bien formadas
+  let turnosTotales = 0, opcionesTotales = 0;
+  M.NPCS.forEach(npc => {
+    const lista = M.CHARLAS[npc.id] || [];
+    check(lista.length >= 2, `${npc.id}: tiene al menos dos conversaciones`);
+    lista.forEach(c => {
+      check(!!c.abre && !!c.cierre, `${npc.id}/${c.id}: tiene apertura y cierre`);
+      check(c.turnos.length >= 2, `${npc.id}/${c.id}: al menos dos turnos`);
+      c.turnos.forEach((t, i) => {
+        turnosTotales++;
+        check(!!t.q, `${npc.id}/${c.id}/t${i}: tiene pregunta`);
+        check(t.r.length === 3, `${npc.id}/${c.id}/t${i}: tres respuestas`);
+        t.r.forEach((r, j) => {
+          opcionesTotales++;
+          check(!!r.t && !!r.eco, `${npc.id}/${c.id}/t${i}/r${j}: texto y respuesta del personaje`);
+          if (r.g) Object.keys(r.g).forEach(k => check(M.STAT_KEYS.indexOf(k) >= 0,
+            `${npc.id}/${c.id}: característica válida "${k}"`));
+        });
+        // toda pregunta deja elegir entre ser fiel o complacer
+        check(t.r.some(r => (r.au || 0) > 0), `${npc.id}/${c.id}/t${i}: se puede responder con autenticidad`);
+        check(t.r.some(r => (r.so || 0) > 0 || (r.au || 0) < 0), `${npc.id}/${c.id}/t${i}: se puede responder complaciendo`);
+      });
+    });
+  });
+  check(turnosTotales >= 28, `hay conversación de sobra (${turnosTotales} turnos, ${opcionesTotales} respuestas)`);
+
+  // una charla se recorre entera y no se repite
+  const marta = M.NPCS.find(n => n.id === 'marta');
+  const c = M.charlaDisponible(s, marta);
+  check(!!c, 'hay conversación disponible al empezar');
+  const a0 = s.autenticidad;
+  c.turnos.forEach(t => M.responderCharla(s, t.r[0]));
+  check(s.autenticidad !== a0, 'lo que contestas te mueve');
+  M.cerrarCharla(s, marta, c, []);
+  check((M.charlaDisponible(s, marta) || {}).id !== c.id, 'una conversación terminada no se repite');
+  check(s.counters.charlas === 1, 'se lleva la cuenta de las conversaciones');
+
+  // el estado decide quién te habla
+  const o = M.newGame({ name: 'O', age: 30, bg: 'autodidacta', perk: 'terco', objetivo: 'propio', seed: 901 });
+  o.autenticidad = 90; o.social = 10;
+  check(!M.puedeHablar(o, M.NPCS.find(n => n.id === 'sara')).ok, 'en el ostracismo la inversora no te atiende');
+  check(M.puedeHablar(o, M.NPCS.find(n => n.id === 'tomas')).ok, 'el librero sí');
+  const m = M.newGame({ name: 'M', age: 30, bg: 'empleado', perk: 'camaleon', objetivo: 'estable', seed: 902 });
+  m.autenticidad = 15; m.social = 95;
+  check(!M.puedeHablar(m, M.NPCS.find(n => n.id === 'tomas')).ok, 'con la máscara puesta el librero se enfría');
+
+  // las conversaciones condicionadas esperan a su momento
+  const cond = M.newGame({ name: 'X', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', seed: 903 });
+  const sara = M.NPCS.find(n => n.id === 'sara');
+  M.cerrarCharla(cond, sara, M.CHARLAS.sara[0], []);
+  check(!M.charlaDisponible(cond, sara), 'la segunda charla de la inversora espera a que factures algo');
+  cond.money = 99999; M.STAT_KEYS.forEach(k => { cond.stats[k] = 50; });
+  M.foundBiz(cond, 'puesto', 'P');
+  cond.counters.bizEarned = 500;
+  check(!!M.charlaDisponible(cond, sara), 'y aparece cuando cumples la condición');
+})();
+
+/* ------------------------------------------------------------------ */
+console.log('10i) Aficiones, manías y equipo');
+(() => {
+  check(M.AFICIONES.length >= 10, `hay aficiones de sobra donde elegir (${M.AFICIONES.length})`);
+  M.AFICIONES.forEach(a => {
+    check(!!a.pro && !!a.contra, `${a.id}: tiene algo bueno y algo que estorba`);
+    if (a.xp) Object.keys(a.xp).forEach(k => check(M.STAT_KEYS.indexOf(k) >= 0, `${a.id}: característica válida`));
+  });
+  check(M.BACKGROUNDS.length >= 10, `hay ${M.BACKGROUNDS.length} experiencias previas`);
+  check(M.PERKS.length >= 10, `hay ${M.PERKS.length} rasgos`);
+  check(M.OBJETIVOS.length >= 6, `hay ${M.OBJETIVOS.length} objetivos profesionales`);
+  check(M.ITEMS.length >= 14, `hay ${M.ITEMS.length} objetos que comprar`);
+
+  // sólo se guardan dos aficiones aunque se manden más
+  const s = M.newGame({ name: 'A', age: 30, bg: 'artista', perk: 'nocturno', objetivo: 'libertad',
+    aficiones: ['cocina', 'musica', 'juegos', 'noexiste'], seed: 910 });
+  check(s.aficiones.length === M.MAX_AFICIONES, 'nunca hay más de dos aficiones');
+  check(s.aficiones.indexOf('noexiste') < 0, 'y no se cuelan aficiones inventadas');
+
+  // cocinar abarata la vida; el manirroto la encarece
+  const cocina = M.newGame({ name: 'C', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', aficiones: ['cocina'], seed: 911 });
+  const gasta = M.newGame({ name: 'G', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', aficiones: ['manirroto'], seed: 911 });
+  check(M.dailyExpenses(cocina) < M.dailyExpenses(gasta), 'cocinar sale más barato que ser manirroto');
+
+  // el insomnio se paga durmiendo
+  const dorm = M.newGame({ name: 'D', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', seed: 912 });
+  const inso = M.newGame({ name: 'I', age: 30, bg: 'empleado', perk: 'resiliente', objetivo: 'aprender', aficiones: ['insomnio'], seed: 912 });
+  [dorm, inso].forEach(x => { x.energy = 5; x.hour = 22; M.endDay(x, []); });
+  check(inso.energy < dorm.energy, 'con insomnio se duerme peor');
+
+  // comprar y revender equipo
+  const t = M.newGame({ name: 'T', age: 30, bg: 'heredero', perk: 'analitico', objetivo: 'aprender', seed: 913 });
+  t.money = 9000;
+  const antes = t.money;
+  M.buyItem(t, 'coche');
+  check(t.money === antes - 3400, 'comprar descuenta el precio');
+  check(M.playerSpeed(t, false) > M.playerSpeed(dorm, false), 'el coche te mueve más rápido');
+  check(M.dailyExpenses(t) > M.dailyExpenses(dorm), 'y te sube los gastos fijos');
+  const r = M.sellItem(t, 'coche');
+  check(r.ok && !t.items.coche, 'se puede revender lo que ya no usas');
+  check(t.money === antes - 3400 + M.itemReventa(M.ITEMS.find(i => i.id === 'coche')), 'la reventa devuelve su parte');
+  check(!M.sellItem(t, 'coche').ok, 'no se vende dos veces lo mismo');
+})();
 
 /* ------------------------------------------------------------------ */
 console.log('11) Los finales');

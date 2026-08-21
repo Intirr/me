@@ -41,6 +41,47 @@ async function entrevistar(p, columna) {
   }
 }
 
+// Coloca al jugador delante de un lugar concreto usando el mismo generador
+// de mundo que el juego, para poder fotografiar sus paneles.
+const M = require('./load-game.js');
+async function llevarA(p, id) {
+  const semilla = await p.evaluate(k => JSON.parse(localStorage.getItem(k)).s.seed, SAVE);
+  const w = M.worldGen(semilla);
+  const sitio = w.buildings.find(b => b.id === id) || w.spots.find(x => x.id === id);
+  const destino = sitio.door
+    ? { x: (sitio.door.x + 0.5) * M.TILE, y: (sitio.door.y + 1.2) * M.TILE }
+    : { x: (sitio.x + 0.5) * M.TILE, y: (sitio.y + 0.5) * M.TILE };
+  await p.evaluate(({ k, destino }) => {
+    const raw = JSON.parse(localStorage.getItem(k));
+    raw.pos = destino;
+    localStorage.setItem(k, JSON.stringify(raw));
+  }, { k: SAVE, destino });
+  await p.reload(); await p.waitForTimeout(300);
+  await p.click('#btnLoadSave'); await p.waitForTimeout(800);
+  const saltar = await p.$('.guia-nav .btn.ghost');
+  if (saltar) { await saltar.click(); await p.waitForTimeout(400); }
+  await p.keyboard.press('e'); await p.waitForTimeout(400);
+}
+
+// Deja al jugador justo encima de donde ronda un personaje.
+async function llevarANpc(p, npcId) {
+  const npc = M.NPCS.find(n => n.id === npcId);
+  const semilla = await p.evaluate(k => JSON.parse(localStorage.getItem(k)).s.seed, SAVE);
+  const w = M.worldGen(semilla);
+  const sitio = w.buildings.find(b => b.id === npc.cerca) || w.spots.find(x => x.id === npc.cerca);
+  const destino = { x: ((sitio.door ? sitio.door.x : sitio.x) + 2.5) * M.TILE,
+                    y: ((sitio.door ? sitio.door.y : sitio.y) + 2.5) * M.TILE };
+  await p.evaluate(({ k, destino }) => {
+    const raw = JSON.parse(localStorage.getItem(k));
+    raw.pos = destino;
+    localStorage.setItem(k, JSON.stringify(raw));
+  }, { k: SAVE, destino });
+  await p.reload(); await p.waitForTimeout(300);
+  await p.click('#btnLoadSave'); await p.waitForTimeout(800);
+  const saltar = await p.$('.guia-nav .btn.ghost');
+  if (saltar) { await saltar.click(); await p.waitForTimeout(400); }
+}
+
 (async () => {
   if (!fs.existsSync(DOCS)) fs.mkdirSync(DOCS);
   const browser = await chromium.launch({ executablePath: exe });
@@ -49,6 +90,7 @@ async function entrevistar(p, columna) {
   // 1. El currículum y 2. el rechazo
   {
     const p = await browser.newPage({ viewport: { width: 1360, height: 860 } });
+    p.on('pageerror', e => console.error('⚠️  error en la página:', e.message));
     await p.goto(URL); await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(DOCS, 'cv.png') }); hechas.push('cv.png');
     await p.click('#btnRandomChar');
@@ -68,6 +110,36 @@ async function entrevistar(p, columna) {
     await p.screenshot({ path: path.join(DOCS, 'mundo.png') }); hechas.push('mundo.png');
     await p.keyboard.press('e'); await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(DOCS, 'dilema.png') }); hechas.push('dilema.png');
+    await p.keyboard.press('Escape');
+
+    // 6. el diseñador de negocios, con dinero y características suficientes
+    await p.evaluate(k => {
+      const raw = JSON.parse(localStorage.getItem(k));
+      raw.s.money = 60000;
+      Object.keys(raw.s.stats).forEach(x => { raw.s.stats[x] = 55; });
+      localStorage.setItem(k, JSON.stringify(raw));
+    }, SAVE);
+    await llevarA(p, 'incubadora');
+    const fundar = (await p.$$('#mBody .act button')).find(Boolean);
+    if (fundar) { await fundar.click(); await p.waitForTimeout(350); }
+    await p.screenshot({ path: path.join(DOCS, 'negocio.png') }); hechas.push('negocio.png');
+
+    // 7. el último paso del asistente, con los números de lo que estás montando
+    const sorprendeme = (await p.$$('.guia-nav .btn.ghost.sm')).find(Boolean);
+    if (sorprendeme) { await sorprendeme.click(); await p.waitForTimeout(350); }
+    await p.screenshot({ path: path.join(DOCS, 'negocio-resumen.png') }); hechas.push('negocio-resumen.png');
+
+    // 8. una conversación con opciones, junto al personaje que la abre
+    await p.keyboard.press('Escape');
+    await llevarANpc(p, 'tomas');
+    for (let i = 0; i < 30 && !(await p.$('.ent-opts')); i++) {
+      await p.keyboard.press('e'); await p.waitForTimeout(150);
+      const seguir = await p.$('#mBody .btn.primary, #mBody .btn.wide');
+      if (seguir) { await seguir.click(); await p.waitForTimeout(180); }
+    }
+    if (await p.$('.ent-opts')) {
+      await p.screenshot({ path: path.join(DOCS, 'charla.png') }); hechas.push('charla.png');
+    }
     await p.close();
   }
 

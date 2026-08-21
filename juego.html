@@ -635,6 +635,17 @@
           <div class="head"><h2>Otros datos de interés</h2><span class="hint">qué te hace diferente</span></div>
           <div class="body"><div class="opt-grid" id="perkGrid"></div></div>
         </div>
+
+        <div class="card">
+          <div class="head">
+            <h2>Aficiones y manías</h2>
+            <span class="hint" id="afiHint">elige 2</span>
+          </div>
+          <div class="body">
+            <p class="stat-desc">Ninguna es gratis: todas traen algo bueno y algo que estorba.</p>
+            <div class="opt-grid" id="afiGrid"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -816,7 +827,7 @@
 
   const money = n => (Math.round(n)).toLocaleString('es-ES') + ' €';
   const hhmm = h => {
-    const t = clamp(h, 0, 24);
+    const t = clamp(h, 0, 30);
     const hh = Math.floor(t), mm = Math.round((t - hh) * 60);
     return String(hh % 24).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
   };
@@ -944,6 +955,22 @@
       desc: 'Cuerpo entrenado, cabeza acostumbrada a la rutina.',
       bonus: { vigor: 5, equilibrio: 1 },
       perkText: 'Energía máxima +15.' },
+    { id: 'cuidador', name: 'Cuidador', icon: '🫂', money: 500, debt: 300,
+      desc: 'Llevas años ocupándote de alguien antes que de ti.',
+      bonus: { equilibrio: 4, liderazgo: 3, vigor: -1 },
+      perkText: 'Sigues teniendo una carga: los gastos diarios suben 6 €.' },
+    { id: 'migrante', name: 'Recién llegado', icon: '🧳', money: 350, debt: 200,
+      desc: 'Empezaste de cero en un sitio donde no conocías a nadie.',
+      bonus: { disciplina: 3, carisma: 3, vigor: 1 },
+      perkText: 'Sabes rehacerte: el estrés te afecta un 15 % menos.' },
+    { id: 'artista', name: 'Artista', icon: '🎨', money: 450, debt: 500,
+      desc: 'Llevas media vida haciendo cosas que nadie te encargó.',
+      bonus: { creatividad: 6, equilibrio: 1, finanzas: -2 },
+      perkText: 'Vender tu obra te renta un 30 % más.' },
+    { id: 'manos', name: 'De oficio', icon: '🔩', money: 800, debt: 0,
+      desc: 'Trabajas con las manos desde los dieciséis.',
+      bonus: { vigor: 4, disciplina: 4, intelecto: -1 },
+      perkText: 'Los trabajos por horas te pagan un 25 % más.' },
     { id: 'heredero', name: 'Heredero', icon: '💎', money: 6000, debt: 0,
       desc: 'Dinero de sobra, disciplina por construir.',
       bonus: { finanzas: 4, carisma: 2, disciplina: -3 },
@@ -966,10 +993,76 @@
     { id: 'analitico', name: 'Analítico', icon: '📊',
       desc: 'Lees los números antes de decidir.',
       bonusText: 'Ingresos de tus negocios +12 %' },
+    { id: 'nocturno', name: 'Nocturno', icon: '🌙',
+      desc: 'Tu cabeza arranca cuando el resto del mundo apaga la luz.',
+      bonusText: '+20 % de experiencia después de las 18:00' },
+    { id: 'terco', name: 'Terco', icon: '🪨',
+      desc: 'Cuando decides algo tuyo, no hay quien te mueva.',
+      bonusText: 'Las decisiones auténticas dan un 15 % más de experiencia' },
+    { id: 'camaleon', name: 'Camaleón', icon: '🦎',
+      desc: 'Te adaptas a cualquier sala sin que se te note el esfuerzo.',
+      bonusText: 'Complacer te cuesta un 35 % menos de autenticidad' },
+    { id: 'curioso', name: 'Curioso', icon: '🔍',
+      desc: 'Lo nuevo te enciende; lo repetido te apaga.',
+      bonusText: 'La primera vez que haces algo cada día rinde un 30 % más' },
     { id: 'incansable', name: 'Incansable', icon: '🔋',
       desc: 'Aguantas jornadas que tumbarían a cualquiera.',
       bonusText: 'Las acciones cuestan un 15 % menos de energía' },
   ];
+
+  /* --------------------- Aficiones y manías --------------------------
+     Se eligen dos en el currículum. Ninguna es gratis: todas traen algo
+     bueno y algo que estorba, como en la vida.
+     ------------------------------------------------------------------ */
+
+  const AFICIONES = [
+    { id: 'musica', name: 'Tocas algo', icon: '🎸',
+      desc: 'Guitarra, piano, lo que sea. Te ordena por dentro.',
+      pro: '+15 % de experiencia en Creatividad', contra: 'Cuerdas, clases y caprichos: +3 € de gastos al día',
+      xp: { creatividad: 1.15 }, gastos: 3 },
+    { id: 'correr', name: 'Sales a correr', icon: '👟',
+      desc: 'Salir a la calle antes de que empiece el día.',
+      pro: 'Energía máxima +7 y +10 % en Vigor', contra: 'Zapatillas y carreras: +2 € de gastos al día',
+      xp: { vigor: 1.1 }, energiaMax: 7, gastos: 2 },
+    { id: 'lector', name: 'Lees de noche', icon: '🛏️',
+      desc: 'Un capítulo más, siempre un capítulo más.',
+      pro: '+15 % de experiencia en Intelecto', contra: 'Duermes algo peor',
+      xp: { intelecto: 1.15 }, descanso: -0.05 },
+    { id: 'cocina', name: 'Cocinas de verdad', icon: '🍳',
+      desc: 'Comer bien y barato sin pensarlo mucho.',
+      pro: '−7 € de gastos al día y +8 % en Disciplina', contra: 'Te lleva tiempo: energía máxima −4',
+      xp: { disciplina: 1.08 }, gastos: -7, energiaMax: -4 },
+    { id: 'juegos', name: 'Videojuegos', icon: '🎮',
+      desc: 'Tu manera de desconectar de todo.',
+      pro: 'El estrés te sube un 20 % menos', contra: '−8 % de experiencia en todo',
+      xpAll: 0.92, estresMult: 0.8 },
+    { id: 'coleccion', name: 'Coleccionas algo', icon: '🧩',
+      desc: 'Vinilos, cromos, plantas. Da igual: te fascina el orden.',
+      pro: '+12 % en Creatividad y +6 % en Disciplina', contra: 'Es un pozo sin fondo: +5 € al día',
+      xp: { creatividad: 1.12, disciplina: 1.06 }, gastos: 5 },
+    { id: 'insomnio', name: 'Insomnio', icon: '🌑',
+      desc: 'Te desvelas y la cabeza no para.',
+      pro: '+20 % de experiencia después de las 20:00', contra: 'Duermes peor todas las noches',
+      nocheXp: 1.2, descanso: -0.1 },
+    { id: 'ansiedad', name: 'Ansiedad', icon: '😰',
+      desc: 'Vives con el motor un poco revolucionado.',
+      pro: 'Te anticipas: +12 % de experiencia en Intelecto', contra: 'El estrés te sube un 25 % más',
+      xp: { intelecto: 1.12 }, estresMult: 1.25 },
+    { id: 'complaciente', name: 'No sabes decir que no', icon: '🙇',
+      desc: 'Te cuesta horrores negarte a algo que te piden.',
+      pro: 'Complacer te da un 25 % más de aprobación', contra: 'Y también te cuesta un 25 % más de autenticidad',
+      socialMult: 1.25, authPenal: 1.25 },
+    { id: 'manirroto', name: 'Manirroto', icon: '💸',
+      desc: 'El dinero te quema en el bolsillo.',
+      pro: 'Comprar te levanta el ánimo: +6 de ánimo por compra', contra: '+8 € de gastos al día',
+      gastos: 8, animoCompra: 6 },
+  ];
+  const AFICION_BY = {}; AFICIONES.forEach(a => { AFICION_BY[a.id] = a; });
+  const MAX_AFICIONES = 2;
+
+  // Devuelve las aficiones elegidas por el personaje.
+  const aficionesDe = s => (s.aficiones || []).map(id => AFICION_BY[id]).filter(Boolean);
+  const tieneAficion = (s, id) => (s.aficiones || []).indexOf(id) >= 0;
 
   /* ================================================================
      2b. LOS DOS EJES DEL JUEGO
@@ -1087,6 +1180,10 @@
       desc: 'Aunque tarde más en dar dinero.', autenticidad: 6, social: 2 },
     { id: 'propio', icon: '🔥', label: 'Construir algo mío',
       desc: 'Aunque nadie lo entienda todavía.', autenticidad: 10, social: -6 },
+    { id: 'servir', icon: '🫱', label: 'Que lo que haga le sirva a alguien',
+      desc: 'No te importa tanto el qué como el para quién.', autenticidad: 7, social: 4 },
+    { id: 'libertad', icon: '🕊️', label: 'No depender de nadie',
+      desc: 'Ni de un jefe, ni de un cliente, ni de una nómina.', autenticidad: 8, social: -5 },
     { id: 'nose', icon: '🌫️', label: 'Sinceramente, todavía no lo sé',
       desc: 'La respuesta más honesta que puedes dar.', autenticidad: 4, social: -4 },
   ];
@@ -1313,27 +1410,198 @@
     { id: 'gimcasa',   name: 'Gimnasio en casa',   icon: '🏋️', cost: 1400,
       desc: 'Entrenas sin desplazarte: experiencia física +20 %.',
       mods: { bodyXpMul: 0.20 }, au: 3, so: -2 },
+    { id: 'herramientas', name: 'Caja de herramientas', icon: '🧰', cost: 620,
+      desc: 'Lo que haga falta arreglar, lo arreglas tú. Experiencia práctica +18 %.',
+      mods: { manosXpMul: 0.18 }, au: 4, so: -1 },
+    { id: 'movil', name: 'Móvil nuevo', icon: '📱', cost: 780,
+      desc: 'Siempre localizable y siempre visible. Contactos +20 %.',
+      mods: { netMul: 0.20 }, au: -4, so: 6 },
+    { id: 'cuaderno', name: 'Cuaderno de ideas', icon: '📓', cost: 60,
+      desc: 'Barato y tuyo. Las ideas dejan de perderse: Creatividad +12 %.',
+      mods: { creaXpMul: 0.12 }, au: 5, so: 0 },
+    { id: 'plantas', name: 'Plantas para casa', icon: '🪴', cost: 140,
+      desc: 'La casa deja de parecer un almacén. Estrés −10 % y ánimo estable.',
+      mods: { estres: 0.9 }, au: 3, so: 1 },
+    { id: 'coche', name: 'Coche de segunda mano', icon: '🚗', cost: 3400,
+      desc: 'Te mueves rapidísimo, pero da gastos: +9 € al día.',
+      mods: { speedMul: 1.1, gastos: 9 }, au: -2, so: 5 },
+    { id: 'local', name: 'Llave de un local pequeño', icon: '🔑', cost: 5200,
+      desc: 'Un sitio propio donde montar cosas. Tus negocios rinden +18 %.',
+      mods: { bizMul: 0.18, gastos: 12 }, au: 6, so: 3 },
   ];
   const ITEM_BY = {}; ITEMS.forEach(i => { ITEM_BY[i.id] = i; });
 
+  /* ---------------- El negocio se monta pieza a pieza ----------------
+     Cinco decisiones que se combinan: a qué te dedicas, a quién le vendes,
+     qué vendes exactamente, cómo cobras y con qué actitud lo haces. Cada
+     pieza cambia la inversión, los ingresos, el riesgo, de qué depende y
+     hasta cómo te miran. Son más de mil combinaciones posibles.
+     ------------------------------------------------------------------ */
+
+  const BIZ_BASE_COSTE = 1300;
+  const BIZ_BASE_INGRESO = 46;
+  const BIZ_BASE_GASTO = 14;
+
+  // 1. Sector: a qué te dedicas.
+  const BIZ_SECTORES = [
+    { id: 'comida', name: 'Comida y bebida', icon: '🍜',
+      desc: 'Cocinar, servir, alimentar. Trabajo duro y clientes que vuelven.',
+      coste: 1.35, base: 1.05, gasto: 1.45, riesgo: 1.0, stats: ['disciplina', 'carisma'],
+      productos: ['Puesto de arepas', 'Comidas caseras a domicilio', 'Cafetería de especialidad', 'Pastelería sin gluten'] },
+    { id: 'oficio', name: 'Oficio y reparación', icon: '🔧',
+      desc: 'Arreglar lo que otros tiran. Poca inversión, manos y confianza.',
+      coste: 0.75, base: 0.95, gasto: 0.7, riesgo: 0.75, stats: ['disciplina', 'vigor'],
+      productos: ['Reparación de bicis', 'Electrodomésticos a domicilio', 'Carpintería a medida', 'Reformas pequeñas'] },
+    { id: 'digital', name: 'Producto digital', icon: '💻',
+      desc: 'Se fabrica una vez y se vende mil. Barato de empezar, difícil de que lo vean.',
+      coste: 0.55, base: 1.2, gasto: 0.45, riesgo: 1.35, stats: ['intelecto', 'creatividad'],
+      productos: ['App de hábitos', 'Herramienta para autónomos', 'Plantillas de diseño', 'Videojuego pequeño'] },
+    { id: 'creativo', name: 'Creativo y cultural', icon: '🎨',
+      desc: 'Vender lo que sale de ti. Techo alto, suelo incierto.',
+      coste: 0.7, base: 0.9, gasto: 0.6, riesgo: 1.3, stats: ['creatividad', 'carisma'],
+      productos: ['Ilustración por encargo', 'Fotografía', 'Cerámica', 'Música para vídeos'] },
+    { id: 'formacion', name: 'Formación', icon: '🎓',
+      desc: 'Enseñar lo que sabes. Escala con tu nombre, no con tu tiempo.',
+      coste: 0.65, base: 1.0, gasto: 0.5, riesgo: 0.9, stats: ['intelecto', 'liderazgo'],
+      productos: ['Clases particulares', 'Curso online', 'Talleres presenciales', 'Academia de oficio'] },
+    { id: 'cuidado', name: 'Cuidado y bienestar', icon: '🌿',
+      desc: 'Cuerpos y cabezas. Relación directa, agenda apretada.',
+      coste: 0.9, base: 1.0, gasto: 0.85, riesgo: 0.8, stats: ['equilibrio', 'carisma'],
+      productos: ['Entrenamiento personal', 'Masaje terapéutico', 'Acompañamiento a mayores', 'Estudio de yoga'] },
+    { id: 'comercio', name: 'Comercio', icon: '📦',
+      desc: 'Comprar bien y vender mejor. Todo está en el margen.',
+      coste: 1.15, base: 1.1, gasto: 1.1, riesgo: 1.05, stats: ['finanzas', 'carisma'],
+      productos: ['Tienda de barrio', 'Venta online', 'Importación de segunda mano', 'Puesto de mercado'] },
+    { id: 'servicios', name: 'Servicios profesionales', icon: '💼',
+      desc: 'Vender criterio. Pocos clientes, facturas grandes.',
+      coste: 0.85, base: 1.25, gasto: 0.75, riesgo: 0.95, stats: ['liderazgo', 'finanzas'],
+      productos: ['Consultoría', 'Gestoría', 'Agencia de marketing', 'Asesoría financiera'] },
+  ];
+
+  // 2. Público: a quién le vendes.
+  const BIZ_PUBLICO = [
+    { id: 'barrio', name: 'La gente del barrio', icon: '🏘️',
+      desc: 'Poco volumen y mucha fidelidad. Te conocen por tu nombre.',
+      base: 0.8, coste: 0.7, riesgo: 0.6, au: 3, so: 1, req: {} },
+    { id: 'nicho', name: 'Un nicho muy concreto', icon: '🎯',
+      desc: 'Pocos, raros y fieles. Nadie más los entiende como tú.',
+      base: 1.0, coste: 0.85, riesgo: 0.85, au: 5, so: -2, req: {} },
+    { id: 'general', name: 'El público general', icon: '🌍',
+      desc: 'Mucho volumen, mucha competencia y ninguna cara conocida.',
+      base: 1.3, coste: 1.3, riesgo: 1.3, au: -2, so: 3, req: {} },
+    { id: 'empresas', name: 'Otras empresas', icon: '🏢',
+      desc: 'Facturas grandes y plazos largos. Hay que saber tratar.',
+      base: 1.4, coste: 1.2, riesgo: 1.0, au: -1, so: 2, req: { liderazgo: 22 } },
+    { id: 'lujo', name: 'Quien puede pagar mucho', icon: '💎',
+      desc: 'Pocos clientes que pagan como diez. Exigen y se aburren rápido.',
+      base: 1.6, coste: 1.55, riesgo: 1.45, au: -3, so: 5, req: { carisma: 30 } },
+  ];
+
+  // 3. Modelo de ingresos: cómo cobras.
+  const BIZ_MODELO = [
+    { id: 'suelto', name: 'Venta suelta', icon: '🛒',
+      desc: 'Cobras cada vez que vendes. Sencillo e irregular.',
+      base: 1.0, estable: 0.75, techo: 1.0, coste: 1.0, req: {} },
+    { id: 'suscripcion', name: 'Suscripción', icon: '🔁',
+      desc: 'Menos por cliente, pero entra todos los días. Hay que retener.',
+      base: 0.85, estable: 1.6, techo: 1.15, coste: 1.15, req: { finanzas: 26 } },
+    { id: 'horas', name: 'Por horas', icon: '⏱️',
+      desc: 'Lo más seguro y lo que menos escala: estás vendiendo tu tiempo.',
+      base: 1.15, estable: 1.25, techo: 0.55, coste: 0.7, req: {} },
+    { id: 'encargo', name: 'Por encargo', icon: '📐',
+      desc: 'Pocos trabajos que pagan bien. O ninguno este mes.',
+      base: 1.35, estable: 0.55, techo: 0.9, coste: 0.8, req: {} },
+    { id: 'comision', name: 'A comisión', icon: '🤝',
+      desc: 'Cobras un porcentaje de lo que muevas. Sin riesgo y sin control.',
+      base: 0.9, estable: 0.9, techo: 1.1, coste: 0.5, req: { carisma: 24 } },
+  ];
+
+  // 4. Enfoque: con qué actitud lo haces.
+  const BIZ_ENFOQUE = [
+    { id: 'barato', name: 'Barato y para todos', icon: '🏷️',
+      desc: 'Margen pequeño, mucha gente. Nunca puedes parar de vender.',
+      margen: 0.75, volumen: 1.45, riesgo: 1.1, au: -3, so: 4 },
+    { id: 'calidad', name: 'Cuidado y bien hecho', icon: '✨',
+      desc: 'Tardas más, cobras más y te recomiendan solos.',
+      margen: 1.3, volumen: 0.85, riesgo: 0.85, au: 4, so: 1 },
+    { id: 'rapido', name: 'Rápido y sin florituras', icon: '⚡',
+      desc: 'Cumple, no enamora. Funciona mientras nadie lo haga mejor.',
+      margen: 1.0, volumen: 1.15, riesgo: 1.0, au: -1, so: 1 },
+    { id: 'honesto', name: 'Honesto aunque cueste', icon: '🤍',
+      desc: 'Dices que no cuando toca. Pierdes clientes y ganas los buenos.',
+      margen: 0.92, volumen: 0.9, riesgo: 0.65, au: 7, so: -1, sana: 1 },
+    { id: 'ruidoso', name: 'Ruidoso y muy visible', icon: '📣',
+      desc: 'Prometes mucho y se te oye. Funciona hasta que deja de funcionar.',
+      margen: 1.15, volumen: 1.35, riesgo: 1.4, au: -6, so: 7 },
+  ];
+
+  const SECTOR_BY = {}; BIZ_SECTORES.forEach(x => { SECTOR_BY[x.id] = x; });
+  const PUBLICO_BY = {}; BIZ_PUBLICO.forEach(x => { PUBLICO_BY[x.id] = x; });
+  const MODELO_BY = {}; BIZ_MODELO.forEach(x => { MODELO_BY[x.id] = x; });
+  const ENFOQUE_BY = {}; BIZ_ENFOQUE.forEach(x => { ENFOQUE_BY[x.id] = x; });
+
+  // Plantillas: combinaciones ya montadas para quien no quiera decidirlo todo.
   const BIZ_TYPES = [
-    { id: 'puesto', name: 'Puesto de mercado', icon: '🥕', cost: 600, base: 52, upkeep: 14,
-      stats: ['carisma', 'disciplina'], req: {},
-      desc: 'Poca inversión, mucho madrugar. La escuela de todo comerciante.' },
-    { id: 'tienda', name: 'Tienda online', icon: '🛍️', cost: 1500, base: 82, upkeep: 26,
-      stats: ['creatividad', 'finanzas'], req: { finanzas: 22 },
-      desc: 'Vendes mientras duermes… si sabes traer visitas.' },
-    { id: 'agencia', name: 'Agencia de servicios', icon: '🧑‍💼', cost: 3200, base: 148, upkeep: 55,
-      stats: ['liderazgo', 'carisma'], req: { carisma: 34, liderazgo: 26 },
-      desc: 'Vendes horas y talento. Escala con equipo.' },
-    { id: 'cafeteria', name: 'Cafetería de barrio', icon: '☕', cost: 6000, base: 235, upkeep: 105,
-      stats: ['liderazgo', 'finanzas'], req: { finanzas: 40, liderazgo: 32 },
-      desc: 'Un local con alma. Costes fijos altos, comunidad fiel.' },
-    { id: 'startup', name: 'Startup tecnológica', icon: '🚀', cost: 11000, base: 400, upkeep: 210,
-      stats: ['intelecto', 'creatividad'], req: { intelecto: 48, creatividad: 42, finanzas: 35 },
-      desc: 'Alto riesgo, alto techo. Necesita producto y aguante.' },
+    { id: 'puesto', name: 'Puesto de mercado', icon: '🥕',
+      desc: 'Poca inversión y mucho madrugar. La escuela de todo comerciante.',
+      cfg: { sector: 'comercio', publico: 'barrio', modelo: 'suelto', enfoque: 'rapido' },
+      producto: 'Fruta y verdura de temporada' },
+    { id: 'tienda', name: 'Tienda online', icon: '🛍️',
+      desc: 'Vendes mientras duermes… si sabes traer visitas.',
+      cfg: { sector: 'comercio', publico: 'general', modelo: 'suelto', enfoque: 'barato' },
+      producto: 'Catálogo de artículos para casa' },
+    { id: 'agencia', name: 'Agencia de servicios', icon: '🧑‍💼',
+      desc: 'Vendes horas y talento. Escala con equipo.',
+      cfg: { sector: 'servicios', publico: 'empresas', modelo: 'horas', enfoque: 'calidad' },
+      producto: 'Servicios de marketing' },
+    { id: 'cafeteria', name: 'Cafetería de barrio', icon: '☕',
+      desc: 'Un local con alma. Costes fijos altos, comunidad fiel.',
+      cfg: { sector: 'comida', publico: 'barrio', modelo: 'suelto', enfoque: 'calidad' },
+      producto: 'Café de especialidad y bollería' },
+    { id: 'startup', name: 'Startup tecnológica', icon: '🚀',
+      desc: 'Alto riesgo, alto techo. Necesita producto y aguante.',
+      cfg: { sector: 'digital', publico: 'general', modelo: 'suscripcion', enfoque: 'ruidoso' },
+      producto: 'Plataforma en la nube' },
   ];
   const BIZ_BY = {}; BIZ_TYPES.forEach(b => { BIZ_BY[b.id] = b; });
+
+  // Devuelve las cuatro piezas de un negocio (o de una configuración suelta).
+  function bizPiezas(cfg) {
+    const c = (cfg && cfg.sector) ? cfg : ((BIZ_BY[cfg && cfg.type] || BIZ_TYPES[0]).cfg);
+    return {
+      sector: SECTOR_BY[c.sector] || BIZ_SECTORES[0],
+      publico: PUBLICO_BY[c.publico] || BIZ_PUBLICO[0],
+      modelo: MODELO_BY[c.modelo] || BIZ_MODELO[0],
+      enfoque: ENFOQUE_BY[c.enfoque] || BIZ_ENFOQUE[0],
+    };
+  }
+
+  // Lo que cuesta montarlo, lo que se lleva cada día y qué exige de ti.
+  // Montar algo caro de mantener cuesta más, y montar algo con mucho techo
+  // también: nadie te deja entrar barato donde se gana mucho.
+  function bizCoste(cfg) {
+    const p = bizPiezas(cfg);
+    const potencia = p.sector.base * p.publico.base * p.modelo.base * p.enfoque.volumen * p.enfoque.margen;
+    const c = BIZ_BASE_COSTE * p.sector.coste * p.publico.coste * p.modelo.coste * Math.pow(potencia, 0.9);
+    return Math.round(c / 10) * 10;
+  }
+  function bizGastoDiario(b) {
+    const p = bizPiezas(b);
+    return BIZ_BASE_GASTO * p.sector.gasto * p.publico.coste * (1 + (b.level - 1) * 0.32) + b.emp * 40;
+  }
+  function bizRequisitos(cfg) {
+    const p = bizPiezas(cfg), req = {};
+    [p.sector, p.publico, p.modelo, p.enfoque].forEach(x => {
+      Object.keys(x.req || {}).forEach(k => { req[k] = Math.max(req[k] || 0, x.req[k]); });
+    });
+    return req;
+  }
+  // Cuánto baila el ingreso de un día a otro: sector, público y enfoque suman
+  // riesgo; el modelo de ingresos lo amortigua.
+  function bizVolatilidad(b) {
+    const p = bizPiezas(b);
+    return clamp(0.42 * p.sector.riesgo * p.publico.riesgo * p.enfoque.riesgo / p.modelo.estable, 0.05, 1.1);
+  }
 
   /* ================================================================
      4. LUGARES DEL MUNDO Y SUS ACCIONES
@@ -1358,7 +1626,7 @@
         { id: 'dormir', label: 'Dormir hasta mañana', icon: '🛌', sp: 'dormir',
           desc: 'Cierra el día: cobras tus negocios, pagas gastos y recuperas energía.' },
         { id: 'siesta', label: 'Siesta corta', icon: '😴', h: 1, e: -22, st: -6, mo: 2,
-          desc: 'Una hora para recargar sin perder el día.', au: 2, so: -1 },
+          desc: 'Una hora para recargar sin perder el día.', au: 2, so: -1, once: 'dia' },
         { id: 'planificar', label: 'Planificar el día', icon: '🗓️', h: 0.5, e: 4, once: 'dia',
           g: { disciplina: 20 }, mo: 6, st: -4,
           desc: 'Decides tus prioridades antes de que el día decida por ti.',
@@ -1639,7 +1907,7 @@
       dist: 'finanzas', w: 9, h: 11, hint: 'Entrar a la oficina',
       about: 'Tu empleo: ingresos previsibles a cambio de tus mejores horas.',
       actions: [
-        { id: 'turno', label: 'Jornada completa', icon: '🕘', h: 6, e: 32, sp: 'trabajo',
+        { id: 'turno', label: 'Jornada completa', icon: '🕘', h: 6, e: 32, sp: 'trabajo', once: 'dia',
           g: { disciplina: 16, finanzas: 8 }, st: 16, mo: -4, max: 20,
           desc: 'Ocho horas de tu vida a cambio de la nómina.',
           w: { a: { l: 'Hacer el trabajo bien', d: 'Aunque nadie mire esa parte.', au: 5, so: -2, gm: 1.15 },
@@ -1959,6 +2227,355 @@
       ],
       gift: { au: 3, g: { equilibrio: 22 }, st: -20, text: 'Luis te explica cómo bajar pulsaciones en dos minutos.' } },
   ];
+
+  /* ------------------------- Conversaciones -------------------------
+     Hablar con alguien no es pulsar un botón: es elegir qué contestas.
+     Cada charla son dos turnos con tres salidas, y lo que digas te mueve.
+     'cuando' decide si esa conversación toca ahora mismo.
+     ------------------------------------------------------------------ */
+
+  const CHARLAS = {
+    marta: [
+      { id: 'm1',
+        abre: 'Marta está colocando cajas. Te ve mirar los precios y se endereza. '
+            + '«¿Buscas algo o estás estudiando cómo lo hago?»',
+        turnos: [
+          { q: '«¿Tú qué haces? Aparte de dar vueltas por aquí.»',
+            r: [
+              { t: '«Estoy intentando montar algo mío.»', au: 6, so: 1, eco: '«Ah. Entonces mira bien. Aquí se aprende más que en un curso.»' },
+              { t: '«Nada, todavía. Estoy viendo qué hago.»', au: 4, so: -2, eco: 'Asiente despacio. «Eso también es hacer algo, aunque no lo parezca.»' },
+              { t: '«Trabajo en lo que sale, como todos.»', au: -3, so: 3, eco: '«Como todos», repite, y no suena a cumplido.' },
+            ] },
+          { q: '«¿Y qué crees que es lo más difícil de esto? Dilo sin pensar.»',
+            r: [
+              { t: '«Conseguir clientes.»', au: 0, so: 2, g: { carisma: 14 },
+                eco: '«Los clientes vienen. Lo difícil es que vuelvan.»' },
+              { t: '«Aguantar cuando no vende nada.»', au: 7, so: -1, g: { disciplina: 18, equilibrio: 10 },
+                eco: '«Ésa es la respuesta buena. Cualquiera abre un día. Abrir mil es otra cosa.»' },
+              { t: '«Que te tomen en serio.»', au: 3, so: 1, g: { carisma: 10, liderazgo: 8 },
+                eco: '«A mí me costó diez años. Y sigo siendo "la del puesto".»' },
+            ] },
+        ],
+        cierre: '«Vuelve cuando quieras. Y si algún día vendes algo, ven a contármelo.»' },
+      { id: 'm2', cuando: s => s.bizs.length > 0,
+        abre: 'Marta te ve llegar y deja lo que está haciendo. «Ya me han dicho que has montado algo.»',
+        turnos: [
+          { q: '«¿Ya sabes cuánto ganas de verdad con cada cosa que vendes?»',
+            r: [
+              { t: '«De memoria, euro a euro.»', au: 5, so: 2, g: { finanzas: 22 },
+                eco: '«Entonces vas bien. La mitad de los que abren aquí no lo saben nunca.»' },
+              { t: '«Más o menos. Lo miro a final de mes.»', au: 0, so: 0, g: { finanzas: 12 },
+                eco: '«A final de mes ya es tarde para corregir. Míralo cada día.»' },
+              { t: '«Sinceramente, no. Voy vendiendo y ya está.»', au: 6, so: -3, g: { finanzas: 16 },
+                eco: 'Se ríe. «Al menos lo dices. Ven, que te enseño mi libreta.»', net: 1 },
+            ] },
+          { q: '«¿Y bajarías el precio si te lo pidieran?»',
+            r: [
+              { t: '«Si con eso vendo más, sí.»', au: -6, so: 4,
+                eco: '«Cuidado. Bajas una vez y ya no vuelves a subir.»' },
+              { t: '«No. Vale lo que vale.»', au: 8, so: -2, g: { finanzas: 14 },
+                eco: '«Vas a perder clientes. Los que se queden serán buenos.»' },
+              { t: '«Depende de quién me lo pida.»', au: 2, so: 2, g: { carisma: 12 },
+                eco: '«Eso es de listos. Pero que no se entere el de al lado.»' },
+            ] },
+        ],
+        cierre: 'Te mete dos manzanas en la bolsa sin cobrártelas. «Para el camino.»' },
+    ],
+
+    diego: [
+      { id: 'd1',
+        abre: 'Diego está recogiendo discos. «¿Vienes a entrenar o vienes a mirar el móvil entre series?»',
+        turnos: [
+          { q: '«¿Cuánto llevas sin hacer nada por tu cuerpo? Sé sincero.»',
+            r: [
+              { t: '«Demasiado. Y lo sé.»', au: 7, so: -1, g: { vigor: 12, equilibrio: 8 },
+                eco: '«Bien. El que lo sabe empieza. El que se engaña, no.»' },
+              { t: '«Estoy entrenando, aunque poco.»', au: 2, so: 1, g: { vigor: 10 },
+                eco: '«Poco y constante gana a mucho y a ratos.»' },
+              { t: '«Tengo otras prioridades ahora mismo.»', au: -2, so: 2,
+                eco: '«Todos las tienen. Hasta que el cuerpo pone la suya.»' },
+            ] },
+          { q: '«Si sólo pudieras hacer una cosa a la semana, ¿cuál harías?»',
+            r: [
+              { t: '«Levantar peso, como todo el mundo.»', au: -2, so: 4, g: { vigor: 20, disciplina: 8 },
+                eco: '«Buena elección. Aunque lo has dicho mirando a los del fondo.»' },
+              { t: '«Caminar y dormir bien.»', au: 6, so: -1, g: { equilibrio: 20, vigor: 8 },
+                eco: 'Se queda pensando. «Puede que ésa sea mejor respuesta que la mía.»' },
+              { t: '«Lo que me apeteciera ese día.»', au: 5, so: -2, g: { equilibrio: 12 },
+                eco: '«Entonces no harías nada. Te lo digo por experiencia.»' },
+            ] },
+        ],
+        cierre: '«Te apunto una rutina de tres días. No la mejores. Sólo hazla.»' },
+      { id: 'd2', cuando: s => s.stress > 55 || s.energy < maxEnergy(s) * 0.35,
+        abre: 'Diego te mira de arriba abajo. «Tienes cara de llevar semanas durmiendo mal.»',
+        turnos: [
+          { q: '«¿Qué te está costando más ahora mismo?»',
+            r: [
+              { t: '«Parar. No sé estar quieto.»', au: 6, so: -2, st: -14, g: { equilibrio: 18 },
+                eco: '«Descansar es parte del entrenamiento. Nadie crece durante la serie.»' },
+              { t: '«El dinero. Todo lo demás va detrás.»', au: 3, so: 1, g: { finanzas: 12 },
+                eco: '«Lo entiendo. Pero si te rompes, el dinero tampoco viene.»' },
+              { t: '«Que nada de lo que hago parece suficiente.»', au: 8, so: -3, st: -18, mo: 8,
+                eco: 'Se sienta a tu lado. «Eso lo he oído mucho aquí. Y casi siempre es mentira.»' },
+            ] },
+          { q: '«Hazme caso una semana. ¿Qué quitas para que quepa descansar?»',
+            r: [
+              { t: '«Nada, lo meto encima.»', au: -4, so: 2, st: 8,
+                eco: '«Entonces no vas a descansar. Sólo vas a tener otra tarea.»' },
+              { t: '«Quito lo que hago para quedar bien.»', au: 9, so: -4, st: -12,
+                eco: '«Ésa es la respuesta que casi nadie da.»' },
+              { t: '«Quito una hora de trabajo.»', au: 4, so: 0, st: -8,
+                eco: '«Empieza por ahí. Y no la recuperes el domingo.»' },
+            ] },
+        ],
+        cierre: '«Nos vemos el lunes. Y ven dormido.»' },
+    ],
+
+    sara: [
+      { id: 's1',
+        abre: 'Sara contesta un mensaje sin mirarte y luego guarda el móvil del todo. «Tienes dos minutos. Úsalos.»',
+        turnos: [
+          { q: '«Cuéntame qué estás construyendo. Sin adjetivos.»',
+            r: [
+              { t: 'Le cuentas lo que hay, con sus agujeros.', au: 8, so: 1, g: { finanzas: 12 },
+                eco: '«Gracias por no venderme humo. Es raro.»', net: 1 },
+              { t: 'Le cuentas la versión que suena bien.', au: -7, so: 6, g: { carisma: 14 },
+                eco: '«Suena redondo. Demasiado.» Sonríe sin apuntar nada.' },
+              { t: '«Todavía no lo sé. Estoy averiguándolo.»', au: 5, so: -3,
+                eco: '«Entonces vuelve cuando lo sepas. O no. A veces los que no lo saben aciertan.»' },
+            ] },
+          { q: '«Última: ¿qué harías si mañana te doy cien mil euros?»',
+            r: [
+              { t: '«Contratar gente y crecer rápido.»', au: -3, so: 5, g: { liderazgo: 12 },
+                eco: '«La respuesta de manual. Casi siempre funde el dinero.»' },
+              { t: '«Comprarme tiempo para hacerlo bien.»', au: 7, so: 0, g: { finanzas: 16 },
+                eco: 'Levanta una ceja. «Ésa es la respuesta que doy yo cuando me la hacen.»', net: 1 },
+              { t: '«No lo quiero. Todavía no.»', au: 9, so: -5,
+                eco: '«Vaya.» Te mira de verdad por primera vez. «Guárdame el número.»', net: 1 },
+            ] },
+        ],
+        cierre: '«Te doy mi contacto. No lo uses hasta que tengas algo que enseñar.»' },
+      { id: 's2', cuando: s => s.bizs.length > 0 && s.counters.bizEarned > 200,
+        abre: '«He visto que estás facturando algo. Poco, pero algo. Ahora empieza lo difícil.»',
+        turnos: [
+          { q: '«¿Crecer rápido o crecer sostenible? Y no digas las dos.»',
+            r: [
+              { t: '«Rápido. La ventana se cierra.»', au: -5, so: 6, g: { finanzas: 14 },
+                eco: '«Puede. También es como se rompen las cosas buenas.»' },
+              { t: '«Sostenible. Quiero que dure.»', au: 7, so: -1, g: { finanzas: 12, equilibrio: 10 },
+                eco: '«Con eso no te haces rico rápido. Pero sigues aquí en diez años.»' },
+              { t: '«Lo que aguante sin que yo me rompa.»', au: 9, so: -2, st: -10,
+                eco: 'Se calla un momento. «Ojalá me lo hubieran dicho a mí a tu edad.»' },
+            ] },
+          { q: '«¿Y si te digo que tu producto tiene que cambiar por completo?»',
+            r: [
+              { t: '«Te escucho. Enséñame los datos.»', au: 5, so: 3, g: { intelecto: 16, finanzas: 10 },
+                eco: '«Correcto. Escuchar no es obedecer.»' },
+              { t: '«Lo cambio. Tú sabes más que yo.»', au: -9, so: 5,
+                eco: '«Mala respuesta. Si yo supiera, lo montaba yo.»' },
+              { t: '«No. Entonces ya no sería lo mío.»', au: 8, so: -4,
+                eco: '«Rígido.» Lo apunta. No queda claro si es bueno o malo.' },
+            ] },
+        ],
+        cierre: '«Sigue así y hablamos de dinero. Pero primero, sigue así.»' },
+    ],
+
+    tomas: [
+      { id: 't1',
+        abre: 'Tomás baja un libro de la estantería sin que se lo pidas. «¿Lees por gusto o para poder decir que lees?»',
+        turnos: [
+          { q: '«¿Qué fue lo último que leíste que te cambió algo?»',
+            r: [
+              { t: 'Le cuentas un libro raro que casi nadie conoce.', au: 8, so: -3, g: { intelecto: 18, creatividad: 10 },
+                eco: '«Vaya. Ése lo tengo escondido detrás. Ven.»' },
+              { t: 'Le dices uno de los que salen en todas las listas.', au: -2, so: 4, g: { intelecto: 10 },
+                eco: '«Está bien. También lo he vendido cuatrocientas veces.»' },
+              { t: '«Hace tiempo que no leo nada de verdad.»', au: 6, so: -2, g: { intelecto: 8 },
+                eco: '«Honesto. La gente miente mucho con esto.»' },
+            ] },
+          { q: '«Dime: ¿leer para saber o leer para hacer?»',
+            r: [
+              { t: '«Para hacer. Si no lo aplico, no me sirve.»', au: 4, so: 2, g: { intelecto: 14, disciplina: 12 },
+                eco: '«Bien. Aunque hay libros que sólo sirven para respirar mejor.»' },
+              { t: '«Para saber. Me gusta entender cómo funciona todo.»', au: 7, so: -2, g: { intelecto: 22 },
+                eco: '«Peligroso y bonito. Cuidado con saber mucho y no hacer nada.»' },
+              { t: '«Para no sentirme tan solo.»', au: 9, so: -1, mo: 10, g: { equilibrio: 14 },
+                eco: 'Se queda callado un rato largo. «Ésa es la razón de verdad.»' },
+            ] },
+        ],
+        cierre: 'Te presta el libro sin ficha ni fecha. «Cuando lo acabes, hablamos.»' },
+      { id: 't2', cuando: s => s.autenticidad < 40 || estadoDe(s.autenticidad, s.social).id === 'mascara',
+        abre: 'Tomás te mira más rato del normal. «Llevas unas semanas hablando como un folleto. ¿Te has dado cuenta?»',
+        turnos: [
+          { q: '«¿Cuándo fue la última vez que dijiste que no a algo?»',
+            r: [
+              { t: '«No me acuerdo.»', au: 8, so: -3, mo: -4,
+                eco: '«Ya. Eso pasa despacio y luego de golpe.»' },
+              { t: '«Ayer mismo. Digo que no constantemente.»', au: -4, so: 4,
+                eco: '«Entonces olvida lo que he dicho.» No lo dice como si te creyera.' },
+              { t: '«No puedo permitirme decir que no.»', au: 5, so: -1, g: { equilibrio: 10 },
+                eco: '«Eso es verdad más veces de las que se admite. Pero no siempre.»' },
+            ] },
+          { q: '«¿Y qué harías si nadie fuera a enterarse nunca?»',
+            r: [
+              { t: 'Se lo cuentas. Te sorprende decirlo en voz alta.', au: 12, so: -4, mo: 12,
+                eco: '«Pues hazlo. Aunque sea una hora a la semana.»' },
+              { t: '«Lo mismo que hago ahora.»', au: -4, so: 3,
+                eco: '«Entonces o eres muy afortunado o llevas mucho tiempo sin preguntártelo.»' },
+              { t: '«Ni idea. Y eso es lo que me da miedo.»', au: 7, so: -2, g: { equilibrio: 12 },
+                eco: '«Averiguarlo es el trabajo. El resto son detalles.»' },
+            ] },
+        ],
+        cierre: '«No te voy a dar ningún libro hoy. Piénsalo tú.»' },
+    ],
+
+    nadia: [
+      { id: 'n1',
+        abre: 'Nadia no deja de pintar mientras habla. «Puedes mirar. Pero no digas que "tiene mucho talento", por favor.»',
+        turnos: [
+          { q: '«¿Tú haces algo? Algo que no sea por dinero, digo.»',
+            r: [
+              { t: '«Sí, aunque no se lo enseño a nadie.»', au: 8, so: -3, g: { creatividad: 18 },
+                eco: '«Enséñalo. Se pudre si no sale.»' },
+              { t: '«Antes sí. Ya no tengo tiempo.»', au: 4, so: 0, mo: -3,
+                eco: '«Nadie tiene tiempo. Se roba.»' },
+              { t: '«No, la verdad. No se me da bien nada de eso.»', au: 2, so: 1,
+                eco: '«Eso te lo dijo alguien a los ocho años y te lo creíste.»' },
+            ] },
+          { q: '«¿Y harías algo aunque supieras que va a salir mal?»',
+            r: [
+              { t: '«Sí. Salir mal también enseña.»', au: 9, so: -2, g: { creatividad: 20 },
+                eco: '«Entonces ya eres de los míos.»', net: 1 },
+              { t: '«Prefiero hacer cosas que sé que funcionan.»', au: -4, so: 4, g: { disciplina: 12 },
+                eco: '«Eso es un oficio. También está bien. Pero no es esto.»' },
+              { t: '«Depende de cuánto me cueste.»', au: 1, so: 2, g: { finanzas: 10 },
+                eco: 'Se ríe. «Muy sensato. Aburridísimo, pero sensato.»' },
+            ] },
+        ],
+        cierre: '«Te aviso del próximo proyecto colectivo. Ven aunque no sepas hacer nada.»' },
+      { id: 'n2', cuando: s => s.bizs.length > 0 || s.stats.creatividad >= 35,
+        abre: '«¿Ya te han dicho que lo que haces tiene que gustarle a más gente?»',
+        turnos: [
+          { q: '«¿Qué haces cuando algo tuyo no le gusta a nadie?»',
+            r: [
+              { t: '«Lo cambio hasta que guste.»', au: -6, so: 5,
+                eco: '«Y acabas haciendo lo que ya hacía otro. Te lo digo yo.»' },
+              { t: '«Lo dejo un tiempo y lo miro con calma.»', au: 6, so: 0, g: { equilibrio: 12, creatividad: 12 },
+                eco: '«Sano. Casi nadie aguanta ese tiempo.»' },
+              { t: '«Lo enseño igual. Ya aparecerá quien lo entienda.»', au: 10, so: -5, g: { creatividad: 18 },
+                eco: '«Vas a pasarlo mal y a hacer cosas buenas. En ese orden.»' },
+            ] },
+          { q: '«¿Cobrarías por algo que no te enorgullece?»',
+            r: [
+              { t: '«Si paga las facturas, sí.»', au: -5, so: 4, money: 120,
+                eco: '«Lo he hecho. Se paga con otra moneda.»' },
+              { t: '«No. Prefiero cobrar menos.»', au: 9, so: -3,
+                eco: '«Bien. Aguanta eso todo lo que puedas.»' },
+              { t: '«Lo he hecho y me arrepiento.»', au: 7, so: -1, mo: 6, g: { equilibrio: 10 },
+                eco: '«Todos. Lo importante es que te acuerdes.»' },
+            ] },
+        ],
+        cierre: 'Te da un bote de pintura casi vacío. «Para lo que sea que estés haciendo.»' },
+    ],
+
+    rosa: [
+      { id: 'r1',
+        abre: 'Rosa te pone un café en la mano antes de que digas nada. «Siéntate un momento, que llevas prisa en la cara.»',
+        turnos: [
+          { q: '«¿Y tú por qué has entrado aquí, hijo? Nadie entra por casualidad.»',
+            r: [
+              { t: '«Quiero ayudar en algo.»', au: 6, so: 4, g: { liderazgo: 12 },
+                eco: '«Pues manos. Hay más manos que ideas aquí.»' },
+              { t: '«Necesitaba estar en un sitio donde no me pidan nada.»', au: 8, so: 1, st: -16, mo: 8,
+                eco: '«Aquí nadie te pide nada. Quédate el rato que quieras.»' },
+              { t: '«Me han dicho que aquí se conoce a gente.»', au: -3, so: 4, net: 1,
+                eco: '«También. Aunque los que vienen sólo a eso duran poco.»' },
+            ] },
+          { q: '«¿Sabes lo que más echa de menos la gente que viene? A ver si aciertas.»',
+            r: [
+              { t: '«Dinero.»', au: 0, so: 1,
+                eco: '«Eso es lo que dicen. Lo que echan de menos es que alguien pregunte.»' },
+              { t: '«Que les escuchen.»', au: 7, so: 3, g: { equilibrio: 14, carisma: 10 },
+                eco: '«Exacto. Y eso no cuesta un céntimo.»' },
+              { t: '«Tener algo que hacer.»', au: 5, so: 3, g: { disciplina: 12 },
+                eco: '«También. Por eso les doy tarea aunque no haga falta.»' },
+            ] },
+        ],
+        cierre: '«Te apunto en la lista del sábado. No hace falta que sepas nada.»' },
+      { id: 'r2', cuando: s => (s.counters.sanas || 0) >= 5,
+        abre: '«Ya te he visto por aquí varias veces. Los que repiten son los que valen.»',
+        turnos: [
+          { q: '«¿Te has parado a pensar en lo que sacas tú de venir?»',
+            r: [
+              { t: '«Nada. Por eso vengo.»', au: 10, so: 3, mo: 10,
+                eco: '«Mentira preciosa. Sacas mucho, y está bien que lo saques.»' },
+              { t: '«Me ordena la cabeza.»', au: 7, so: 2, st: -14, g: { equilibrio: 16 },
+                eco: '«Eso es. Ayudar es egoísta del bueno.»' },
+              { t: '«Contactos, la verdad.»', au: -4, so: 5, net: 2,
+                eco: '«Al menos no me engañas. Los tendrás igual.»' },
+            ] },
+          { q: '«¿Te atreverías a llevar tú un turno? Hace falta alguien.»',
+            r: [
+              { t: '«Sí. Lo organizo yo.»', au: 8, so: 6, g: { liderazgo: 24 },
+                eco: '«Hecho. El jueves. No te me eches atrás.»', net: 1 },
+              { t: '«Puedo ayudar, pero no dirigir.»', au: 4, so: 2, g: { liderazgo: 10 },
+                eco: '«De momento vale. Ya dirigirás sin darte cuenta.»' },
+              { t: '«No tengo tiempo para eso.»', au: -2, so: -1,
+                eco: '«Nadie lo tiene. Lo digo sin reproche, ¿eh?»' },
+            ] },
+        ],
+        cierre: 'Te da la mano con las dos suyas. «Aquí tienes casa.»' },
+    ],
+
+    luis: [
+      { id: 'l1',
+        abre: 'Luis termina de escribir y gira la silla hacia ti. «Tengo siete minutos. Cuéntame de verdad, no lo de la puerta.»',
+        turnos: [
+          { q: '«¿Cómo duermes? Y no me digas "bien" por decir.»',
+            r: [
+              { t: '«Fatal. Me despierto a las cuatro pensando.»', au: 7, so: -2, st: -12, g: { equilibrio: 16 },
+                eco: '«Eso es ansiedad, no insomnio. Se trabaja distinto.»' },
+              { t: '«Poco, pero aguanto.»', au: 0, so: 2,
+                eco: '«Aguantar no es un plan. Es una cuenta que se paga luego.»' },
+              { t: '«Bien, la verdad.»', au: 2, so: 1, g: { equilibrio: 8 },
+                eco: '«Entonces cuídalo. Es lo primero que se pierde.»' },
+            ] },
+          { q: '«¿Qué te quita el sueño exactamente? Ponle nombre.»',
+            r: [
+              { t: '«El dinero.»', au: 3, so: 1, g: { finanzas: 12 },
+                eco: '«Concreto. Eso se puede planificar, que es más de lo que parece.»' },
+              { t: '«La sensación de estar perdiendo el tiempo.»', au: 9, so: -3, mo: 6, g: { equilibrio: 14 },
+                eco: '«Ésa la oigo diez veces al día. Y casi nunca es cierta.»' },
+              { t: '«Decepcionar a gente.»', au: 6, so: -1, st: -14, g: { equilibrio: 12 },
+                eco: '«Vas a decepcionar a alguien igual. Elige a quién.»' },
+            ] },
+        ],
+        cierre: '«Te apunto dos cosas. Una es dormir. La otra también.»' },
+      { id: 'l2', cuando: s => s.stress > 65 || s.mood < 40,
+        abre: 'Luis no dice nada al principio. Luego: «Vienes peor que la última vez.»',
+        turnos: [
+          { q: '«¿Cuánto llevas así? Semanas, meses.»',
+            r: [
+              { t: '«Meses. Pensaba que se pasaría.»', au: 7, so: -2, st: -20, mo: 8,
+                eco: '«No se pasa solo. Se pasa cambiando algo.»' },
+              { t: '«Poco. Tampoco es para tanto.»', au: -5, so: 3, st: 4,
+                eco: '«Eso me lo dicen todos los que acaban aquí de urgencias.»' },
+              { t: '«No sé. He dejado de llevar la cuenta.»', au: 8, so: -3, st: -18, mo: 10,
+                eco: 'Anota algo. «Eso me preocupa más que lo anterior.»' },
+            ] },
+          { q: '«Si tuvieras que quitar una sola cosa de tu vida, ¿cuál sería?»',
+            r: [
+              { t: '«Las obligaciones que me inventé yo.»', au: 11, so: -3, st: -16,
+                eco: '«Ésas son las peores. No las puso nadie y pesan igual.»' },
+              { t: '«El trabajo.»', au: 4, so: 0, st: -8,
+                eco: '«Ya. Hablemos entonces de cuánto trabajo hace falta de verdad.»' },
+              { t: '«Ninguna. Todo es necesario.»', au: -5, so: 3, st: 6,
+                eco: '«Eso lo dicen todos. Y luego el cuerpo elige por ellos.»' },
+            ] },
+        ],
+        cierre: '«Vuelve en dos semanas. Y esta vez no vengas sólo cuando estés fatal.»' },
+    ],
+  };
 
   /* --------------------------- Misiones --------------------------- */
   // check(s) -> {cur, max}. Se completan solas al cumplirse.
@@ -2479,7 +3096,16 @@
 
   const WAKE_HOUR = 7;
   const COHERENCIA_DIAS = 5;   // días seguidos con la autenticidad alta antes de que se note fuera
-  const DAY_END = 24;
+  const DAY_END = 26;   // el día aguanta hasta las 2:00, pero trasnochar se paga durmiendo menos
+
+  /* --- Ritmo general de la partida ------------------------------------
+     Las acciones cuestan mucho menos tiempo y energía que su valor bruto,
+     así que en un día caben muchas más cosas. A cambio, cada una aporta
+     bastante menos: los días cunden y la vida sigue tardando en cambiar. */
+  const COSTE_TIEMPO = 0.6;    // horas reales frente a las del dato
+  const COSTE_ENERGIA = 0.72;  // energía real frente a la del dato
+  const XP_GLOBAL = 0.5;       // experiencia real por acción
+  const PAGA_GLOBAL = 0.62;    // dinero real por acción remunerada
   const SAVE_KEY = 'rutapropia_save_v2';
 
   function emptyStats(v) { const o = {}; STAT_KEYS.forEach(k => { o[k] = v; }); return o; }
@@ -2501,6 +3127,7 @@
       name: (profile.name || 'Alex').slice(0, 22),
       age: edad, etapa: etapa.id,
       bg: bg.id, perk: perk.id, objetivo: objetivo.id,
+      aficiones: (profile.aficiones || []).filter(a => AFICION_BY[a]).slice(0, MAX_AFICIONES),
       stats, statxp: emptyStats(0),
       level: 1, xp: 0, points: 0,
       energy: 100, stress: 20, mood: 62,
@@ -2520,7 +3147,7 @@
       quests: {}, achievements: {},
       counters: { dev: 0, planDays: 0, bizEarned: 0, actions: 0, streak: 0, bestStreak: 0,
                   dayDev: 0, dayAuth: 0, daySoc: 0, planToday: 0, workDays: 0, hadDebt: true,
-                  diasCoherente: 0, sanas: 0, movAuth: 0, movSoc: 0, avisoTope: 0,
+                  diasCoherente: 0, sanas: 0, baseAuth: 0, baseSoc: 0, avisoTope: 0, charlas: 0,
                   firstBizIncome: false, autenticas: 0, sociales: 0, rachaAuth: 0,
                   diasLiderazgo: 0, diasMascara: 0, diasDesierto: 0, diasOstracismo: 0 },
       // la evaluación inicial y su rechazo
@@ -2535,6 +3162,7 @@
     s.energy = maxEnergy(s);
     if (s.perk === 'madrugador') s.hour = 6;
     QUESTS.forEach(q => { s.quests[q.id] = { done: false, prog: 0 }; });
+    s.counters.baseAuth = s.autenticidad; s.counters.baseSoc = s.social;
     s.estado = estadoDe(s.autenticidad, s.social).id;
     logLine(s, `${etapa.icon} ${etapa.titulo}. ${s.age} años y una evaluación por delante.`, 'gold');
     return s;
@@ -2560,6 +3188,7 @@
     else { s.mood = c100(s.mood - 10); s.stress = c100(s.stress + 6); }
 
     s.estado = estadoDe(s.autenticidad, s.social).id;
+    s.counters.baseAuth = s.autenticidad; s.counters.baseSoc = s.social;
     s.energy = clamp(s.energy, 0, maxEnergy(s));
     logLine(s, `Te rechazan en ${ent.lugar}. Empieza lo tuyo.`, 'bad');
     if (s.quests.q1) { s.quests.q1.done = true; s.quests.q1.prog = 1; }
@@ -2572,6 +3201,7 @@
   function maxEnergy(s) {
     let m = 68 + s.stats.vigor * 0.55 + s.stats.equilibrio * 0.16;
     if (s.bg === 'deportista') m += 15;
+    aficionesDe(s).forEach(a => { if (a.energiaMax) m += a.energiaMax; });
     // agotamiento por complacer: sostener la máscara cuesta energía real
     if (estadoDe(s.autenticidad, s.social).id === 'mascara') m -= 14;
     if (estadoDe(s.autenticidad, s.social).id === 'liderazgo') m += 6;
@@ -2601,8 +3231,8 @@
 
   /* ------------------------- Progresión --------------------------- */
 
-  const statNeed = v => Math.round(30 + v * 2.4);
-  const levelNeed = lv => Math.round(120 + (lv - 1) * 65);
+  const statNeed = v => Math.round(80 + v * 6.4);
+  const levelNeed = lv => Math.round(260 + (lv - 1) * 170);
 
   function gainStat(s, key, amount, out) {
     if (!(key in s.stats) || !(amount > 0)) return 0;
@@ -2674,28 +3304,38 @@
     return clamp(e, 0.3, 1.5);
   }
 
-  function xpMultiplier(s, key) {
-    let m = effectiveness(s);
+  function xpMultiplier(s, key, wayId) {
+    let m = effectiveness(s) * XP_GLOBAL;
     if (s.perk === 'madrugador' && s.hour < 12) m *= 1.15;
+    if (s.perk === 'nocturno' && s.hour >= 18) m *= 1.20;
+    if (s.perk === 'terco' && wayId !== 's') m *= 1.15;
     if (s.bg === 'autodidacta' && (key === 'intelecto' || key === 'creatividad')) m *= 1.30;
     if (hasItem(s, 'libros') && (key === 'intelecto')) m *= 1.15;
     if (hasItem(s, 'gimcasa') && (key === 'vigor')) m *= 1.20;
+    if (hasItem(s, 'cuaderno') && (key === 'creatividad')) m *= 1.12;
+    if (hasItem(s, 'herramientas') && (key === 'disciplina' || key === 'vigor')) m *= 1.18;
     if (s.flags.dieta && (key === 'vigor' || key === 'equilibrio')) m *= 1.10;
+    aficionesDe(s).forEach(a => {
+      if (a.xpAll) m *= a.xpAll;
+      if (a.xp && a.xp[key]) m *= a.xp[key];
+      if (a.nocheXp && s.hour >= 20) m *= a.nocheXp;
+    });
     return m;
   }
 
   function energyCost(s, base) {
     if (!(base > 0)) return base || 0;
-    let c = base * (1 - s.stats.disciplina / 420);
+    let c = base * COSTE_ENERGIA * (1 - s.stats.disciplina / 420);
     if (s.perk === 'incansable') c *= 0.85;
     if (s.flags.sick) c *= 1.25;
     return Math.max(1, Math.round(c));
   }
 
   function timeCost(s, base) {
-    let h = base || 0;
-    if (hasItem(s, 'agenda') && h >= 1) h = Math.max(0.5, h - 0.25);
-    return h;
+    let h = (base || 0) * COSTE_TIEMPO;
+    if (hasItem(s, 'agenda') && h >= 1) h -= 0.25;
+    if (!h) return 0;
+    return Math.max(0.25, Math.round(h * 4) / 4);   // en cuartos de hora
   }
 
   function actionCost(s, act, place) {
@@ -2708,6 +3348,9 @@
     if (!(v > 0)) return v || 0;
     let g = v * (1 - s.stats.equilibrio / 300);
     if (s.perk === 'resiliente') g *= 0.65;
+    if (s.bg === 'migrante') g *= 0.85;
+    if (hasItem(s, 'plantas')) g *= 0.90;
+    aficionesDe(s).forEach(a => { if (a.estresMult) g *= a.estresMult; });
     return g;
   }
 
@@ -2716,41 +3359,56 @@
   function dailyExpenses(s) {
     let e = s.flags.rent + 13 + s.bizs.length * 4;
     if (s.flags.despensa > 0) e -= 5;
+    if (s.bg === 'cuidador') e += 6;
+    aficionesDe(s).forEach(a => { if (a.gastos) e += a.gastos; });
+    ITEMS.forEach(i => { if (hasItem(s, i.id) && i.mods && i.mods.gastos) e += i.mods.gastos; });
     if (s.perk === 'ahorrador') e *= 0.70;
-    return Math.round(e);
+    return Math.round(Math.max(4, e));
   }
 
+  // Ingreso medio esperado. Lo que entra cada día concreto baila alrededor
+  // de esta cifra según el riesgo del negocio (ver bizIngresoDelDia).
   function bizIncome(s, b) {
-    const t = BIZ_BY[b.type];
-    if (!t) return 0;
-    const statAvg = avg(t.stats.map(k => s.stats[k] || 0));
-    let gross = t.base
-      * (1 + (b.level - 1) * 0.45)
+    const p = bizPiezas(b);
+    const techo = p.modelo.techo;
+    const statAvg = avg(p.sector.stats.map(k => s.stats[k] || 0));
+    let gross = BIZ_BASE_INGRESO
+      * p.sector.base * p.publico.base * p.modelo.base
+      * p.enfoque.margen * p.enfoque.volumen
+      * (1 + (b.level - 1) * 0.45 * techo)
       * (0.42 + statAvg / 100 * 1.15)
       * (0.85 + s.social / 320)
       * (1 + b.marketing * 0.014)
-      * (1 + b.emp * 0.22)
+      * (1 + b.emp * 0.22 * techo)
       * (1 + b.quality * 0.022)
       * (1 + b.brand * 0.06);
     if (s.bg === 'comercial') gross *= 1.15;
     if (s.perk === 'analitico') gross *= 1.12;
     if (hasItem(s, 'portatil')) gross *= 1.10;
+    if (hasItem(s, 'local')) gross *= 1.18;
     if (s.flags.bizPenalty > 0) gross *= 0.88;
     const est = estadoDe(s.autenticidad, s.social).id;
     if (est === 'liderazgo') gross *= 1.18;      // aportas valor real y se nota
     if (est === 'mascara') gross *= 0.92;        // vendes lo que no eres
     if (est === 'ostracismo') gross *= 0.85;     // nadie te recomienda
     gross *= 0.9 + s.autenticidad / 500;
-    const costs = t.upkeep * (1 + (b.level - 1) * 0.32) + b.emp * 40;
-    return Math.round(gross - costs);
+    return Math.round(gross - bizGastoDiario(b));
+  }
+
+  // Lo que entra hoy: la media, más o menos según lo que baile el negocio.
+  function bizIngresoDelDia(s, b) {
+    const medio = bizIncome(s, b);
+    const v = bizVolatilidad(b);
+    const bruto = medio + bizGastoDiario(b);      // el gasto no baila, los ingresos sí
+    const factor = 1 + (rand(s) - 0.5) * 2 * v;
+    return Math.round(bruto * Math.max(0, factor) - bizGastoDiario(b));
   }
 
   function totalBizIncome(s) { return s.bizs.reduce((a, b) => a + bizIncome(s, b), 0); }
 
   function bizValue(s, b) {
-    const t = BIZ_BY[b.type];
     const inc = Math.max(0, bizIncome(s, b));
-    return Math.round(t.cost * 0.45 * (1 + (b.level - 1) * 0.5) + inc * 12);
+    return Math.round(bizCoste(b) * 0.45 * (1 + (b.level - 1) * 0.5) + inc * 12);
   }
 
   function netWorth(s) {
@@ -2853,6 +3511,7 @@
     let gm = (via && via.gm) || 1;
     const mm = (via && via.mm) || 1;
     if (laser) gm *= 1.35;                       // enfoque láser del ostracismo
+    if (s.perk === 'curioso' && !(s.flags['hoy_' + act.id] || 0)) gm *= 1.30;
     if (est.id === 'mascara') gm *= 0.85;        // la máscara te apaga
     if (est.id === 'liderazgo') gm *= 1.1;
 
@@ -2860,7 +3519,7 @@
     let xpSum = 0;
     if (act.g) {
       Object.keys(act.g).forEach(k => {
-        const amount = act.g[k] * xpMultiplier(s, k) * gm;
+        const amount = act.g[k] * xpMultiplier(s, k, wayId) * gm;
         xpSum += amount;
         gainStat(s, k, amount, out);
       });
@@ -2894,6 +3553,7 @@
     if (netBase > 0) {
       let g = netBase * (s.perk === 'networker' ? 1.6 : 1) * (1 + s.stats.carisma / 220);
       if (hasItem(s, 'traje')) g *= 1.12;
+      if (hasItem(s, 'movil')) g *= 1.20;
       if (est.id === 'ostracismo') g *= 0.4;                // la gente no te devuelve las llamadas
       if (est.id === 'liderazgo') g *= 1.35;
       const add = Math.max(est.id === 'ostracismo' ? 0 : 1, Math.round(g));
@@ -2907,7 +3567,7 @@
     // acciones con lógica propia
     if (act.sp && SPECIAL[act.sp]) SPECIAL[act.sp](s, out, act, place, mm);
 
-    gainXP(s, (12 + xpSum * 0.35) * (laser ? 1.2 : 1), out);
+    gainXP(s, (5 + xpSum * 0.3) * (laser ? 1.2 : 1), out);
     const titulo = via ? `${act.icon} ${via.l}` : `${act.icon} ${act.label}`;
     out.unshift({ t: titulo, k: 'neutral' });
     if (xpSum > 0) {
@@ -2931,17 +3591,22 @@
   // Mueve autenticidad y aprobación social y lo cuenta al jugador.
   // Los dos ejes se mueven despacio a propósito: una vida no cambia de rumbo
   // en una tarde. Todo lo que los toca pasa por aquí y se divide por tres.
-  const RITMO = 0.34;
-  const TOPE_DIA = 8;     // lo máximo que un solo día puede mover cada eje
+  const RITMO = 0.25;
+  const TOPE_DIA = 4;     // lo máximo que un solo día puede mover cada eje
   const un = v => Math.round(v * 10) / 10;   // una cifra decimal, para que se note
 
-  // Traduce un valor bruto de los datos a lo que de verdad se va a mover hoy:
-  // el ritmo lento del juego y el tope que tiene cada jornada.
-  function limitarEje(d, usadoHoy) {
+  // Traduce un valor bruto de los datos a lo que de verdad se va a mover hoy.
+  // El tope no es una cuota que se gasta y se recarga: es una distancia. Al
+  // acabar el día no puedes estar a más de TOPE_DIA puntos de donde amaneciste.
+  function limitarEje(valor, base, d) {
     if (!d) return 0;
-    const queda = Math.max(0, TOPE_DIA - Math.abs(usadoHoy || 0));
-    return Math.sign(d) * Math.min(Math.abs(d * RITMO), queda);
+    const b = (base == null ? valor : base);
+    const objetivo = clamp(valor + d * RITMO, Math.max(0, b - TOPE_DIA), Math.min(100, b + TOPE_DIA));
+    return objetivo - valor;
   }
+
+  // Cuánto margen queda hoy en cada eje, en la dirección que se quiera mover.
+  const margenEje = (valor, base) => Math.max(0, TOPE_DIA - Math.abs(valor - (base == null ? valor : base)));
 
   // Lo que esta acción movería AHORA MISMO, con todo aplicado: ritmo, tope del
   // día, rendimiento decreciente por repetirla y el estado en que estás.
@@ -2953,14 +3618,19 @@
     const est = estadoDe(s.autenticidad, s.social).id;
     if (est === 'ostracismo' && dSoc > 0) dSoc *= 0.5;   // cuesta más que te acepten
     if (est === 'liderazgo' && dAuth > 0) dAuth *= 1.15;
+    if (wayId === 's') {
+      if (s.perk === 'camaleon' && dAuth < 0) dAuth *= 0.65;
+      if (tieneAficion(s, 'complaciente')) { if (dSoc > 0) dSoc *= 1.25; if (dAuth < 0) dAuth *= 1.25; }
+    }
     // la quinta vez que haces hoy lo mismo ya no dice nada nuevo de ti
     const gasto = 1 / (1 + (s.flags['hoy_' + act.id] || 0) * 0.8);
     dAuth *= gasto; dSoc *= gasto;
+    const auth = limitarEje(s.autenticidad, s.counters.baseAuth, dAuth);
+    const soc = limitarEje(s.social, s.counters.baseSoc, dSoc);
     return {
-      auth: limitarEje(dAuth, s.counters.movAuth),
-      soc: limitarEje(dSoc, s.counters.movSoc),
-      topeAuth: Math.abs(s.counters.movAuth || 0) >= TOPE_DIA - 0.01 && !!dAuth,
-      topeSoc: Math.abs(s.counters.movSoc || 0) >= TOPE_DIA - 0.01 && !!dSoc,
+      auth, soc,
+      topeAuth: !!dAuth && Math.abs(auth) < 0.005,
+      topeSoc: !!dSoc && Math.abs(soc) < 0.005,
     };
   }
 
@@ -2968,16 +3638,14 @@
   function aplicarEjes(s, dAuth, dSoc, out) {
     const c = s.counters;
     if (dAuth) {
-      c.movAuth = (c.movAuth || 0) + dAuth;
       s.autenticidad = c100(s.autenticidad + dAuth);
       if (out) out.push({ t: `🔥 Autenticidad ${dAuth > 0 ? '+' : ''}${un(dAuth)} (${Math.round(s.autenticidad)})`,
         k: dAuth > 0 ? 'good' : 'warn' });
-    } else if (out && !c.avisoTope && Math.abs(c.movAuth || 0) >= TOPE_DIA - 0.01) {
+    } else if (out && !c.avisoTope && margenEje(s.autenticidad, c.baseAuth) < 0.01) {
       c.avisoTope = 1;
       out.push({ t: '🌙 Por hoy ya has movido tu rumbo todo lo que un día da de sí', k: 'neutral' });
     }
     if (dSoc) {
-      c.movSoc = (c.movSoc || 0) + dSoc;
       s.social = c100(s.social + dSoc);
       if (out) out.push({ t: `👥 Aprobación ${dSoc > 0 ? '+' : ''}${un(dSoc)} (${Math.round(s.social)})`,
         k: dSoc > 0 ? 'good' : 'warn' });
@@ -2987,8 +3655,8 @@
   // Para lo que no es una acción del mundo: misiones, regalos, objetos, eventos.
   function moverEjes(s, dAuth, dSoc, out) {
     aplicarEjes(s,
-      limitarEje(dAuth, s.counters.movAuth),
-      limitarEje(dSoc, s.counters.movSoc), out);
+      limitarEje(s.autenticidad, s.counters.baseAuth, dAuth),
+      limitarEje(s.social, s.counters.baseSoc, dSoc), out);
   }
 
   // Detecta los cambios de estado y avisa: la UI y el mundo cambian con ellos.
@@ -3023,13 +3691,13 @@
 
     trabajo(s, out, act, place, mm) {
       const pay = Math.round(s.job.salary * (1 + s.stats.disciplina / 160 + s.stats.finanzas / 320)
-        * (s.bg === 'empleado' ? 1.2 : 1) * effectiveness(s) * (mm || 1));
+        * (s.bg === 'empleado' ? 1.2 : 1) * effectiveness(s) * (mm || 1) * PAGA_GLOBAL);
       s.money += pay; s.counters.workDays++;
       out.push({ t: `💼 Cobras ${money(pay)} por la jornada`, k: 'gold' });
     },
 
     trabajoMedio(s, out, act, place, mm) {
-      const pay = Math.round(s.job.salary * 0.45 * (1 + s.stats.disciplina / 160) * effectiveness(s) * (mm || 1));
+      const pay = Math.round(s.job.salary * 0.45 * (1 + s.stats.disciplina / 160) * effectiveness(s) * (mm || 1) * PAGA_GLOBAL);
       s.money += pay;
       out.push({ t: `💼 Cobras ${money(pay)} por la media jornada`, k: 'gold' });
     },
@@ -3066,20 +3734,20 @@
     titulo(s, out) { s.titles++; s.job.salary = Math.round(s.job.salary * 1.08); out.push({ t: '📜 Titulación conseguida: tu perfil vale más', k: 'gold' }); },
 
     jornal(s, out, act, place, mm) {
-      const pay = Math.round((38 + s.stats.vigor * 0.5 + s.stats.carisma * 0.35) * effectiveness(s) * (mm || 1));
+      const pay = Math.round((38 + s.stats.vigor * 0.5 + s.stats.carisma * 0.35) * effectiveness(s) * (mm || 1) * PAGA_GLOBAL * (s.bg === 'manos' ? 1.25 : 1));
       s.money += pay;
       out.push({ t: `🧺 Te pagan ${money(pay)} por la mañana`, k: 'gold' });
     },
 
     darClase(s, out, act, place, mm) {
-      const pay = Math.round((45 + s.stats.intelecto * 1.1 + s.social * 0.8) * effectiveness(s) * (mm || 1));
+      const pay = Math.round((45 + s.stats.intelecto * 1.1 + s.social * 0.8) * effectiveness(s) * (mm || 1) * PAGA_GLOBAL);
       s.money += pay;
       out.push({ t: `🧑‍🏫 Te pagan ${money(pay)} por la clase`, k: 'gold' });
     },
 
     venderObra(s, out, act, place, mm) {
-      const base = 30 + s.stats.creatividad * 1.6 + s.social * 1.2;
-      const pay = Math.round(base * (0.6 + rand(s) * 0.9) * (mm || 1));
+      const base = (30 + s.stats.creatividad * 1.6 + s.social * 1.2) * (s.bg === 'artista' ? 1.3 : 1);
+      const pay = Math.round(base * (0.6 + rand(s) * 0.9) * (mm || 1) * PAGA_GLOBAL);
       s.money += pay; moverEjes(s, 0, 2, out);
       out.push({ t: `🖼️ Vendes tu obra por ${money(pay)}`, k: 'gold' });
     },
@@ -3222,28 +3890,53 @@
     return { ok: true, out };
   }
 
-  function canFound(s, typeId) {
-    const t = BIZ_BY[typeId];
-    if (!t) return { ok: false, why: 'Modelo desconocido' };
-    for (const k in (t.req || {})) if (s.stats[k] < t.req[k])
-      return { ok: false, why: `Necesitas ${STAT_BY[k].label} ${t.req[k]}` };
-    if (s.money < t.cost) return { ok: false, why: `Necesitas ${money(t.cost)}` };
-    if (s.bizs.length >= 4) return { ok: false, why: 'Ya llevas 4 negocios: consolida antes de abrir otro' };
-    return { ok: true };
+  // Normaliza lo que llega de la interfaz: el id de una plantilla o una
+  // configuración montada a mano, siempre con sus cuatro piezas.
+  function bizConfig(x) {
+    if (typeof x === 'string') {
+      const t = BIZ_BY[x] || BIZ_TYPES[0];
+      return Object.assign({}, t.cfg, { producto: t.producto, name: t.name, plantilla: t.id });
+    }
+    const c = Object.assign({}, x || {});
+    if (!SECTOR_BY[c.sector]) c.sector = BIZ_SECTORES[0].id;
+    if (!PUBLICO_BY[c.publico]) c.publico = BIZ_PUBLICO[0].id;
+    if (!MODELO_BY[c.modelo]) c.modelo = BIZ_MODELO[0].id;
+    if (!ENFOQUE_BY[c.enfoque]) c.enfoque = BIZ_ENFOQUE[0].id;
+    return c;
   }
 
-  function foundBiz(s, typeId, name) {
-    const chk = canFound(s, typeId);
+  function canFound(s, x) {
+    const cfg = bizConfig(x);
+    const req = bizRequisitos(cfg);
+    for (const k in req) if (s.stats[k] < req[k])
+      return { ok: false, why: `Necesitas ${STAT_BY[k].label} ${req[k]}` };
+    const coste = bizCoste(cfg);
+    if (s.money < coste) return { ok: false, why: `Necesitas ${money(coste)} para montarlo` };
+    if (s.bizs.length >= 4) return { ok: false, why: 'Ya llevas 4 negocios: consolida antes de abrir otro' };
+    return { ok: true, coste };
+  }
+
+  function foundBiz(s, x, name, producto) {
+    const chk = canFound(s, x);
     if (!chk.ok) return { ok: false, why: chk.why };
-    const t = BIZ_BY[typeId];
-    s.money -= t.cost;
-    const b = { id: 'b' + (s.bizs.length + 1) + '_' + s.day, type: t.id,
-      name: (name || t.name).slice(0, 26), level: 1, emp: 0, marketing: 4,
-      quality: 0, brand: 0, margin: 0, earned: 0, born: s.day };
+    const cfg = bizConfig(x);
+    const p = bizPiezas(cfg);
+    const coste = bizCoste(cfg);
+    s.money -= coste;
+    const b = {
+      id: 'b' + (s.bizs.length + 1) + '_' + s.day,
+      sector: cfg.sector, publico: cfg.publico, modelo: cfg.modelo, enfoque: cfg.enfoque,
+      plantilla: cfg.plantilla || null,
+      producto: String(producto || cfg.producto || p.sector.productos[0]).slice(0, 44),
+      name: String(name || cfg.name || p.sector.name).slice(0, 26),
+      level: 1, emp: 0, marketing: 4, quality: 0, brand: 0, margin: 0, earned: 0, born: s.day,
+    };
     s.bizs.push(b);
-    logLine(s, `Registras tu negocio: ${b.name}.`, 'gold');
-    const out = [{ t: `📋 ${t.icon} ${b.name} registrado. −${money(t.cost)}`, k: 'gold' }];
-    moverEjes(s, 0, 4, out);
+    const out = [{ t: `📋 ${p.sector.icon} ${b.name} registrado. −${money(coste)}`, k: 'gold' }];
+    out.push({ t: `${b.producto} · ${p.publico.icon} ${p.publico.name} · ${p.modelo.icon} ${p.modelo.name} · ${p.enfoque.icon} ${p.enfoque.name}`, k: 'neutral' });
+    // montar algo tuyo te define: el enfoque y el público que elijas te marcan
+    moverEjes(s, (p.enfoque.au + p.publico.au) / 2 + 4, (p.enfoque.so + p.publico.so) / 2 + 2, out);
+    logLine(s, `Registras ${b.name}: ${b.producto}.`, 'gold', out);
     checkQuests(s, out); checkAchievements(s, out);
     return { ok: true, out };
   }
@@ -3251,7 +3944,7 @@
   const BIZ_ACCION = { mejorar: 'sube de nivel', marketing: 'campaña de marketing',
     contratar: 'contratación', despedir: 'reducción de plantilla', vender: 'venta del negocio' };
 
-  const BIZ_UPGRADE = b => Math.round(BIZ_BY[b.type].cost * (0.55 + (b.level - 1) * 0.55));
+  const BIZ_UPGRADE = b => Math.round(bizCoste(b) * (0.55 + (b.level - 1) * 0.55));
   const BIZ_MARKETING = b => Math.round(90 + b.level * 70);
   const BIZ_HIRE = b => Math.round(280 + b.emp * 180);
 
@@ -3304,9 +3997,27 @@
     if (s.money < it.cost) return { ok: false, why: `Necesitas ${money(it.cost)}` };
     s.money -= it.cost; s.items[itemId] = true;
     const out = [{ t: `${it.icon} ${it.name} comprado (−${money(it.cost)})`, k: 'good' }];
+    aficionesDe(s).forEach(a => { if (a.animoCompra) { s.mood = c100(s.mood + a.animoCompra); out.push({ t: '🙂 Comprar te ha subido el ánimo', k: 'good' }); } });
     if (it.au || it.so) moverEjes(s, it.au || 0, it.so || 0, out);
     revisarEstado(s, out);
     logLine(s, `Compras: ${it.name}.`, 'neutral');
+    return { ok: true, out };
+  }
+
+  // Revender equipo: recuperas el 45 %, y lo que te daba deja de darte.
+  const itemReventa = it => Math.round(it.cost * 0.45);
+
+  function sellItem(s, itemId) {
+    const it = ITEM_BY[itemId];
+    if (!it) return { ok: false, why: 'Objeto desconocido' };
+    if (!hasItem(s, itemId)) return { ok: false, why: 'No lo tienes' };
+    const precio = itemReventa(it);
+    delete s.items[itemId];
+    s.money += precio;
+    const out = [{ t: `${it.icon} Vendes ${it.name} por ${money(precio)}`, k: 'gold' }];
+    if (it.au || it.so) moverEjes(s, -(it.au || 0) / 2, -(it.so || 0) / 2, out);
+    revisarEstado(s, out);
+    logLine(s, `Vendes ${it.name} por ${money(precio)}.`, 'neutral', out);
     return { ok: true, out };
   }
 
@@ -3391,7 +4102,7 @@
     // 1. dinero: negocios, gastos, intereses
     let bizNet = 0;
     s.bizs.forEach(b => {
-      const inc = bizIncome(s, b);
+      const inc = bizIngresoDelDia(s, b);
       bizNet += inc; b.earned += inc;
       if (inc > 0) s.counters.bizEarned += inc;
     });
@@ -3416,8 +4127,10 @@
     coverOverdraft(s, out);
 
     // 2. descanso
+    let ajusteSueno = 0;
+    aficionesDe(s).forEach(a => { if (a.descanso) ajusteSueno += a.descanso; });
     const quality = clamp(0.5 + slept * 0.045 + s.stats.equilibrio / 420 - s.stress / 320
-      + (hasItem(s, 'colchon') ? 0.2 : 0), 0.35, 1);
+      + (hasItem(s, 'colchon') ? 0.2 : 0) + ajusteSueno, 0.3, 1);
     s.energy = Math.round(maxEnergy(s) * quality);
     if (hasItem(s, 'cafetera')) s.energy = Math.min(maxEnergy(s), s.energy + 8);
     s.stress = c100(s.stress - (10 + slept * 1.1 + s.stats.equilibrio * 0.12));
@@ -3439,9 +4152,9 @@
 
     // 4. los dos ejes se enfrían solos: mantenerlos cuesta
     if (s.net > 0 && rand(s) < 0.35) s.net = Math.max(0, s.net - 1);
-    if (s.social > 0) s.social = c100(s.social - 0.6 * RITMO);
+    if (s.social > 0) s.social = c100(s.social - 0.9 * RITMO);
     if (s.counters.dayDev > 0 && s.counters.dayAuth === 0) {
-      s.autenticidad = c100(s.autenticidad - 1.2 * RITMO);   // un día entero haciendo lo que se espera
+      s.autenticidad = c100(s.autenticidad - 1.6 * RITMO);   // un día entero haciendo lo que se espera
     } else if (s.counters.dayAuth >= 3) {
       s.autenticidad = c100(s.autenticidad + 0.6 * RITMO);   // un día entero siendo tú
       out.push({ t: '🔥 Hoy has decidido por ti de principio a fin', k: 'good' });
@@ -3451,7 +4164,7 @@
     if (s.autenticidad >= 60) {
       s.counters.diasCoherente = (s.counters.diasCoherente || 0) + 1;
       if (s.counters.diasCoherente >= COHERENCIA_DIAS) {
-        const gana = 0.5 + Math.min(1, (s.counters.diasCoherente - COHERENCIA_DIAS) / 20);
+        const gana = (0.5 + Math.min(1, (s.counters.diasCoherente - COHERENCIA_DIAS) / 20)) * 0.5;
         s.social = c100(s.social + gana);
         if (s.counters.diasCoherente === COHERENCIA_DIAS)
           out.push({ t: '🤝 La gente empieza a respetar que no cambies según quién mire', k: 'gold' });
@@ -3465,7 +4178,7 @@
     s.day++; s.hour = wake;
     s.counters.dayDev = 0; s.counters.planToday = 0; s.counters.dayAuth = 0; s.counters.daySoc = 0;
     Object.keys(s.flags).forEach(k => { if (k.indexOf('hoy_') === 0) delete s.flags[k]; });
-    s.counters.movAuth = 0; s.counters.movSoc = 0; s.counters.avisoTope = 0;
+    s.counters.baseAuth = s.autenticidad; s.counters.baseSoc = s.social; s.counters.avisoTope = 0;
     if (s.flags.despensa > 0) s.flags.despensa--;
     if (s.flags.bizPenalty > 0) s.flags.bizPenalty--;
     if (s.flags.sick && rand(s) < 0.5) s.flags.sick = 0;
@@ -3545,27 +4258,64 @@
     if (s.money + s.savings >= 10000) give('a9');
   }
 
+  /* --------------------- Motor de conversaciones ---------------------- */
+
+  // ¿Quién te atiende? El estado decide antes que las ganas.
+  function puedeHablar(s, npc) {
+    const est = estadoActual(s).id;
+    if (est === 'ostracismo' && npc.tipo === 'social') return { ok: false, frio: npc.frio };
+    if (est === 'mascara' && npc.tipo === 'auth') return { ok: false, frio: npc.frio };
+    return { ok: true };
+  }
+
+  // La primera charla pendiente cuya condición se cumpla ahora mismo.
+  function charlaDisponible(s, npc) {
+    const hechas = s.flags['charlas_' + npc.id] || '';
+    return (CHARLAS[npc.id] || []).find(c =>
+      hechas.indexOf('|' + c.id + '|') < 0 && (!c.cuando || c.cuando(s))) || null;
+  }
+
+  // Aplica lo que has contestado: los ejes, lo que aprendes y lo que te llevas.
+  function responderCharla(s, r) {
+    const out = [];
+    moverEjes(s, r.au || 0, r.so || 0, out);
+    if (r.g) Object.keys(r.g).forEach(k => gainStat(s, k, r.g[k] * xpMultiplier(s, k), out));
+    if (r.net) { s.net += r.net; out.push({ t: `📇 +${r.net} contacto`, k: 'good' }); }
+    if (r.money) { s.money += r.money; out.push({ t: `+${money(r.money)}`, k: 'gold' }); }
+    if (r.st) s.stress = c100(s.stress + (r.st > 0 ? stressGain(s, r.st) : r.st));
+    if (r.mo) s.mood = c100(s.mood + r.mo);
+    revisarEstado(s, out);
+    return out;
+  }
+
+  // Cierra la charla: queda marcada como hecha y deja algo de experiencia.
+  function cerrarCharla(s, npc, charla, out) {
+    s.flags['charlas_' + npc.id] = (s.flags['charlas_' + npc.id] || '') + '|' + charla.id + '|';
+    s.counters.charlas = (s.counters.charlas || 0) + 1;
+    gainXP(s, 30, out);
+    s.mood = c100(s.mood + 3);
+    if (estadoActual(s).id === 'liderazgo') { s.net += 1; }
+    checkQuests(s, out); checkAchievements(s, out);
+    logLine(s, `💬 Conversación con ${npc.name} (${npc.role})`, 'neutral', out);
+    return out;
+  }
+
   // Hablar con alguien: quién te atiende depende de en qué estado estés.
+  // Si no queda conversación pendiente, siempre hay un saludo y un consejo.
   function talkTo(s, npc) {
     const out = [];
-    const est = estadoActual(s).id;
-
-    if (est === 'ostracismo' && npc.tipo === 'social') {
-      out.push({ t: `💬 ${npc.name}: ${npc.frio || 'Te ve venir y aparta la mirada.'}`, k: 'warn' });
-      out.push({ t: 'Fuera del molde hay puertas que se cierran.', k: 'neutral' });
+    const chk = puedeHablar(s, npc);
+    if (!chk.ok) {
+      out.push({ t: `💬 ${npc.name}: ${chk.frio || 'Te ve venir y aparta la mirada.'}`, k: 'warn' });
+      out.push({ t: estadoActual(s).id === 'ostracismo'
+        ? 'Fuera del molde hay puertas que se cierran.'
+        : 'Los que te conocían de verdad notan la máscara.', k: 'neutral' });
       s.mood = c100(s.mood - 3);
       return out;
     }
-    if (est === 'mascara' && npc.tipo === 'auth') {
-      out.push({ t: `💬 ${npc.name}: ${npc.frio || 'Te habla como se habla a un conocido cualquiera.'}`, k: 'warn' });
-      out.push({ t: 'Los que te conocían de verdad notan la máscara.', k: 'neutral' });
-      s.mood = c100(s.mood - 4);
-      return out;
-    }
-
-    const key = 'npc_' + npc.id;
     const line = npc.lines[Math.floor(rand(s) * npc.lines.length)] || npc.lines[0];
     out.push({ t: `💬 ${npc.name}: "${line}"`, k: 'neutral' });
+    const key = 'npc_' + npc.id;
     if (!s.flags[key]) {
       s.flags[key] = 1;
       const g = npc.gift || {};
@@ -3574,16 +4324,12 @@
       if (g.au || g.so) moverEjes(s, g.au || 0, g.so || 0, out);
       if (g.st) s.stress = c100(s.stress + g.st);
       if (g.text) out.push({ t: g.text, k: 'good' });
-      gainXP(s, 35, out);
+      gainXP(s, 25, out);
       s.mood = c100(s.mood + 4);
-    }
-    if (est === 'liderazgo') {
-      out.push({ t: `${npc.name} te pregunta cómo lo has hecho.`, k: 'gold' });
-      s.net += 1;
     }
     revisarEstado(s, out);
     checkQuests(s, out); checkAchievements(s, out);
-    logLine(s, `💬 Hablas con ${npc.name} (${npc.role})`, 'neutral', out);
+    logLine(s, `💬 Saludas a ${npc.name}`, 'neutral', out);
     return out;
   }
 
@@ -4116,9 +4862,10 @@
     R(ctx, x + 1, y + 12, 2, 3, base);
     R(ctx, x + 3, y + 12, 2, 3, base);
     if (ignora) { R(ctx, x + 1, y - 3, 4, 1, col('#8b93a1')); }
-    else if (!G.s || !G.s.flags['npc_' + p.def.id]) {
-      const p2 = Math.sin(G.time * 3) > 0 ? 0 : 1;
+    else if (G.s && charlaDisponible(G.s, p.def)) {
+      const p2 = Math.sin(G.time * 3) > 0 ? 0 : 1;   // hay conversación pendiente
       R(ctx, x + 2, y - 5 - p2, 2, 3, '#fbbf24');
+      R(ctx, x + 2, y - 2 - p2, 2, 1, '#fbbf24');
     }
   }
 
@@ -4271,7 +5018,8 @@
   // Velocidad de movimiento. Correr casi duplica, y el vigor se nota al correr.
   function playerSpeed(s, corriendo) {
     let sp = SPEED_BASE;
-    if (hasItem(s, 'bici')) sp *= 1.45;
+    if (hasItem(s, 'coche')) sp *= 2.1;
+    else if (hasItem(s, 'bici')) sp *= 1.45;
     if (s.energy < maxEnergy(s) * 0.2) sp *= 0.78;
     if (s.flags.sick) sp *= 0.85;
     if (corriendo && puedeCorrer(s)) sp *= 1.75 + s.stats.vigor / 400;
@@ -4382,6 +5130,7 @@
 
   const draft = {
     name: 'Alex', age: 24, objetivo: 'aprender', bg: 'estudiante', perk: 'madrugador',
+    aficiones: ['correr', 'lector'],
     stats: emptyStats(START_BASE), seed: (Date.now() & 0x7fffffff) >>> 0,
   };
 
@@ -4467,6 +5216,19 @@
        <div class="b">${esc(p.bonusText)}</div>`,
       id => { draft.perk = id; });
 
+    // --- aficiones y manías: se eligen dos ---
+    optionGrid('afiGrid', AFICIONES, a =>
+      `<div class="t">${a.icon} ${esc(a.name)}</div>
+       <div class="d">${esc(a.desc)}</div>
+       <div class="b">✔ ${esc(a.pro)}</div>
+       <div class="d" style="color:var(--warn)">✘ ${esc(a.contra)}</div>`,
+      id => {
+        const i = draft.aficiones.indexOf(id);
+        if (i >= 0) draft.aficiones.splice(i, 1);
+        else if (draft.aficiones.length < MAX_AFICIONES) draft.aficiones.push(id);
+        else { draft.aficiones.shift(); draft.aficiones.push(id); }
+      });
+
     $('inName').addEventListener('input', e => { draft.name = e.target.value; });
     $('inAge').addEventListener('input', e => { draft.age = clamp(Number(e.target.value) || 24, 14, 80); syncCreator(); });
 
@@ -4476,6 +5238,7 @@
       draft.objetivo = OBJETIVOS[Math.floor(Math.random() * OBJETIVOS.length)].id;
       draft.bg = BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)].id;
       draft.perk = PERKS[Math.floor(Math.random() * PERKS.length)].id;
+      draft.aficiones = AFICIONES.slice().sort(() => Math.random() - 0.5).slice(0, MAX_AFICIONES).map(a => a.id);
       STAT_KEYS.forEach(k => { draft.stats[k] = START_BASE; });
       let left = START_POOL;
       while (left > 0) {
@@ -4498,7 +5261,7 @@
       if (!name) { $('createWarn').textContent = 'El formulario no admite el campo del nombre en blanco.'; return; }
       draft.name = name;
       const s = newGame({ name: draft.name, age: draft.age, bg: draft.bg, perk: draft.perk,
-        objetivo: draft.objetivo, stats: draft.stats, seed: draft.seed });
+        objetivo: draft.objetivo, aficiones: draft.aficiones, stats: draft.stats, seed: draft.seed });
       s.points += Math.max(0, draftLeft());
       abrirEntrevista(s);
     });
@@ -4527,6 +5290,9 @@
     [['objGrid', draft.objetivo], ['bgGrid', draft.bg], ['perkGrid', draft.perk]].forEach(([id, sel]) => {
       document.querySelectorAll('#' + id + ' .opt').forEach(b => b.classList.toggle('sel', b.dataset.id === sel));
     });
+    document.querySelectorAll('#afiGrid .opt').forEach(b =>
+      b.classList.toggle('sel', draft.aficiones.indexOf(b.dataset.id) >= 0));
+    $('afiHint').textContent = `elegidas ${draft.aficiones.length} de ${MAX_AFICIONES}`;
 
     // la etapa de vida se deduce de la edad
     const et = etapaPorEdad(draft.age);
@@ -4546,7 +5312,8 @@
       + `<span class="pill">${bg.icon} ${esc(bg.name)}</span>`
       + `<span class="pill">${pk.icon} ${esc(pk.name)}</span>`
       + `<span class="pill" style="color:#f59e0b;border-color:rgba(245,158,11,.5)">${ob.icon} ${esc(ob.label)}</span>`
-      + `<span class="pill" style="color:${t.accent};border-color:${rgba(t.accent, .5)}">${t.dominant.icon} ${t.dominant.label}</span>`;
+      + `<span class="pill" style="color:${t.accent};border-color:${rgba(t.accent, .5)}">${t.dominant.icon} ${t.dominant.label}</span>`
+      + draft.aficiones.map(id => `<span class="pill">${AFICION_BY[id].icon} ${esc(AFICION_BY[id].name)}</span>`).join('');
     $('createWarn').textContent = left > 0
       ? `Te quedan ${left} puntos: si envías la candidatura ahora los conservarás para gastarlos jugando.` : '';
   }
@@ -5047,8 +5814,8 @@
         + `Entrena sobre todo ${r.entrena.map(k => STAT_BY[k].icon + ' ' + STAT_BY[k].label).join(', ')}`
         + `${r.cobra ? '. Aquí puedes ganar dinero' : ''}${r.sana ? '. Hay decisiones que suman en las dos barras' : ''}.`));
     }
-    const restaAuth = Math.max(0, TOPE_DIA - Math.abs(s.counters.movAuth || 0));
-    const restaSoc = Math.max(0, TOPE_DIA - Math.abs(s.counters.movSoc || 0));
+    const restaAuth = margenEje(s.autenticidad, s.counters.baseAuth);
+    const restaSoc = margenEje(s.social, s.counters.baseSoc);
     if (restaAuth < 1 && restaSoc < 1) {
       wrap.appendChild(el('div', 'banner',
         '🌙 <b>Hoy ya has movido los dos ejes todo lo que un día da de sí.</b> '
@@ -5204,16 +5971,34 @@
       const owned = hasItem(s, it.id);
       const card = el('div', 'item' + (owned ? ' owned' : ''));
       card.innerHTML = `<div class="t">${it.icon} ${esc(it.name)}</div><div class="d">${esc(it.desc)}</div>`;
+      if (it.au || it.so) {
+        card.appendChild(el('div', 'tag-row', ejeParPill(it.au || 0, it.so || 0)));
+      }
+      if (it.mods && it.mods.gastos) {
+        card.appendChild(el('div', 'tag-row', `<span class="pill cost">🧾 +${it.mods.gastos} €/día</span>`));
+      }
       const btn = el('button', 'btn' + (owned ? '' : ' primary') + ' wide', owned ? '✓ En tu poder' : money(it.cost));
       btn.disabled = owned || s.money < it.cost;
       btn.addEventListener('click', () => {
         const r = buyItem(s, it.id);
         if (!r.ok) { toast('⚠️ ' + r.why, 'warn'); return; }
-        showOut(r.out); save(); updateHUD();
+        showOut(r.out); save(); updateHUD(); aplicarEstadoVisual();
         $('mSub').textContent = `Caja: ${money(s.money)}`;
         refreshModal(shopBody);
       });
       card.appendChild(btn);
+      if (owned) {
+        const vender = el('button', 'btn ghost sm wide', `Venderlo por ${money(itemReventa(it))}`);
+        vender.style.marginTop = '6px';
+        vender.addEventListener('click', () => {
+          const r = sellItem(s, it.id);
+          if (!r.ok) { toast('⚠️ ' + r.why, 'warn'); return; }
+          showOut(r.out); save(); updateHUD();
+          $('mSub').textContent = `Caja: ${money(s.money)}`;
+          refreshModal(shopBody);
+        });
+        card.appendChild(vender);
+      }
       grid.appendChild(card);
     });
     wrap.appendChild(grid);
@@ -5224,65 +6009,386 @@
     return wrap;
   }
 
+  /* ------------------ Montar un negocio a medida --------------------- */
+
+  const NUEVO = { paso: 0, cfg: {}, name: '', producto: '', modo: 'medida' };
+
+  const PASOS_BIZ = [
+    { k: 'sector',  titulo: '¿A qué te vas a dedicar?',  sub: 'El sector marca de qué características depende todo lo demás.', lista: () => BIZ_SECTORES },
+    { k: 'publico', titulo: '¿A quién le vendes?',        sub: 'Cuanta más gente, más dinero y menos alma.', lista: () => BIZ_PUBLICO },
+    { k: 'modelo',  titulo: '¿Cómo cobras?',              sub: 'Decide si tus ingresos son estables o una montaña rusa.', lista: () => BIZ_MODELO },
+    { k: 'enfoque', titulo: '¿Con qué actitud lo haces?', sub: 'Aquí es donde tu negocio se parece a ti o deja de hacerlo.', lista: () => BIZ_ENFOQUE },
+  ];
+
+  // Resumen numérico de la configuración que se está montando.
+  function resumenConfig(s, cfg) {
+    const completa = PASOS_BIZ.every(p => cfg[p.k]);
+    if (!completa) return null;
+    const p = bizPiezas(cfg);
+    const coste = bizCoste(cfg);
+    const falso = { sector: cfg.sector, publico: cfg.publico, modelo: cfg.modelo, enfoque: cfg.enfoque,
+      level: 1, emp: 0, marketing: 4, quality: 0, brand: 0 };
+    const medio = bizIncome(s, falso);
+    const vol = bizVolatilidad(falso);
+    const req = bizRequisitos(cfg);
+    return { p, coste, medio, vol, req, gasto: Math.round(bizGastoDiario(falso)) };
+  }
+
+  function fichaResumen(s, cfg) {
+    const r = resumenConfig(s, cfg);
+    if (!r) return el('div', 'stat-desc', 'Ve eligiendo las piezas y aquí verás los números.');
+    const chk = canFound(s, cfg);
+    const box = el('div', 'biz');
+    const baile = r.vol < 0.25 ? 'muy estable' : r.vol < 0.5 ? 'estable' : r.vol < 0.8 ? 'irregular' : 'una montaña rusa';
+    box.innerHTML =
+      `<div class="top"><div class="nm">${r.p.sector.icon} Lo que estás montando</div>
+         <span class="lv">${money(r.coste)} de inversión</span></div>
+       <div class="stats">
+         <div>Ingreso medio<b style="color:${r.medio >= 0 ? 'var(--good)' : 'var(--danger)'}">${money(r.medio)}/día</b></div>
+         <div>Costes fijos<b>${money(r.gasto)}/día</b></div>
+         <div>Estabilidad<b style="font-size:12.5px">${baile}</b></div>
+         <div>Depende de<b style="font-size:11.5px">${r.p.sector.stats.map(k => STAT_BY[k].icon + ' ' + STAT_BY[k].label + ' ' + s.stats[k]).join(' · ')}</b></div>
+       </div>
+       <div class="tag-row">
+         ${ejeParPill((r.p.enfoque.au + r.p.publico.au) / 2 + 4, (r.p.enfoque.so + r.p.publico.so) / 2 + 2)}
+         ${Object.keys(r.req).map(k => `<span class="pill req">🔒 ${STAT_BY[k].label} ${r.req[k]}</span>`).join('')}
+       </div>
+       ${chk.ok ? '' : `<div class="stat-desc" style="color:var(--warn);margin-top:8px">⚠️ ${esc(chk.why)}</div>`}`;
+    return box;
+  }
+
+  // Muestra cómo te marcaría montar esto, con el ritmo del juego ya aplicado.
+  function ejeParPill(au, so) {
+    const s = G.s;
+    const a = limitarEje(s.autenticidad, s.counters.baseAuth, au);
+    const o = limitarEje(s.social, s.counters.baseSoc, so);
+    const c = v => (v > 0 ? '+' : '−') + (Math.round(Math.abs(v) * 10) / 10).toLocaleString('es-ES');
+    return (a ? `<span class="pill auth">🔥 ${c(a)}</span>` : '')
+         + (o ? `<span class="pill soc">👥 ${c(o)}</span>` : '');
+  }
+
+  // Pistas de una pieza: qué mueve respecto a la media, en lenguaje llano.
+  function pistasPieza(clave, op) {
+    const bits = [];
+    const arriba = (v, txt) => v > 1.08 ? `<span class="pill money">${txt} alto</span>`
+      : v < 0.92 ? `<span class="pill">${txt} bajo</span>` : '';
+    if (clave === 'sector') {
+      bits.push(arriba(op.coste, '💶 Inversión'));
+      bits.push(arriba(op.gasto, '🧾 Gastos fijos'));
+      bits.push(`<span class="pill xp">${op.stats.map(k => STAT_BY[k].icon + ' ' + STAT_BY[k].label).join(' · ')}</span>`);
+    } else if (clave === 'publico') {
+      bits.push(arriba(op.base, '💹 Ingresos'));
+      bits.push(arriba(op.coste, '💶 Inversión'));
+      bits.push(arriba(op.riesgo, '🎲 Riesgo'));
+    } else if (clave === 'modelo') {
+      bits.push(arriba(op.base, '💹 Ingresos'));
+      bits.push(op.estable > 1.1 ? '<span class="pill money">📈 Muy estable</span>'
+        : op.estable < 0.8 ? '<span class="pill cost">🎢 Irregular</span>' : '');
+      bits.push(op.techo < 0.8 ? '<span class="pill cost">🚧 Escala mal</span>'
+        : op.techo > 1.05 ? '<span class="pill money">🚀 Escala bien</span>' : '');
+    } else if (clave === 'enfoque') {
+      bits.push(arriba(op.margen, '💰 Margen'));
+      bits.push(arriba(op.volumen, '📦 Volumen'));
+      bits.push(arriba(op.riesgo, '🎲 Riesgo'));
+    }
+    if (op.au || op.so) bits.push(ejeParPill(op.au || 0, op.so || 0));
+    if (op.sana) bits.push('<span class="pill sana">💚 suma en las dos</span>');
+    return bits.filter(Boolean).join('');
+  }
+
   function foundBody() {
     const s = G.s;
     const wrap = el('div');
-    wrap.appendChild(el('p', 'stat-desc',
-      'Elige el modelo de negocio. Cada uno depende de características distintas: el tuyo rendirá según lo que hayas desarrollado.'));
-    BIZ_TYPES.forEach(t => {
-      const chk = canFound(s, t.id);
-      const card = el('div', 'biz');
-      const statTxt = t.stats.map(k => `${STAT_BY[k].icon} ${STAT_BY[k].label} ${s.stats[k]}`).join(' · ');
-      const reqTxt = Object.keys(t.req || {}).map(k => `${STAT_BY[k].label} ${t.req[k]}`).join(' · ');
-      card.innerHTML =
-        `<div class="top"><div class="nm">${t.icon} ${esc(t.name)}</div>
-           <span class="lv">${money(t.cost)}</span></div>
-         <div class="d" style="font-size:12.5px;color:var(--muted);margin-top:6px">${esc(t.desc)}</div>
-         <div class="stats">
-           <div>Ingreso base<b>${money(t.base)}/día</b></div>
-           <div>Costes fijos<b>${money(t.upkeep)}/día</b></div>
-           <div>Depende de<b style="font-size:11.5px">${esc(statTxt)}</b></div>
-         </div>
-         ${reqTxt ? `<div class="tag-row"><span class="pill req">🔒 ${esc(reqTxt)}</span></div>` : ''}`;
-      const acts = el('div', 'acts');
-      const btn = el('button', 'btn' + (chk.ok ? ' primary' : ''), chk.ok ? 'Registrar este negocio' : chk.why);
-      btn.disabled = !chk.ok;
-      btn.addEventListener('click', () => {
-        const name = prompt('Nombre para tu negocio:', t.name) || t.name;
-        const r = foundBiz(s, t.id, name);
-        if (!r.ok) { toast('⚠️ ' + r.why, 'warn'); return; }
-        showOut(r.out); save(); updateHUD(); closeModal();
-      });
-      acts.appendChild(btn);
-      card.appendChild(acts);
-      wrap.appendChild(card);
+
+    // elegir entre plantilla rápida o montarlo pieza a pieza
+    const sel = el('div', 'menu-row');
+    sel.style.justifyContent = 'flex-start';
+    sel.style.marginBottom = '14px';
+    [['medida', '🧩 Montarlo a medida'], ['plantilla', '⚡ Plantillas rápidas']].forEach(([id, txt]) => {
+      const b = el('button', 'btn sm' + (NUEVO.modo === id ? ' primary' : ''), txt);
+      b.addEventListener('click', () => { NUEVO.modo = id; refreshModal(foundBody); });
+      sel.appendChild(b);
     });
-    const back = el('button', 'btn ghost wide', '← Volver');
-    back.style.marginTop = '10px';
-    back.addEventListener('click', () => openPlace(PLACE_BY.incubadora));
-    wrap.appendChild(back);
+    wrap.appendChild(sel);
+
+    if (NUEVO.modo === 'plantilla') {
+      wrap.appendChild(el('p', 'stat-desc',
+        'Cinco combinaciones ya montadas. Puedes cambiarles el nombre y el producto igualmente.'));
+      BIZ_TYPES.forEach(t => {
+        const chk = canFound(s, t.id);
+        const p = bizPiezas(t.cfg);
+        const card = el('div', 'biz');
+        card.innerHTML =
+          `<div class="top"><div class="nm">${t.icon} ${esc(t.name)}</div>
+             <span class="lv">${money(bizCoste(t.cfg))}</span></div>
+           <div class="d" style="font-size:12.5px;color:var(--muted);margin-top:6px">${esc(t.desc)}</div>
+           <div class="tag-row" style="margin-top:8px">
+             <span class="pill">${p.sector.icon} ${esc(p.sector.name)}</span>
+             <span class="pill">${p.publico.icon} ${esc(p.publico.name)}</span>
+             <span class="pill">${p.modelo.icon} ${esc(p.modelo.name)}</span>
+             <span class="pill">${p.enfoque.icon} ${esc(p.enfoque.name)}</span>
+           </div>`;
+        const acts = el('div', 'acts');
+        const btn = el('button', 'btn sm' + (chk.ok ? ' primary' : ''), chk.ok ? 'Elegir esta' : chk.why);
+        btn.disabled = !chk.ok;
+        btn.addEventListener('click', () => {
+          NUEVO.cfg = Object.assign({}, t.cfg);
+          NUEVO.name = t.name; NUEVO.producto = t.producto;
+          NUEVO.paso = PASOS_BIZ.length; NUEVO.modo = 'medida';
+          refreshModal(foundBody);
+        });
+        acts.appendChild(btn);
+        card.appendChild(acts);
+        wrap.appendChild(card);
+      });
+      const volver = el('button', 'btn ghost wide', '← Volver a la incubadora');
+      volver.style.marginTop = '10px';
+      volver.addEventListener('click', () => openPlace(PLACE_BY.incubadora));
+      wrap.appendChild(volver);
+      return wrap;
+    }
+
+    // ---- asistente pieza a pieza ----
+    const paso = PASOS_BIZ[NUEVO.paso];
+    const total = PASOS_BIZ.length + 1;
+    wrap.appendChild(el('div', 'guia-puntos-wrap',
+      `<div class="ent-progress">${Array.from({ length: total }, (_, i) =>
+        `<i class="${i <= NUEVO.paso ? 'on' : ''}"></i>`).join('')}</div>`));
+
+    if (paso) {
+      wrap.appendChild(el('h3', 'ent-q', esc(paso.titulo)));
+      wrap.appendChild(el('div', 'ent-ctx', esc(paso.sub)));
+      const grid = el('div', 'opt-grid');
+      paso.lista().forEach(op => {
+        const req = op.req && Object.keys(op.req).length
+          ? Object.keys(op.req).map(k => `${STAT_BY[k].label} ${op.req[k]}`).join(' · ') : '';
+        const falta = req && Object.keys(op.req).some(k => s.stats[k] < op.req[k]);
+        const btn = el('button', 'opt' + (NUEVO.cfg[paso.k] === op.id ? ' sel' : ''),
+          `<div class="t">${op.icon} ${esc(op.name)}</div>
+           <div class="d">${esc(op.desc)}</div>
+           <div class="tag-row">${pistasPieza(paso.k, op)}</div>
+           ${req ? `<div class="b" style="color:${falta ? 'var(--warn)' : 'var(--muted-2)'}">🔒 ${esc(req)}</div>` : ''}`);
+        btn.disabled = !!falta;
+        if (falta) btn.style.opacity = '.5';
+        btn.addEventListener('click', () => {
+          NUEVO.cfg[paso.k] = op.id;
+          if (paso.k === 'sector' && !NUEVO.producto) NUEVO.producto = op.productos[0];
+          NUEVO.paso++;
+          refreshModal(foundBody);
+        });
+        grid.appendChild(btn);
+      });
+      wrap.appendChild(grid);
+    } else {
+      // último paso: nombre, producto y resumen
+      const p = bizPiezas(NUEVO.cfg);
+      wrap.appendChild(el('h3', 'ent-q', '¿Cómo se llama y qué vendes exactamente?'));
+      wrap.appendChild(el('div', 'ent-ctx', 'Lo que escribas aquí es lo que verá todo el mundo.'));
+      const campos = el('div');
+      campos.innerHTML =
+        `<div class="row2">
+           <div class="field"><label for="bizName">Nombre del negocio</label>
+             <input class="input" id="bizName" maxlength="26" value="${esc(NUEVO.name || '')}" placeholder="${esc(p.sector.name)}" /></div>
+           <div class="field"><label for="bizProd">Inversión</label>
+             <input class="input" id="bizProd2" value="${money(bizCoste(NUEVO.cfg))}" disabled /></div>
+         </div>
+         <div class="field"><label for="bizProducto">Producto o servicio concreto</label>
+           <input class="input" id="bizProducto" maxlength="44" value="${esc(NUEVO.producto || '')}" placeholder="${esc(p.sector.productos[0])}" /></div>`;
+      wrap.appendChild(campos);
+      const sug = el('div', 'tag-row');
+      p.sector.productos.forEach(nombre => {
+        const b = el('button', 'btn sm ghost', esc(nombre));
+        b.addEventListener('click', () => { $('bizProducto').value = nombre; NUEVO.producto = nombre; });
+        sug.appendChild(b);
+      });
+      wrap.appendChild(sug);
+
+      wrap.appendChild(el('div', 'sect-title', '<span>Lo que estás montando</span><span class="ln"></span>'));
+      wrap.appendChild(fichaResumen(s, NUEVO.cfg));
+
+      const chk = canFound(s, NUEVO.cfg);
+      const ok = el('button', 'btn primary wide', chk.ok ? '📋 Registrar el negocio' : chk.why);
+      ok.disabled = !chk.ok;
+      ok.style.marginTop = '12px';
+      ok.addEventListener('click', () => {
+        const nombre = ($('bizName').value || '').trim() || p.sector.name;
+        const producto = ($('bizProducto').value || '').trim() || p.sector.productos[0];
+        const r = foundBiz(s, NUEVO.cfg, nombre, producto);
+        if (!r.ok) { toast('⚠️ ' + r.why, 'warn'); return; }
+        showOut(r.out); save(); updateHUD(); aplicarEstadoVisual();
+        NUEVO.paso = 0; NUEVO.cfg = {}; NUEVO.name = ''; NUEVO.producto = '';
+        closeModal();
+      });
+      wrap.appendChild(ok);
+    }
+
+    // navegación
+    const nav = el('div', 'guia-nav');
+    const atras = el('button', 'btn', '← Atrás');
+    atras.disabled = NUEVO.paso === 0;
+    atras.addEventListener('click', () => { NUEVO.paso = Math.max(0, NUEVO.paso - 1); refreshModal(foundBody); });
+    nav.appendChild(atras);
+    if (paso) {
+      const saltar = el('button', 'btn ghost sm', 'Sorpréndeme');
+      saltar.addEventListener('click', () => {
+        PASOS_BIZ.forEach(x => {
+          const posibles = x.lista().filter(o => !o.req || Object.keys(o.req).every(k => s.stats[k] >= o.req[k]));
+          NUEVO.cfg[x.k] = posibles[Math.floor(Math.random() * posibles.length)].id;
+        });
+        const sec = SECTOR_BY[NUEVO.cfg.sector];
+        NUEVO.producto = sec.productos[Math.floor(Math.random() * sec.productos.length)];
+        NUEVO.paso = PASOS_BIZ.length;
+        refreshModal(foundBody);
+      });
+      nav.appendChild(saltar);
+    }
+    const salir = el('button', 'btn ghost', 'Dejarlo para otro día');
+    salir.style.marginLeft = 'auto';
+    salir.addEventListener('click', () => openPlace(PLACE_BY.incubadora));
+    nav.appendChild(salir);
+    wrap.appendChild(nav);
+
+    // resumen permanente mientras eliges
+    if (paso && Object.keys(NUEVO.cfg).length) {
+      const elegido = el('div', 'tag-row');
+      elegido.style.marginTop = '12px';
+      PASOS_BIZ.forEach(x => {
+        if (!NUEVO.cfg[x.k]) return;
+        const o = x.lista().find(y => y.id === NUEVO.cfg[x.k]);
+        elegido.innerHTML += `<span class="pill">${o.icon} ${esc(o.name)}</span>`;
+      });
+      wrap.appendChild(elegido);
+      const r = resumenConfig(s, NUEVO.cfg);
+      if (r) wrap.appendChild(el('p', 'stat-desc',
+        `Por ahora: ${money(r.coste)} de inversión y unos ${money(r.medio)}/día de ingreso medio.`));
+    }
     return wrap;
   }
 
-  function openNpc(npc) {
-    const out = talkTo(G.s, npc.def);
-    save();
+  /* --------------------- Conversaciones en pantalla -------------------- */
+
+  const CHAT = { npc: null, charla: null, turno: 0, acumulado: [] };
+
+  function openNpc(npcSprite) {
+    const s = G.s, npc = npcSprite.def;
+    const chk = puedeHablar(s, npc);
+    const charla = chk.ok ? charlaDisponible(s, npc) : null;
+
+    if (!charla) {                        // saludo corto: no queda charla pendiente
+      const out = talkTo(s, npc);
+      save();
+      openModal({
+        icon: npc.icon, title: npc.name, sub: npc.role, narrow: true,
+        render: () => {
+          const w = el('div');
+          out.forEach(o => {
+            const p = el('p', 'dialog-txt', esc(o.t));
+            if (o.k === 'good' || o.k === 'gold') p.style.color = 'var(--good)';
+            if (o.k === 'warn' || o.k === 'bad') p.style.color = 'var(--warn)';
+            w.appendChild(p);
+          });
+          const b = el('button', 'btn primary wide', 'Seguir tu camino');
+          b.style.marginTop = '14px';
+          b.addEventListener('click', closeModal);
+          w.appendChild(b);
+          return w;
+        },
+      });
+      return;
+    }
+
+    CHAT.npc = npc; CHAT.charla = charla; CHAT.turno = -1; CHAT.acumulado = [];
+    pintarCharla();
+  }
+
+  function marcoCharla(render) {
+    const npc = CHAT.npc;
     openModal({
-      icon: npc.def.icon, title: npc.def.name, sub: npc.def.role, narrow: true,
-      render: () => {
+      icon: npc.icon, title: npc.name,
+      sub: `${npc.role} · ${CHAT.turno < 0 ? 'te saluda' : CHAT.turno >= CHAT.charla.turnos.length
+        ? 'se despide' : `pregunta ${CHAT.turno + 1} de ${CHAT.charla.turnos.length}`}`,
+      render,
+    });
+  }
+
+  function pintarCharla() {
+    const s = G.s, ch = CHAT.charla;
+
+    if (CHAT.turno < 0) {                 // apertura
+      marcoCharla(() => {
         const w = el('div');
-        out.forEach(o => {
-          const p = el('p', 'dialog-txt', esc(o.t));
-          if (o.k === 'good' || o.k === 'gold') p.style.color = 'var(--good)';
-          w.appendChild(p);
-        });
+        w.appendChild(el('p', 'ent-scene', esc(ch.abre)));
+        const b = el('button', 'btn primary wide', 'Escuchar');
+        b.addEventListener('click', () => { CHAT.turno = 0; pintarCharla(); });
+        w.appendChild(b);
+        return w;
+      });
+      return;
+    }
+
+    const turno = ch.turnos[CHAT.turno];
+    if (!turno) {                          // cierre
+      const out = CHAT.acumulado.slice();
+      cerrarCharla(s, CHAT.npc, ch, out);
+      save(); updateHUD(); aplicarEstadoVisual();
+      marcoCharla(() => {
+        const w = el('div');
+        w.appendChild(el('p', 'ent-scene', esc(typeof ch.cierre === 'function' ? ch.cierre(s) : ch.cierre)));
+        if (out.length) {
+          const res = el('div', 'log-det');
+          out.forEach(o => res.appendChild(el('div', 'log-sub ' + (o.k || 'neutral'), esc(o.t))));
+          w.appendChild(el('div', 'sect-title', '<span>Lo que te llevas</span><span class="ln"></span>'));
+          w.appendChild(res);
+        }
         const b = el('button', 'btn primary wide', 'Seguir tu camino');
-        b.style.marginTop = '14px';
+        b.style.marginTop = '16px';
         b.addEventListener('click', closeModal);
         w.appendChild(b);
         return w;
-      },
+      });
+      return;
+    }
+
+    marcoCharla(() => {
+      const w = el('div');
+      w.appendChild(el('h3', 'ent-q', esc(turno.q)));
+      const opts = el('div', 'ent-opts');
+      turno.r.forEach(r => {
+        const b = el('button', 'ent-opt');
+        b.innerHTML = `<div>${esc(r.t)}</div><div class="tag-row" style="margin-top:8px">${ejeParPill(r.au || 0, r.so || 0)}`
+          + `${r.g ? Object.keys(r.g).map(k => `<span class="pill xp" style="color:${STAT_BY[k].color}">${STAT_BY[k].icon}</span>`).join('') : ''}`
+          + `${r.net ? '<span class="pill">📇</span>' : ''}${r.money ? '<span class="pill money">💶</span>' : ''}</div>`;
+        b.addEventListener('click', () => {
+          const out = responderCharla(G.s, r);
+          CHAT.acumulado = CHAT.acumulado.concat(out);
+          CHAT.turno++;
+          pintarEco(r, out);
+        });
+        opts.appendChild(b);
+      });
+      w.appendChild(opts);
+      return w;
     });
+  }
+
+  function pintarEco(r, out) {
+    marcoCharla(() => {
+      const w = el('div');
+      w.appendChild(el('h3', 'ent-q', `<span style="opacity:.55">${esc(r.t)}</span>`));
+      w.appendChild(el('p', 'ent-eco', esc(r.eco || '')));
+      if (out.length) {
+        const res = el('div', 'log-det');
+        res.style.margin = '14px 0';
+        out.forEach(o => res.appendChild(el('div', 'log-sub ' + (o.k || 'neutral'), esc(o.t))));
+        w.appendChild(res);
+      }
+      const b = el('button', 'btn wide',
+        CHAT.turno >= CHAT.charla.turnos.length ? 'Terminar la conversación' : 'Seguir hablando');
+      b.addEventListener('click', pintarCharla);
+      w.appendChild(b);
+      return w;
+    });
+    updateHUD();
   }
 
   /* ------------------------- Panel de perfil ------------------------- */
@@ -5303,7 +6409,8 @@
        <span class="pill">${bg.icon} ${esc(bg.name)}</span>
        <span class="pill">${pk.icon} ${esc(pk.name)}</span>
        <span class="pill" style="color:${t.accent};border-color:${rgba(t.accent, .5)}">${t.dominant.icon} ${t.dominant.label}</span>
-       ${s.job.has ? `<span class="pill">💼 ${esc(s.job.title)} · ${money(s.job.salary)}/jornada</span>` : '<span class="pill">🔍 Sin empleo</span>'}`));
+       ${s.job.has ? `<span class="pill">💼 ${esc(s.job.title)} · ${money(s.job.salary)}/jornada</span>` : '<span class="pill">🔍 Sin empleo</span>'}
+       ${aficionesDe(s).map(a => `<span class="pill">${a.icon} ${esc(a.name)}</span>`).join('')}`));
     left.appendChild(el('p', 'stat-desc', esc(pk.desc + ' ' + pk.bonusText + '.')));
 
     const right = el('div');
@@ -5434,24 +6541,33 @@
     }
 
     s.bizs.forEach(b => {
-      const t = BIZ_BY[b.type];
+      const p = bizPiezas(b);
       const inc = bizIncome(s, b);
+      const vol = bizVolatilidad(b);
+      const baile = vol < 0.25 ? 'muy estable' : vol < 0.5 ? 'estable' : vol < 0.8 ? 'irregular' : 'montaña rusa';
       const card = el('div', 'biz');
       card.innerHTML =
         `<div class="top">
-           <div class="nm">${t.icon} ${esc(b.name)}</div>
+           <div class="nm">${p.sector.icon} ${esc(b.name)}</div>
            <span class="lv">Nivel ${b.level}/6</span>
-           <span class="lv">${esc(t.name)}</span>
+         </div>
+         <div class="d" style="font-size:12.5px;color:var(--muted);margin-top:4px">${esc(b.producto || p.sector.name)}</div>
+         <div class="tag-row" style="margin-top:8px">
+           <span class="pill">${p.sector.icon} ${esc(p.sector.name)}</span>
+           <span class="pill">${p.publico.icon} ${esc(p.publico.name)}</span>
+           <span class="pill">${p.modelo.icon} ${esc(p.modelo.name)}</span>
+           <span class="pill">${p.enfoque.icon} ${esc(p.enfoque.name)}</span>
          </div>
          <div class="stats">
-           <div>Ingreso neto<b style="color:${inc >= 0 ? 'var(--good)' : 'var(--danger)'}">${money(inc)}/día</b></div>
+           <div>Ingreso medio<b style="color:${inc >= 0 ? 'var(--good)' : 'var(--danger)'}">${money(inc)}/día</b></div>
+           <div>Estabilidad<b style="font-size:13px">${baile}</b></div>
            <div>Equipo<b>${b.emp} persona${b.emp === 1 ? '' : 's'}</b></div>
            <div>Marketing<b>${b.marketing}/45</b></div>
            <div>Calidad<b>${b.quality}/20</b></div>
            <div>Marca<b>${b.brand}/6</b></div>
            <div>Acumulado<b>${money(b.earned)}</b></div>
            <div>Valor de venta<b>${money(bizValue(s, b))}</b></div>
-           <div>Depende de<b style="font-size:11.5px">${t.stats.map(k => STAT_BY[k].icon + ' ' + s.stats[k]).join(' · ')}</b></div>
+           <div>Depende de<b style="font-size:11.5px">${p.sector.stats.map(k => STAT_BY[k].icon + ' ' + s.stats[k]).join(' · ')}</b></div>
          </div>`;
       const acts = el('div', 'acts');
       const mk = (label, what, cost) => {
@@ -5700,11 +6816,18 @@
       s.flags = Object.assign(base.flags, data.s.flags || {});
       s.quests = Object.assign(base.quests, data.s.quests || {});
       s.log = Array.isArray(data.s.log) ? data.s.log : [];
-      s.bizs = Array.isArray(data.s.bizs) ? data.s.bizs : [];
+      s.bizs = (Array.isArray(data.s.bizs) ? data.s.bizs : []).map(b => {
+        if (b.sector) return b;                      // ya está en el formato nuevo
+        const cfg = bizConfig(b.type || 'puesto');    // partidas anteriores
+        return Object.assign({}, b, cfg, { producto: b.producto || cfg.producto });
+      });
       s.entrevista = data.s.entrevista || base.entrevista;
+      s.aficiones = Array.isArray(data.s.aficiones) ? data.s.aficiones.filter(a => AFICION_BY[a]) : [];
       s.autenticidad = c100(data.s.autenticidad != null ? data.s.autenticidad : base.autenticidad);
       s.social = c100(data.s.social != null ? data.s.social : base.social);
       s.estado = estadoDe(s.autenticidad, s.social).id;
+      if (s.counters.baseAuth == null) s.counters.baseAuth = s.autenticidad;
+      if (s.counters.baseSoc == null) s.counters.baseSoc = s.social;
       return { s, pos: data.pos };
     } catch (_) { return null; }
   }
@@ -5763,13 +6886,16 @@
     module.exports = {
       // datos
       STATS, STAT_KEYS, BACKGROUNDS, PERKS, ITEMS, BIZ_TYPES, PLACES, PLACE_BY,
+      AFICIONES, AFICION_BY, MAX_AFICIONES, aficionesDe, tieneAficion,
       QUESTS, ACHIEVEMENTS, EVENTS, NPCS, TILE, MAP_W, MAP_H, T,
       START_BASE, START_POOL, START_MAX,
       // los dos ejes, los estados, las etapas y la entrevista
       EJES, ESTADOS, ETAPAS, ETAPA_BY, OBJETIVOS, ENTREVISTAS, FINALES,
       estadoDe, estadoActual, etapaPorEdad, enfoqueLaser, tonoRespuestas,
+      CHARLAS, puedeHablar, charlaDisponible, responderCharla, cerrarCharla,
       resolverEntrevista, moverEjes, aplicarEjes, ejesPrevistos, limitarEje, revisarEstado, revisarFinales, viaDe, viaBloqueada,
       DISTRITOS, DIST_BY, resumenLugar, playerSpeed, puedeCorrer, efectoActual, RITMO, TOPE_DIA, COHERENCIA_DIAS,
+      DAY_END, COSTE_TIEMPO, COSTE_ENERGIA, XP_GLOBAL, timeCost, energyCost, margenEje,
       // mundo
       worldGen, reachability,
       // simulación
@@ -5777,7 +6903,9 @@
       maxEnergy, effectiveness, dailyExpenses, bizIncome, totalBizIncome, bizValue, netWorth,
       gainStat, gainXP, spendPoint, statNeed, levelNeed,
       bankDeposit, bankWithdraw, bankLoan, bankRepay, loanLimit,
-      canFound, foundBiz, bizAction, buyItem, checkQuests, checkAchievements,
+      canFound, foundBiz, bizAction, buyItem, sellItem, itemReventa, checkQuests, checkAchievements,
+      BIZ_SECTORES, BIZ_PUBLICO, BIZ_MODELO, BIZ_ENFOQUE, SECTOR_BY, PUBLICO_BY, MODELO_BY, ENFOQUE_BY,
+      bizConfig, bizPiezas, bizCoste, bizGastoDiario, bizRequisitos, bizVolatilidad, bizIngresoDelDia,
       // render puro
       avatarSVG, radarSVG, avatarTraits,
       // utilidades

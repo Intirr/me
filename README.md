@@ -25,13 +25,22 @@ consiste en negociar entre las dos sin romperte.
 **Los dos ejes se mueven despacio a propósito.** Una vida no cambia de rumbo en una
 tarde, así que el juego lo impide de tres maneras:
 
-- Cada movimiento vale **un tercio** de lo que marca la acción.
-- Ningún día puede mover un eje **más de 8 puntos**, hagas lo que hagas.
+- Cada movimiento vale **una cuarta parte** de lo que marca la acción.
+- Al acabar el día no puedes estar a **más de 4 puntos** de donde amaneciste, hagas lo
+  que hagas y vengan de donde vengan.
 - Repetir hoy la misma acción rinde cada vez menos: la quinta vez ya casi no dice
   nada nuevo de ti.
 
-Pasar de 45 a 70 de autenticidad cuesta **días de constancia**, no una tarde de
+Pasar de 45 a 70 de autenticidad cuesta **semanas de constancia**, no una tarde de
 decisiones acertadas.
+
+### 🕰️ Días largos, vida lenta
+
+El día va de las 7:00 **a las 2:00 de la madrugada** y las acciones cuestan bastante
+menos tiempo y energía de lo que dice su ficha, así que en una jornada caben muchas
+cosas. A cambio, cada una aporta la mitad de experiencia y subir de nivel cuesta más
+del doble. Los días cunden; la vida sigue tardando en cambiar. Un jugador que optimice
+tarda unos **40 días** en llegar al final bueno, y bastante más si juega a su aire.
 
 ### 💚 Ganar aprobación sin venderte
 
@@ -83,10 +92,18 @@ va a dar permiso.
 
 ![La entrevista](docs/entrevista.png)
 
-También declaras tu **objetivo profesional** (la primera decisión real del juego), tu
-**experiencia previa**, un **rasgo distintivo** y repartes **60 puntos** entre ocho
-habilidades. El avatar se genera con todo eso: complexión, postura, apertura de brazos,
-halo mental y núcleo de energía salen de lo que has declarado.
+También declaras tu **objetivo profesional** entre seis (la primera decisión real del
+juego), tu **experiencia previa** entre diez, un **rasgo distintivo** entre diez, **dos
+aficiones o manías** entre diez, y repartes **60 puntos** entre ocho habilidades.
+
+Ninguna afición es gratis: cocinar abarata la vida pero te quita energía; el insomnio te
+hace rendir de noche y dormir peor; no saber decir que no te da más aprobación cuando
+complaces… y te cuesta más autenticidad. Las experiencias previas van del estudiante
+endeudado al cuidador que lleva años ocupándose de otro, y cada una cambia tu dinero,
+tus deudas y tus gastos de partida.
+
+El avatar se genera con todo eso: complexión, postura, apertura de brazos, halo mental y
+núcleo de energía salen de lo que has declarado.
 
 ![El currículum](docs/cv.png)
 
@@ -165,19 +182,57 @@ se entrena. En el perfil, además, se traduce a lo que significa hoy con tu valo
   repartir por nivel.
 - **Dinero** — nómina, trabajos por horas, gastos diarios, ahorro con interés, préstamos
   al 1 % diario y descubierto que se convierte en deuda.
-- **Negocios** — cinco modelos (puesto de mercado, tienda online, agencia, cafetería,
-  startup) que dependen de características distintas y **rinden según tu estado**:
+- **Negocios** — se montan pieza a pieza (ver abajo) y **rinden según tu estado**:
   vender humo con la máscara puesta paga menos que aportar valor real.
 - **Misiones** — diez pasos desde "sobrevive al rechazo" hasta el liderazgo genuino.
-- **Objetos con doble lectura** — el traje sube la aprobación y baja la autenticidad;
-  la biblioteca personal hace lo contrario.
+- **Equipo con doble lectura** — catorce objetos que puedes comprar y revender por el
+  45 %: el traje y el móvil suben la aprobación y bajan la autenticidad, el cuaderno de
+  ideas y las herramientas hacen lo contrario, y el coche y el local traen gastos fijos.
 - **Eventos, hábitos, rachas y logros**, y guardado automático en el navegador.
 - **Diario detallado** — cada acción queda anotada con su desglose completo (cuánto se
   movió cada eje, qué aprendiste, qué te costó), separado por días, y el cierre de cada
   jornada se guarda entero. Los avisos en pantalla duran 11 segundos y se congelan si
   pasas el ratón por encima.
 
-## 🏁 6. Los finales
+## 🏭 6. El negocio que tú quieras
+
+No eliges entre cinco modelos cerrados: **montas el tuyo pieza a pieza**, y cada decisión
+cambia la inversión, los ingresos, el riesgo y de qué características depende.
+
+| Pieza | Opciones | Qué cambia |
+|---|---|---|
+| **Sector** | Comida, oficio, digital, creativo, formación, cuidado, comercio, servicios | De qué características depende, la inversión y los costes fijos |
+| **Público** | El barrio, un nicho, el público general, otras empresas, quien puede pagar mucho | Cuánto factura, cuánto cuesta entrar y cuánto riesgo corres |
+| **Producto** | Lo escribes tú (con sugerencias por sector) | Es lo que verá todo el mundo |
+| **Modelo** | Venta suelta, suscripción, por horas, por encargo, a comisión | Si los ingresos son estables y si el negocio **escala o no** |
+| **Enfoque** | Barato y masivo, cuidado, rápido, honesto aunque cueste, ruidoso | El margen, el volumen y cuánto se te parece |
+
+Son **1.000 combinaciones**, y no son cosméticas. Vender horas paga bien desde el primer
+día pero apenas crece con el nivel: estás vendiendo tu tiempo. Una suscripción a un nicho
+concreto entra poquito y todos los días. Un negocio ruidoso de lujo puede facturar 283 €
+un día y 67 € al siguiente. Y el enfoque te marca: montar algo honesto sube tu
+autenticidad, montar algo ruidoso sube tu aprobación.
+
+![Montar un negocio](docs/negocio.png)
+
+Si no quieres decidirlo todo, hay **cinco plantillas** ya montadas y un botón de
+*Sorpréndeme*.
+
+## 💬 7. Conversaciones
+
+Hablar con alguien no es pulsar un botón: cada personaje tiene **conversaciones de dos
+turnos con tres respuestas cada una**, y lo que contestas te mueve los ejes, te enseña
+cosas y a veces abre puertas. Hay más de treinta turnos escritos entre los siete
+personajes del mapa.
+
+![Una conversación](docs/charla.png)
+
+Las conversaciones esperan a su momento: la inversora sólo te habla de escalar cuando ya
+estás facturando, el librero te pregunta por lo que has dejado de decir cuando llevas
+tiempo con la máscara puesta, y el médico cambia de tema cuando llegas con el estrés por
+las nubes. Un signo dorado sobre la cabeza avisa de que alguien tiene algo que contarte.
+
+## 🏁 8. Los finales
 
 La partida termina cuando un estado se sostiene en el tiempo:
 
@@ -209,7 +264,7 @@ ejecuta en el navegador.
 
 ```bash
 npm install          # sólo para pruebas y previsualización
-npm test             # lógica pura (~130.000 comprobaciones)
+npm test             # lógica pura (~715.000 comprobaciones)
 npm run test:dom     # integración real con jsdom: currículum → entrevista → guía → mundo
 npm run test:all     # todo
 npm run preview:game # regenera docs/mapa.png y los avatares
@@ -221,8 +276,16 @@ node shots.js        # regenera las capturas del README (necesita playwright-cor
 - Que **las dos vías de cada acción tiran de verdad en direcciones opuestas**: la
   auténtica siempre da más autenticidad y la complaciente siempre la baja; y que las
   marcadas como 💚 sanas —y sólo ésas— suman también aprobación.
-- Que **el ritmo es lento**: una acción mueve menos de 3 puntos, ningún día mueve un eje
-  más de 8, y llegar a 70 de autenticidad exige varios días de decisiones distintas.
+- Que **el ritmo es lento**: una acción mueve menos de 3 puntos, ningún día te aleja más
+  de 4 de donde amaneciste, y llegar a 70 de autenticidad exige varios días de decisiones
+  distintas.
+- Que **las 1.000 combinaciones de negocio** se pueden montar y ninguna produce números
+  rotos, que vender horas escala peor que una suscripción y que montar algo honesto deja
+  otra huella que montar algo ruidoso.
+- Que **las conversaciones** están bien formadas: todas ofrecen en cada turno una salida
+  auténtica y otra complaciente, no se repiten al terminarlas y esperan a su condición.
+- Que **las aficiones** cumplen su parte buena y su parte mala, y que el equipo se puede
+  comprar, usar y revender.
 - Que **lo que la interfaz promete es lo que ocurre**: para cada acción y cada vía del
   catálogo, la previsión que se enseña en pantalla coincide exactamente con lo que aplica
   el motor, incluso al repetir la acción o con el tope del día agotado. Y que ninguna
